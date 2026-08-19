@@ -196,3 +196,39 @@ ELLIPSIS_RULES: tuple[Rule, ...] = (
         PUA_ELLIPSIS_DOT * 3,
     ),
 )
+
+
+# =============================================================================
+# Exclamation Proper Nouns & Click Consonants
+# =============================================================================
+
+EXCLAMATION_WORDS: tuple[str, ...] = (
+    "ǃʼOǃKung",
+    "!Kung-Ekoka",
+    "!Xuun",
+    "ǃKhung",
+    "ǃXung",
+    "!Kung",
+    "!Xun",
+    "!Xũ",
+    "ǃXû",
+    "ǃXo",
+    "ǃKu",
+    "ǃHu",
+    "ǃung",
+    "Yahoo!",
+    "Yum!",
+    "Y!J",
+)
+
+EXCLAMATION_WORDS_REGEX: re.Pattern[str] = re.compile(
+    "|".join(re.escape(w) for w in sorted(EXCLAMATION_WORDS, key=len, reverse=True))
+)
+
+
+def mask_exclamation_words(text: str) -> str:
+    """Mask exclamation marks within known proper nouns and click consonants."""
+    return EXCLAMATION_WORDS_REGEX.sub(
+        lambda m: m.group(0).replace("!", PUA_EXCLAMATION),
+        text,
+    )

@@ -7,13 +7,13 @@ from typing import TYPE_CHECKING
 
 from pragmatic_sbd.abbreviation_replacer import replace_abbreviations
 from pragmatic_sbd.between_punctuation import mask_between_punctuation
-from pragmatic_sbd.exclamation_words import mask_exclamation_words
 from pragmatic_sbd.lang.common import common, standard
 from pragmatic_sbd.lang.common.standard import (
     COMMON_RULES,
     DOUBLE_PUNCTUATION_RULES,
     ELLIPSIS_RULES,
     PUA_NEWLINE,
+    mask_exclamation_words,
     unmask_all,
 )
 from pragmatic_sbd.languages import get_language_module
