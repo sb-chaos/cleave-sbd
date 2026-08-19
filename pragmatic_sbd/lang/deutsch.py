@@ -34,8 +34,8 @@ SENTENCE_STARTERS: frozenset[str] = frozenset({
 # fmt: on
 
 NUMBER_ABBREVIATIONS: frozenset[str] = frozenset({"art", "ca", "no", "nos", "nr", "pp"})
-
 PREPOSITIVE_ABBREVIATIONS: frozenset[str] = frozenset()
+REPLACE_ALL_ABBR_PERIODS = True
 
 # fmt: off
 # German Abbreviations (cleaned of trailing whitespace artifacts)

@@ -55,7 +55,7 @@ def segment_text_file(
             "Hello world! This is the first test sentence. My name is Dr. Jonas E. Smith "
             "and I work in Washington, D.C. at 10.5% growth rate. Is this sentence number four?\n\n"
             "Here begins a new paragraph. Please refer to Fig. 1.2 on p. 45 for further details. "
-            "\"We will succeed!\" said the director. The end."
+            '"We will succeed!" said the director. The end.'
         )
         input_path.write_text(default_sample, encoding="utf-8")
 

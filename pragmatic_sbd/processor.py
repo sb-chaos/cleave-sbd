@@ -42,7 +42,7 @@ class Processor:
         text = self.text
 
         # 1. Lists: Mask list numbers and format markers
-        text = mask_list_items(text)
+        text = mask_list_items(text, lang=self.lang)
 
         # 2. Abbreviations: Mask periods in honorifics, initials, acronyms
         text = replace_abbreviations(text, lang=self.lang)
@@ -54,6 +54,7 @@ class Processor:
         text = mask_exclamation_words(text)
 
         # 5. Paired punctuation: Mask enclosed periods/punctuation
+        text = self._check_for_parens_between_quotes(text)
         text = mask_between_punctuation(text, lang=self.lang)
 
         # 6. Continuous & Common punctuation
@@ -64,10 +65,29 @@ class Processor:
         # 7. Boundary splitting
         return self._split_into_segments(text)
 
+    def _check_for_parens_between_quotes(self, text: str) -> str:
+        """Insert break delimiters around parenthetical citations between double quotes."""
+
+        def _paren_replace(m: re.Match[str]) -> str:
+            match = m.group(0)
+            sub1 = re.sub(r"\s(?=\()", "\r", match)
+            return re.sub(r"(?<=\))\s", "\r", sub1)
+
+        return common.PARENS_BETWEEN_DOUBLE_QUOTES_REGEX.sub(_paren_replace, text)
+
     def _mask_numbers_and_dates(self, text: str) -> str:
         """Mask periods in decimal numbers, timestamps, and language-specific date formats."""
         for rule in common.NUMBER_RULES:
             text = rule.pattern.sub(rule.replacement, text)
+
+        def _ref_sub(m: re.Match[str]) -> str:
+            ref = m.group("ref")
+            space = m.group("space") or ""
+            if m.end() == len(m.string):
+                return f"{standard.PUA_PERIOD}{ref}"
+            return f"{standard.PUA_PERIOD}{ref}{space}\r"
+
+        text = common.NUMBERED_REFERENCE_REGEX.sub(_ref_sub, text)
 
         if self.lang_module:
             for rule in getattr(self.lang_module, "RULES", ()):
@@ -77,6 +97,11 @@ class Processor:
 
     def _mask_continuous_punctuation(self, text: str) -> str:
         """Mask double punctuation marks and multi-dot ellipses."""
+
+        def _cont_repl(m: re.Match[str]) -> str:
+            return m.group(1).replace("!", standard.PUA_EXCLAMATION).replace("?", standard.PUA_QUESTION)
+
+        text = common.CONTINUOUS_PUNCTUATION_REGEX.sub(_cont_repl, text)
         for rule in DOUBLE_PUNCTUATION_RULES:
             text = rule.pattern.sub(rule.replacement, text)
         for rule in ELLIPSIS_RULES:
@@ -93,22 +118,53 @@ class Processor:
             getattr(self.lang_module, "PUNCTUATIONS", None) if self.lang_module else None
         ) or standard.PUNCTUATIONS
 
+        search_punctuations = punctuations | {
+            standard.PUA_PERIOD,
+            standard.PUA_EXCLAMATION,
+            standard.PUA_QUESTION,
+            standard.PUA_DOUBLE_QE,
+            standard.PUA_DOUBLE_EQ,
+            standard.PUA_DOUBLE_QQ,
+            standard.PUA_DOUBLE_EE,
+            standard.PUA_TEMP_END_PUNCT,
+        }
+
+        quote_regex = (
+            getattr(self.lang_module, "QUOTATION_AT_END_OF_SENTENCE_REGEX", None)
+            if self.lang_module
+            else None
+        ) or common.QUOTATION_AT_END_OF_SENTENCE_REGEX
+
+        split_quote_regex = (
+            getattr(self.lang_module, "SPLIT_SPACE_QUOTATION_AT_END_OF_SENTENCE_REGEX", None)
+            if self.lang_module
+            else None
+        ) or common.SPLIT_SPACE_QUOTATION_AT_END_OF_SENTENCE_REGEX
+
         segments: list[str] = []
         for line in LINE_SPLIT_REGEX.split(text):
             if not line:
                 continue
-            if any(p in line for p in punctuations):
-                matches = list(boundary_regex.finditer(line))
+            if any(p in line for p in search_punctuations):
+                proc_line = line if line[-1] in punctuations else (line + standard.PUA_TEMP_END_PUNCT)
+                matches = list(boundary_regex.finditer(proc_line))
                 if matches:
-                    segments.extend(m.group(0) for m in matches)
-                    last_end = matches[-1].end()
-                    if last_end < len(line):
-                        trailing = line[last_end:].lstrip()
-                        if trailing.strip():
-                            segments.append(trailing)
+                    for m in matches:
+                        match_str = m.group(0)
+                        if quote_regex.search(match_str):
+                            parts = split_quote_regex.split(match_str)
+                            segments.extend(unmask_all(p).strip() for p in parts if p.strip())
+                        else:
+                            cleaned_seg = unmask_all(match_str).strip()
+                            if cleaned_seg:
+                                segments.append(cleaned_seg)
                 else:
-                    segments.append(line)
+                    raw = unmask_all(line).strip()
+                    if raw:
+                        segments.append(raw)
             else:
-                segments.append(line)
+                raw = unmask_all(line).strip()
+                if raw:
+                    segments.append(raw)
 
-        return [unmask_all(s) for s in segments if s.strip()]
+        return segments

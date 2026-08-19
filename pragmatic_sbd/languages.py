@@ -1,4 +1,3 @@
-from functools import lru_cache
 from types import ModuleType
 
 from pragmatic_sbd.lang import (
@@ -54,11 +53,12 @@ LANGUAGE_CODES: dict[str, ModuleType] = {
 }
 
 
-@lru_cache(maxsize=32)
-def get_language_module(lang: str) -> ModuleType | None:
+def get_language_module(lang: str | ModuleType | None) -> ModuleType | None:
     """Return cached language configuration module if lang is non-empty, else None."""
     if not lang:
         return None
+    if isinstance(lang, ModuleType):
+        return lang
     try:
         return LANGUAGE_CODES[lang]
     except KeyError as err:

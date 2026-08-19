@@ -43,30 +43,30 @@ def mask_single_quote_punctuation(match: re.Match[str]) -> str:
 
 
 # fmt: off
-# Pre-compiled atomic-lookahead regexes for paired delimiters
+# Pre-compiled atomic-lookahead regexes for paired delimiters (bounded by line breaks)
 BETWEEN_DOUBLE_QUOTES_REGEX = re.compile(
-    r'"(?=(?P<tmp_dq>[^"\\]+|\\{2}|\\.)*)(?P=tmp_dq)"'
+    r'"(?=(?P<tmp_dq>[^"\r\n\\]+|\\{2}|\\.)*)(?P=tmp_dq)"'
 )
 BETWEEN_QUOTE_ARROW_REGEX = re.compile(
-    r"\u00ab(?=(?P<tmp_arr>[^\u00bb\\]+|\\{2}|\\.)*)(?P=tmp_arr)\u00bb"
+    r"\u00ab(?=(?P<tmp_arr>[^\u00bb\r\n\\]+|\\{2}|\\.)*)(?P=tmp_arr)\u00bb"
 )
 BETWEEN_QUOTE_SLANTED_REGEX = re.compile(
-    r"\u201c(?=(?P<tmp_sq>[^\u201d\\]+|\\{2}|\\.)*)(?P=tmp_sq)\u201d"
+    r"\u201c(?=(?P<tmp_sq>[^\u201d\r\n\\]+|\\{2}|\\.)*)(?P=tmp_sq)\u201d"
 )
 BETWEEN_SQUARE_BRACKETS_REGEX = re.compile(
-    r"\[(?=(?P<tmp_sb>[^\]\\]+|\\{2}|\\.)*)(?P=tmp_sb)\]"
+    r"\[(?=(?P<tmp_sb>[^\]\r\n\\]+|\\{2}|\\.)*)(?P=tmp_sb)\]"
 )
 BETWEEN_PARENS_REGEX = re.compile(
-    r"\((?=(?P<tmp_p>[^()\\]+|\\{2}|\\.)*)(?P=tmp_p)\)"
+    r"\((?=(?P<tmp_p>[^()\r\n\\]+|\\{2}|\\.)*)(?P=tmp_p)\)"
 )
 BETWEEN_SINGLE_QUOTES_REGEX = re.compile(
-    r"(?:(?<=^)|(?<=\s))'(?:[^']|'[a-zA-Z])*'"
+    r"(?:(?<=^)|(?<=\s))'(?!\s)(?:[^'\n\r]|(?<=[a-zA-Z])'(?=[a-zA-Z]))+?'(?=[\s.,!?;:\)\]\n\r]|$)"
 )
 BETWEEN_SINGLE_QUOTE_SLANTED_REGEX = re.compile(
-    r"(?:(?<=^)|(?<=\s))\u2018(?:[^\u2019]|\u2019[a-zA-Z])*\u2019"
+    r"(?:(?<=^)|(?<=\s))\u2018(?!\s)(?:[^\u2019\n\r]|(?<=[a-zA-Z])\u2019(?=[a-zA-Z]))+?\u2019(?=[\s.,!?;:\)\]\n\r]|$)"
 )
 BETWEEN_EM_DASHES_REGEX = re.compile(
-    r"--(?=(?P<tmp_ed>[^-]*))(?P=tmp_ed)--"
+    r"--(?=(?P<tmp_ed>[^-\r\n]*))(?P=tmp_ed)--"
 )
 WORD_WITH_LEADING_APOSTROPHE = re.compile(
     r"(?<=\s)'(?:[^']|'[a-zA-Z])*'\S"

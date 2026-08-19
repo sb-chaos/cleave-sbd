@@ -50,6 +50,7 @@ PREPOSITIVE_ABBREVIATIONS: frozenset[str] = frozenset({
     "bc", "doc", "dr", "drsc", "ing", "judr", "mgr", "mudr", "p", "prof",
     "st",
 })
+REPLACE_ALL_ABBR_PERIODS = True
 
 # Deduplicated Slovak Abbreviations
 ABBREVIATIONS: frozenset[str] = frozenset({

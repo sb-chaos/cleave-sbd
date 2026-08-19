@@ -1,7 +1,4 @@
-"""Russian (Русский) language configuration for sentence boundary disambiguation.
-
-Includes Russian Cyrillic and Latin abbreviations.
-"""
+import re
 
 from .common.standard import Rule
 
@@ -10,6 +7,9 @@ ISO_CODE = "ru"
 SENTENCE_STARTERS: frozenset[str] = frozenset()
 PREPOSITIVE_ABBREVIATIONS: frozenset[str] = frozenset()
 NUMBER_ABBREVIATIONS: frozenset[str] = frozenset()
+REPLACE_ALL_ABBR_PERIODS = True
+
+MULTI_PERIOD_ABBREVIATION_REGEX = re.compile(r"\b[\u0400-\u04FF]+(?:\.[\u0400-\u04FF]+)+[.]?", re.IGNORECASE)
 
 # fmt: off
 # Deduplicated Russian Abbreviations

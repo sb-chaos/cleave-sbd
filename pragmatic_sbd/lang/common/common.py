@@ -11,8 +11,10 @@ from .standard import (
     PUA_DOUBLE_EQ,
     PUA_DOUBLE_QE,
     PUA_DOUBLE_QQ,
+    PUA_EXCLAMATION,
     PUA_NEWLINE,
     PUA_PERIOD,
+    PUA_QUESTION,
     PUA_TEMP_END_PUNCT,
 )
 
@@ -40,17 +42,21 @@ SENTENCE_BOUNDARY_REGEX = re.compile(
     r"[.\u3002\uff0e\uff01!?\uff1f]"
 )
 
-QUOTATION_AT_END_OF_SENTENCE_REGEX = re.compile(r"""[!?.\-]["'“”]\s[A-Z]""")
-SPLIT_SPACE_QUOTATION_AT_END_OF_SENTENCE_REGEX = re.compile(r"""(?<=[!?.\-]["'“”])\s(?=[A-Z])""")
-PARENS_BETWEEN_DOUBLE_QUOTES_REGEX = re.compile(r'["\”]\s\(.*\)\s["\“]')
-CONTINUOUS_PUNCTUATION_REGEX = re.compile(r"(?<=\S)(!|\?){3,}(?=\s|$)")
+QUOTATION_AT_END_OF_SENTENCE_REGEX = re.compile(
+    rf"""[!?.\-{PUA_PERIOD}{PUA_EXCLAMATION}{PUA_QUESTION}]["“”]\s[A-Z]"""
+)
+SPLIT_SPACE_QUOTATION_AT_END_OF_SENTENCE_REGEX = re.compile(
+    rf"""(?<=[!?.\-{PUA_PERIOD}{PUA_EXCLAMATION}{PUA_QUESTION}]["“”])\s(?=[A-Z])"""
+)
+PARENS_BETWEEN_DOUBLE_QUOTES_REGEX = re.compile(r'["”]\s\([^)]*\)\s["“]')
+CONTINUOUS_PUNCTUATION_REGEX = re.compile(r"(?<=\S)([!?]{3,})(?=(\s|\Z|$))")
 MULTI_PERIOD_ABBREVIATION_REGEX = re.compile(r"\b[a-z](?:\.[a-z])+\.")
 
-# Footnote / numbered references (e.g. "end of text.12 Next sentence")
+# Footnote / numbered references (e.g. "end of text.12 Next sentence", "martyr.[1]")
 NUMBERED_REFERENCE_REGEX = re.compile(
     rf"(?<=[^\d\s])(?:\.|{PUA_PERIOD})"
-    r"(?:(?:\[(?:\d{1,3},?\s?-?\s?)*\b\d{1,3}\])+|(?:\d{1,3}\s?)?\d{1,3})"
-    r"\s(?=[A-Z])"
+    r"(?P<ref>(?:\[(?:\d{1,3},?\s?-?\s?)*\b\d{1,3}\])+|(?:(?:\d{1,3}\s?)?\d{1,3}))"
+    r"(?P<space>\s*)(?=(?:[A-Z]|\Z|$))"
 )
 
 

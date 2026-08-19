@@ -15,13 +15,17 @@ from .lang.common.standard import (
 )
 
 # Common Pre-Compiled Patterns
-MULTI_PERIOD_DEFAULT_REGEX = re.compile(r"\b[a-z](?:\.[a-z])+[.]", re.IGNORECASE)
+MULTI_PERIOD_DEFAULT_REGEX = re.compile(
+    r"\b[a-zA-Z\u0400-\u0500](?:\.[a-zA-Z\u0400-\u0500])+\.", re.IGNORECASE
+)
 POSSESSIVE_ABBR_REGEX = re.compile(r"\.(?='s\b|’s\b|'S\b|’S\b)")
 KOMMANDITGESELLSCHAFT_REGEX = re.compile(r"(?<=Co)\.(?=\s*(?:KG|GmbH|OHG|AG)\b)", re.IGNORECASE)
 
-# Single letter initials (e.g., "J. K. Rowling" -> "J\ue000 K\ue000 Rowling", "z. B." -> "z\ue000 B\ue000")
-SINGLE_UPPERCASE_LETTER_REGEX = re.compile(r"(?:(?<=^)|(?<=\s))([A-ZА-ЯЁ])\.(?=\s+[a-zA-Zа-яёА-ЯЁ]|\s*$)")
-SINGLE_LOWERCASE_LETTER_REGEX = re.compile(r"(?:(?<=^)|(?<=\s))([a-zа-яё])\.(?=\s+[a-zA-Zа-яёА-ЯЁ]|\s*$)")
+# Single letter initials (e.g., "J. K. Rowling" -> "J\ue000 K\ue000 Rowling", "J.C. Penney" -> "J\ue000C\ue000 Penney")
+SINGLE_UPPERCASE_LETTER_REGEX = re.compile(
+    r"((?:(?<=^)|(?<=[\s\ue000]))[A-ZА-ЯЁ])\.(?=[,.:\-?!]|\s|[A-ZА-ЯЁ]\.|\s*$)"
+)
+SINGLE_LOWERCASE_LETTER_REGEX = re.compile(r"((?:(?<=^)|(?<=\s))[a-zа-яё])\.(?=\s+[a-zA-Zа-яёА-ЯЁ]|\s*$)")
 
 # AM / PM Time Patterns
 AM_PM_REGEX = re.compile(r"(?<=\d)\s*(?:a\.m|p\.m|am|pm)\b", re.IGNORECASE)
@@ -30,25 +34,25 @@ AM_PM_REGEX = re.compile(r"(?<=\d)\s*(?:a\.m|p\.m|am|pm)\b", re.IGNORECASE)
 def replace_pre_number_abbr(txt: str, abbr: str) -> str:
     """Mask periods in number-preceding abbreviations (e.g. 'No. 5', 'pp. (1-3)')."""
     escaped_abbr = re.escape(abbr.strip())
-    pattern = rf"((?:(?<=^)|(?<=\s)){escaped_abbr})\.(?=(\s\d|\s+\())"
-    return re.sub(pattern, rf"\1{PUA_PERIOD}", txt, flags=re.IGNORECASE)
+    pattern = rf"((?:(?<=^)|(?<=\s))(?i:{escaped_abbr}))\.(?=(\s*\d|\s+\())"
+    return re.sub(pattern, lambda m: m.group(1) + PUA_PERIOD, txt)
 
 
 def replace_prepositive_abbr(txt: str, abbr: str) -> str:
     """Mask periods in prepositive titles and honorifics (e.g. 'Mr. Jones', 'Gen. 1:1')."""
     escaped_abbr = re.escape(abbr.strip())
-    pattern = rf"((?:(?<=^)|(?<=\s)){escaped_abbr})\.(?=(\s|:\d+))"
-    return re.sub(pattern, rf"\1{PUA_PERIOD}", txt, flags=re.IGNORECASE)
+    pattern = rf"((?:(?<=^)|(?<=\s))(?i:{escaped_abbr}))\.(?=(\s|:\d+))"
+    return re.sub(pattern, lambda m: m.group(1) + PUA_PERIOD, txt)
 
 
 def replace_period_of_abbr(txt: str, abbr: str) -> str:
     """Mask standard abbreviation periods when followed by lowercase text, numbers, or punctuation."""
     escaped_abbr = re.escape(abbr.strip())
     pattern = (
-        rf"((?:(?<=^)|(?<=\s)){escaped_abbr})\."
-        rf"(?=[.:\-?,]|\s+(?:[a-z]|I\s|I'm|I'll|\d|\())"
+        rf"((?:(?<=^)|(?<=\s))(?i:{escaped_abbr}))\."
+        rf"(?=[.:\-?,!\"\'“”«»]|\s+(?:[a-zа-яё]|I\s|I'm|I'll|\d|\(|\"|'|«|„))"
     )
-    return re.sub(pattern, rf"\1{PUA_PERIOD}", txt, flags=re.IGNORECASE)
+    return re.sub(pattern, lambda m: m.group(1) + PUA_PERIOD, txt)
 
 
 def replace_multi_period_abbreviations(text: str, lang: str = "") -> str:
@@ -78,7 +82,7 @@ def replace_abbreviation_as_sentence_boundary(text: str, lang: str = "") -> str:
     starters_pattern = "|".join(re.escape(word) for word in sorted(sentence_starters, key=len, reverse=True))
     boundary_regex = re.compile(
         rf"((?:U{PUA_PERIOD}S|U\.S|U{PUA_PERIOD}K|E{PUA_PERIOD}U|E\.U|"
-        rf"U{PUA_PERIOD}S{PUA_PERIOD}A|U\.S\.A|I|i\.v|I\.V))"
+        rf"U{PUA_PERIOD}S{PUA_PERIOD}A|U\.S\.A|I|i{PUA_PERIOD}v|I{PUA_PERIOD}V|i\.v|I\.V))"
         rf"{PUA_PERIOD}(?=\s+(?:{starters_pattern})\b)"
     )
     return boundary_regex.sub(r"\1.", text)
@@ -96,6 +100,7 @@ def search_for_abbreviations_in_string(text: str, lang: str = "") -> str:
     number_abbr: frozenset[str] = (
         getattr(lang_module, "NUMBER_ABBREVIATIONS", frozenset()) if lang_module else frozenset()
     )
+    replace_all: bool = getattr(lang_module, "REPLACE_ALL_ABBR_PERIODS", False) if lang_module else False
 
     if not abbreviations and not prepositive and not number_abbr:
         return text
@@ -103,9 +108,32 @@ def search_for_abbreviations_in_string(text: str, lang: str = "") -> str:
     lowered = text.lower()
     all_abbreviations = abbreviations | prepositive | number_abbr
 
-    for abbr in all_abbreviations:
+    # Sort longest first to avoid partial matches on prefixes
+    for abbr in sorted(all_abbreviations, key=len, reverse=True):
         stripped = abbr.strip()
-        if not stripped or stripped not in lowered:
+        if not stripped:
+            continue
+        stripped_lowered = stripped.lower()
+        if stripped_lowered not in lowered and stripped not in text:
+            continue
+
+        if replace_all:
+            escaped_abbr = re.escape(stripped)
+            if not stripped.endswith("."):
+                pattern_dot = rf"((?:(?<=^)|(?<=\s)){escaped_abbr})\."
+                text = re.sub(
+                    pattern_dot,
+                    lambda m: m.group(1).replace(".", PUA_PERIOD) + PUA_PERIOD,
+                    text,
+                    flags=re.IGNORECASE,
+                )
+            pattern_exact = rf"((?:(?<=^)|(?<=\s)){escaped_abbr})(?=(\s|$|[.:\-?,!\"\'“”«»]))"
+            text = re.sub(
+                pattern_exact,
+                lambda m: m.group(1).replace(".", PUA_PERIOD),
+                text,
+                flags=re.IGNORECASE,
+            )
             continue
 
         # Check if candidate abbreviation exists at a word boundary
@@ -116,20 +144,13 @@ def search_for_abbreviations_in_string(text: str, lang: str = "") -> str:
         if not match_pattern.search(text):
             continue
 
-        # Context check: character following the abbreviation
-        next_char_pattern = re.compile(rf"(?<={re.escape(stripped)}\.\s)(\S)", re.IGNORECASE)
-        next_chars = next_char_pattern.findall(text)
-        char = next_chars[0] if next_chars else ""
-        is_upper = char.isupper() if char else False
-
         normalized = stripped.lower()
-        if not is_upper or normalized in prepositive:
-            if normalized in prepositive:
-                text = replace_prepositive_abbr(text, stripped)
-            elif normalized in number_abbr:
-                text = replace_pre_number_abbr(text, stripped)
-            else:
-                text = replace_period_of_abbr(text, stripped)
+        if normalized in prepositive:
+            text = replace_prepositive_abbr(text, stripped)
+        elif normalized in number_abbr:
+            text = replace_pre_number_abbr(text, stripped)
+        else:
+            text = replace_period_of_abbr(text, stripped)
 
     return text
 
@@ -139,28 +160,37 @@ def replace_abbreviations(text: str, lang: str = "") -> str:
     if not text:
         return text
 
-    # 1. Structural & single-letter initials protection
+    # 1. Structural & single-letter uppercase initials protection
     text = POSSESSIVE_ABBR_REGEX.sub(PUA_PERIOD, text)
     text = KOMMANDITGESELLSCHAFT_REGEX.sub(PUA_PERIOD, text)
-    text = SINGLE_UPPERCASE_LETTER_REGEX.sub(rf"\1{PUA_PERIOD}", text)
-    text = SINGLE_LOWERCASE_LETTER_REGEX.sub(rf"\1{PUA_PERIOD}", text)
+    for _ in range(3):
+        text = SINGLE_UPPERCASE_LETTER_REGEX.sub(lambda m: m.group(1) + PUA_PERIOD, text)
 
-    # 2. Language-specific custom preprocessing rules
+    # 2. Multi-period abbreviations (e.g., 'i.e.', 'e.g.', 'U.S.A.', 'т.б.')
+    text = replace_multi_period_abbreviations(text, lang=lang)
+
+    # 3. Language-specific custom preprocessing rules
     lang_module = get_language_module(lang) if lang else None
     lang_rules: tuple[Rule, ...] = getattr(lang_module, "RULES", ()) if lang_module else ()
     for rule in lang_rules:
         text = rule.pattern.sub(rule.replacement, text)
 
-    # 3. Scan line-by-line against language abbreviation lexicon
+    # 4. Scan line-by-line against language abbreviation lexicon
     lines: list[str] = []
     for line in text.splitlines(keepends=True):
         lines.append(search_for_abbreviations_in_string(line, lang=lang))
     text = "".join(lines)
 
-    # 4. Multi-period abbreviations (e.g., 'i.e.', 'e.g.', 'U.S.A.')
-    text = replace_multi_period_abbreviations(text, lang=lang)
+    # 5. Single-letter lowercase initials (e.g., 'z. B.')
+    text = SINGLE_LOWERCASE_LETTER_REGEX.sub(lambda m: m.group(1) + PUA_PERIOD, text)
 
-    # 5. Sentence boundary restoration for ambiguous abbreviations (e.g., '...in the U.S. The company...')
+    # 6. AM/PM rules from common
+    from .lang.common import common as common_module
+
+    for rule in common_module.AM_PM_RULES:
+        text = rule.pattern.sub(rule.replacement, text)
+
+    # 7. Sentence boundary restoration for ambiguous abbreviations (e.g., '...in the U.S. The company...')
     text = replace_abbreviation_as_sentence_boundary(text, lang=lang)
 
     return text

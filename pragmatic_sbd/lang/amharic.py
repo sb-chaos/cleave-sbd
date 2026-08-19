@@ -13,7 +13,7 @@ ISO_CODE = "am"
 
 # Ethiopic Punctuation Marks
 ETHIOPIC_FULL_STOP = "\u1362"  # ።
-ETHIOPIC_QUESTION_MARK = "\u1365"  # ፧
+ETHIOPIC_QUESTION_MARK = "\u1367"  # ፧
 
 PUNCTUATIONS: frozenset[str] = frozenset(
     {

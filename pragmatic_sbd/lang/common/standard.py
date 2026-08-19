@@ -157,8 +157,6 @@ COMMON_RULES: tuple[Rule, ...] = (
     # Protect mid-sentence exclamation points
     Rule(re.compile(r"!(?=,\s[a-z])"), PUA_EXCLAMATION),
     Rule(re.compile(r"!(?=\s[a-z])"), PUA_EXCLAMATION),
-    # Normalize excessive spacing
-    Rule(re.compile(r"\s{3,}"), " "),
     # Protect periods in alphanumeric words/emails (e.g. site.com)
     Rule(re.compile(r"([a-zA-Z0-9_])\.([a-zA-Z0-9_])"), rf"\1{PUA_PERIOD}\2"),
 )

@@ -54,7 +54,7 @@ NUMBER_LIST_REGEX: Final[re.Pattern[str]] = re.compile(
 # Alphabetical lists: e.g. "a.", "b.)", "c)", "(a)"
 ALPHA_LIST_REGEX: Final[re.Pattern[str]] = re.compile(
     r"(?P<lead>(?:^|[\r\n]|\s)(?:[•⁃\-]\s*)?)"
-    r"(?:(?P<lparen>\()(?P<letter_p>[a-zA-Z])\)|(?P<letter>[a-zA-Z])(?P<delim>\.\)?|\)))(?=\s|$)"
+    r"(?:(?P<lparen>\()(?P<letter_p>[a-z])\)|(?P<letter>[a-z])(?P<delim>\.\)?|\)))(?=\s|$)"
 )
 
 # Roman numeral lists in parens: e.g. "(i)", "(ii)", "(iii)"
@@ -315,11 +315,12 @@ def _mask_parenthesized_and_roman_lists(text: str) -> str:
     return "".join(chars)
 
 
-def mask_list_items(text: str) -> str:
+def mask_list_items(text: str, lang: str = "") -> str:
     """Pure functional entrypoint to mask list items and preserve 1:1 character length.
 
     Args:
         text (str): Input text containing potentially ambiguous list markers.
+        lang (str): Language code (e.g. 'sk' to disable alphabetical lists).
 
     Returns:
         str: Text with list item periods and delimiters masked with PUA sentinels
@@ -337,8 +338,9 @@ def mask_list_items(text: str) -> str:
     # 3. Numbered lists (e.g. 1., 1.), • 9., ⁃10.)
     text = _mask_numbered_lists(text)
 
-    # 4. Alphabetical lists (e.g. a., b., c.)
-    text = _mask_alphabetical_lists(text)
+    # 4. Alphabetical lists (e.g. a., b., c.) - disabled for Slovak to preserve abbreviations like 's. r. o.'
+    if lang != "sk":
+        text = _mask_alphabetical_lists(text)
 
     return text
 

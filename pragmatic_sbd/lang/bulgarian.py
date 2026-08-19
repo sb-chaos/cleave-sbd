@@ -1,4 +1,4 @@
-"""Bulgarian language configuration for sentence boundary disambiguation."""
+import re
 
 from .common.standard import Rule
 
@@ -7,6 +7,9 @@ ISO_CODE = "bg"
 SENTENCE_STARTERS: frozenset[str] = frozenset()
 PREPOSITIVE_ABBREVIATIONS: frozenset[str] = frozenset()
 NUMBER_ABBREVIATIONS: frozenset[str] = frozenset()
+REPLACE_ALL_ABBR_PERIODS = True
+
+MULTI_PERIOD_ABBREVIATION_REGEX = re.compile(r"\b[\u0400-\u04FF]+(?:\.[\u0400-\u04FF]+)+[.]?", re.IGNORECASE)
 
 # fmt: off
 # Cyrillic and Latin Abbreviations

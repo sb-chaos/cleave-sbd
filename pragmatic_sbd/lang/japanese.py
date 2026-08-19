@@ -26,8 +26,10 @@ PAIRED_PUNCTUATION_PATTERNS: tuple[re.Pattern[str], ...] = (
     JAPANESE_QUOTES_REGEX,
 )
 
-# Japanese-specific preprocessing and transformation rules
-RULES: tuple[Rule, ...] = (
+CLEAN_RULES: tuple[Rule, ...] = (
     # Remove newlines immediately following particle の before non-whitespace
     Rule(re.compile(r"(?<=\u306e)\n(?=\S)"), ""),
 )
+
+# Japanese-specific preprocessing and transformation rules
+RULES: tuple[Rule, ...] = ()

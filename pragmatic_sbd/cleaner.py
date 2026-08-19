@@ -38,7 +38,11 @@ class Cleaner:
         self.lang: str = lang
         self.doc_type: str = doc_type
         self.char_span: bool = char_span
-        self.rules: tuple[Rule, ...] = tuple(rules)
+        from pragmatic_sbd.languages import get_language_module
+
+        lang_mod = get_language_module(lang) if lang else None
+        lang_clean_rules: tuple[Rule, ...] = getattr(lang_mod, "CLEAN_RULES", ()) if lang_mod else ()
+        self.rules: tuple[Rule, ...] = tuple(rules) + lang_clean_rules
 
     def clean(self, text: str | None = None) -> str | None:
         """Run the complete cleaning pipeline on input text.
@@ -60,11 +64,12 @@ class Cleaner:
         cleaned = self.clean_table_of_contents(cleaned)
         cleaned = self.clean_consecutive_characters(cleaned)
         cleaned = self.check_for_no_space_in_between_sentences(cleaned)
-        cleaned = self.replace_newlines(cleaned, doc_type=self.doc_type)
-        cleaned = self.replace_escaped_newlines(cleaned)
 
         for rule in self.rules:
             cleaned = rule.pattern.sub(rule.replacement, cleaned)
+
+        cleaned = self.replace_newlines(cleaned, doc_type=self.doc_type)
+        cleaned = self.replace_escaped_newlines(cleaned)
 
         return cleaned
 

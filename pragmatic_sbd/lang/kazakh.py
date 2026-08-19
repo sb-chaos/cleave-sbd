@@ -18,6 +18,7 @@ ISO_CODE = "kk"
 SENTENCE_STARTERS: frozenset[str] = frozenset()
 PREPOSITIVE_ABBREVIATIONS: frozenset[str] = frozenset()
 NUMBER_ABBREVIATIONS: frozenset[str] = frozenset()
+REPLACE_ALL_ABBR_PERIODS = True
 
 # fmt: off
 # Deduplicated Kazakh (Cyrillic and Latin) Abbreviations
@@ -48,7 +49,7 @@ ABBREVIATIONS: frozenset[str] = frozenset({
     "пед.", "пиқ", "пәк", "р.", "ржмб", "ркфср", "рлдп", "рнқ", "рсфср",
     "ртж", "руб", "рф", "рфкп", "с.", "с.ш.", "сбд", "сбл", "свс", "сву",
     "сду", "сес", "сент.", "см", "снпс", "солт.", "сооно", "спбму", "ссс",
-    "ссср", "сср", "ссро", "сэс", "т", "т.", "т. б.", "т. с. с.", "т.с.с",
+    "ссср", "сср", "ссро", "сэс", "т", "т.", "т. б.", "т.б.", "т.б", "т. с. с.", "т.с.с",
     "тв", "тереңд.", "тех.", "тим", "тж", "тжқ", "тмд", "тр", "трлн",
     "тэц", "төм.", "уаз", "уефа", "ук", "ұқк", "ұқшұ", "февр.", "фкққ",
     "фсб", "фққ", "хвқ", "хдо", "хдп", "хим.", "хтқо", "хқко", "цас",
