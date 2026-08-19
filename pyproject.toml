@@ -1,0 +1,152 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pragmatic-sbd"
+version = "0.1.0"
+description = "High-performance, strictly-typed sentence boundary disambiguation (Pragmatic SBD)"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+keywords = [
+    "natural-language-processing",
+    "nlp",
+    "sentence-boundary-disambiguation",
+    "sentence-segmentation",
+    "text-processing",
+]
+authors = [
+    { name = "Scott Blasing", email = "sdblasing@gmail.com" },
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Text Processing :: Linguistic",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "License :: OSI Approved :: MIT License",
+    "Typing :: Typed",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/sblasing/pragmatic-sbd"
+Repository = "https://github.com/sblasing/pragmatic-sbd"
+Issues = "https://github.com/sblasing/pragmatic-sbd/issues"
+Changelog = "https://github.com/sblasing/pragmatic-sbd/blob/main/CHANGELOG.md"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=9.0.0",
+    "basedpyright>=1.39.0",
+    "ruff>=0.16.0",
+    "build>=1.5.0",
+    "twine>=7.0.0",
+]
+
+# Standard PEP 735 dependency groups (supported by uv, Hatch, PDM)
+[dependency-groups]
+dev = [
+    "pytest>=9.0.0",
+    "basedpyright>=1.39.0",
+    "ruff>=0.16.0",
+    "build>=1.5.0",
+    "twine>=7.0.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["pragmatic_sbd"]
+
+# -----------------------------------------------------------------------------
+# Tool Configurations
+# -----------------------------------------------------------------------------
+
+[tool.basedpyright]
+include = ["pragmatic_sbd", "tests"]
+exclude = [".venv", "**/__pycache__"]
+pythonVersion = "3.11"
+typeCheckingMode = "strict"
+reportMissingTypeStubs = false
+
+[tool.ruff]
+target-version = "py311"
+line-length = 110
+
+[tool.ruff.lint]
+allowed-confusables = [
+    # Typographic punctuation: smart quotes, brackets & dashes
+    "„", "“", "”", "‘", "’", "«", "»", "「", "」", "（", "）", "—",
+    # Non-Latin & fullwidth punctuation / language markers (CJK, Arabic, Indic, Armenian)
+    "।", "۔", "؟", "،", "。", "．", "！", "？", "の", "։","ǃ","ʼ",
+    # Units, superscripts & legal marks
+    "°", "²", "³", "µ", "®",
+    # Cyrillic lookalikes / Latin homoglyphs (common in bg, kk, ru files)
+    "А", "а", "В", "в", "Е", "е", "К", "к", "М", "м", "О", "о", "Р", "р", "С", "с", "Т", "т", "Х", "х", "б", "г", "у",
+    # Math, music & syllabic sentinels (test fixtures / legacy strings)
+    "∯", "♭", "♬", "ȸ", "ᓴ", "ᓷ", "•", "⁃", "ا", "ه",
+
+]
+select = [
+    "E",     # pycodestyle errors
+    "W",     # pycodestyle warnings
+    "F",     # pyflakes
+    "I",     # isort
+    "UP",    # pyupgrade (modernizes syntax to Python 3.10+)
+    "B",     # flake8-bugbear
+    "SIM",   # flake8-simplify
+    "RUF",   # Ruff-specific rules
+    "FA",    # flake8-future-annotations
+]
+ignore = [
+    "E501",  # Line length handled by formatter / test fixtures
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = [
+    "E501",   # Test fixtures contain long string literals
+    "RUF001", # Test fixtures contain intentional ambiguous unicode characters
+    "RUF002",
+    "RUF003",
+    "UP009",  # UTF-8 encoding declarations in test files
+    "I001",   # Import sorting in test files
+    "F811",   # Redefinition of test function names in legacy fixtures
+    "F841",   # Unused local variables in test assertions
+    "F401",   # Unused imports in test modules
+]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+filterwarnings = [
+    "error",
+    "ignore::DeprecationWarning",
+]
+
+[tool.coverage.run]
+source = ["pragmatic_sbd"]
+branch = true
+omit = [
+    "tests/*",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 0
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]

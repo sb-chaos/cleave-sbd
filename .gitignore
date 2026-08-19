@@ -1,0 +1,72 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environments & Package Managers
+.venv/
+venv/
+ENV/
+env/
+.python-version
+.uv/
+.pdm-build/
+.pdm-python
+
+# Distribution / Packaging
+dist/
+build/
+*.egg-info/
+*.egg
+develop-eggs/
+.eggs/
+parts/
+wheels/
+sdist/
+.installed.cfg
+
+# Testing & Coverage
+.pytest_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+*.cover
+.hypothesis/
+
+# Type Checking & Linting (Ruff, Basedpyright, Mypy, etc.)
+.ruff_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyright/
+.pyre/
+.pytype/
+
+# Environment Variables & Secrets
+.env
+.env.*
+!.env.example
+
+# Editors & IDEs (Zed, VS Code, Cursor, JetBrains)
+.zed/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.cursor/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Documentation
+docs/_build/
+site/
+
+# OS-generated files
+.DS_Store
+Thumbs.db
