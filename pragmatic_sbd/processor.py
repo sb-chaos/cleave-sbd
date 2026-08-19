@@ -6,14 +6,18 @@ import re
 from typing import TYPE_CHECKING
 
 from pragmatic_sbd.abbreviation_replacer import replace_abbreviations
-from pragmatic_sbd.between_punctuation import mask_between_punctuation
 from pragmatic_sbd.lang.common import common, standard
 from pragmatic_sbd.lang.common.standard import (
+    BETWEEN_SINGLE_QUOTES_REGEX,
     COMMON_RULES,
     DOUBLE_PUNCTUATION_RULES,
     ELLIPSIS_RULES,
     PUA_NEWLINE,
+    STANDARD_PAIRED_PATTERNS,
+    WORD_WITH_LEADING_APOSTROPHE,
     mask_exclamation_words,
+    mask_punctuation,
+    mask_single_quote_punctuation,
     unmask_all,
 )
 from pragmatic_sbd.languages import get_language_module
@@ -23,6 +27,30 @@ if TYPE_CHECKING:
     from types import ModuleType
 
 LINE_SPLIT_REGEX = re.compile(rf"(?:\r\n|\r|\n|{PUA_NEWLINE})")
+
+
+def mask_between_punctuation(text: str, lang: str = "") -> str:
+    """Mask punctuation enclosed within paired quotes, brackets, parens, and dashes."""
+    if not text:
+        return text
+
+    # 1. Single quotes with apostrophe collision check
+    if not (WORD_WITH_LEADING_APOSTROPHE.search(text) and not re.search(r"'\s", text)):
+        text = BETWEEN_SINGLE_QUOTES_REGEX.sub(mask_single_quote_punctuation, text)
+
+    # 2. Standard paired patterns (double quotes, brackets, parens, em-dashes, etc.)
+    for pattern, handler in STANDARD_PAIRED_PATTERNS:
+        text = pattern.sub(handler, text)
+
+    # 3. Language-specific paired patterns (e.g., Japanese 「」/（）, Slovak „“, German „“/,,“)
+    lang_module = get_language_module(lang) if lang else None
+    lang_paired_patterns: tuple[re.Pattern[str], ...] = (
+        getattr(lang_module, "PAIRED_PUNCTUATION_PATTERNS", ()) if lang_module else ()
+    )
+    for custom_pattern in lang_paired_patterns:
+        text = custom_pattern.sub(mask_punctuation, text)
+
+    return text
 
 
 class Processor:
