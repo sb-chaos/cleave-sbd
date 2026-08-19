@@ -195,11 +195,10 @@ you may copy it, give it away or re-use it under the terms of the this license
         "Maissen se chargea du reste ... Logiquement,",
         [("Maissen se chargea du reste ... ", 0, 32), ("Logiquement,", 32, 44)],
     ),
-    pytest.param(
+    (
         "#83",
         "Maissen se chargea du reste .... Logiquement,",
         [("Maissen se chargea du reste .", 0, 29), ("... ", 29, 33), ("Logiquement,", 33, 45)],
-        marks=pytest.mark.xfail,
     ),
 ]
 

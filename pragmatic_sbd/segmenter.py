@@ -101,21 +101,19 @@ class Segmenter:
         return [unmask_all(s) for s in sentences]
 
     def sentences_with_char_spans(self, original_text: str, sentences: list[str]) -> list[TextSpan]:
-        """Calculate start and end character offsets against the original source text."""
+        """Calculate start and end character offsets sequentially against the original source text."""
         sent_spans: list[TextSpan] = []
         prior_end_char_idx: int = 0
         for sent in sentences:
-            for match in re.finditer(rf"{re.escape(sent)}\s*", original_text):
-                match_str = match.group(0)
-                match_start_idx, match_end_idx = match.span()
-                if match_end_idx > prior_end_char_idx:
-                    sent_spans.append(
-                        TextSpan(
-                            sent=unmask_all(match_str),
-                            start=match_start_idx,
-                            end=match_end_idx,
-                        )
+            pattern = re.compile(rf"{re.escape(sent)}\s*")
+            match = pattern.search(original_text, pos=prior_end_char_idx)
+            if match:
+                sent_spans.append(
+                    TextSpan(
+                        sent=unmask_all(match.group(0)),
+                        start=match.start(),
+                        end=match.end(),
                     )
-                    prior_end_char_idx = match_end_idx
-                    break
+                )
+                prior_end_char_idx = match.end()
         return sent_spans

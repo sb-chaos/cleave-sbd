@@ -44,6 +44,8 @@ ABBREVIATIONS: frozenset[str] = frozenset(
         "ج.ب",
         "جم",
         "ج.م.ع",
+        "د",
+        "د.",
         "س.ت",
         "سم",
         "ص.ب.",

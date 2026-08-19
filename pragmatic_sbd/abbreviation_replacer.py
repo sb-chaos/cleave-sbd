@@ -49,10 +49,12 @@ def replace_period_of_abbr(txt: str, abbr: str) -> str:
     """Mask standard abbreviation periods when followed by lowercase text, numbers, or punctuation."""
     escaped_abbr = re.escape(abbr.strip())
     pattern = (
-        rf"((?:(?<=^)|(?<=\s))(?i:{escaped_abbr}))\."
-        rf"(?=[.:\-?,!\"\'“”«»]|\s+(?:[a-zа-яё]|I\s|I'm|I'll|\d|\(|\"|'|«|„))"
+        rf"((?:(?<=^)|(?<=\s))(?i:{escaped_abbr}))"
+        r"[\u200e\u200f\u202a-\u202e\u2066-\u2069]*\."
+        r"[\u200e\u200f\u202a-\u202e\u2066-\u2069]*"
+        rf"(?=[.:\-?,!\"\'“”«»]|\s+(?:[a-zа-яё\u0600-\u06ff]|I\s|I'm|I'll|\d|\(|\"|'|«|„))"
     )
-    return re.sub(pattern, r"\g<1>" + PUA_PERIOD, txt)
+    return re.sub(pattern, lambda m: m.group(0).replace(".", PUA_PERIOD), txt)
 
 
 def replace_multi_period_abbreviations(text: str, lang: str = "") -> str:
