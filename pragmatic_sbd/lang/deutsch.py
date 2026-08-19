@@ -78,7 +78,7 @@ RULES: tuple[Rule, ...] = (
     # German ordinal dates (e.g. "1. Januar")
     Rule(GERMAN_DATE_REGEX, PUA_PERIOD),
     # Positive and negative ordinal numbers (e.g. " 1. ", " 12. ", " -5. ")
-    Rule(re.compile(r"((?:(?<=^)|(?<=\s))-?\d{1,2})\.(?=\s)"), rf"\1{PUA_PERIOD}"),
+    Rule(re.compile(r"((?:(?<=^)|(?<=\s))-?\d{1,2})\.(?=\s)"), r"\g<1>" + PUA_PERIOD),
     # Single lower-case initials at line start or mid-sentence (e.g. " z. B. ")
-    Rule(re.compile(r"((?:(?<=^)|(?<=\s))[a-z])\.(?=\s)"), rf"\1{PUA_PERIOD}"),
+    Rule(re.compile(r"((?:(?<=^)|(?<=\s))[a-z])\.(?=\s)"), r"\g<1>" + PUA_PERIOD),
 )

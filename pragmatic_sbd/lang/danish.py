@@ -97,5 +97,5 @@ ABBREVIATIONS: frozenset[str] = frozenset({
 # Language-specific protection rules
 RULES: tuple[Rule, ...] = (
     # Danish ordinal & negative number periods (e.g. " 1. ", " 12. ", " -5. ")
-    Rule(re.compile(r"(\s-?\d{1,2})\.(?=\s)"), rf"\1{PUA_PERIOD}"),
+    Rule(re.compile(r"(\s-?\d{1,2})\.(?=\s)"), r"\g<1>" + PUA_PERIOD),
 )

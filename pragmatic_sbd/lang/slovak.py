@@ -95,5 +95,5 @@ RULES: tuple[Rule, ...] = (
     # Ordinal numbers followed by lowercase text (e.g. "1. poschodie")
     Rule(re.compile(r"(?<=\d)\.(?=\s*[a-z]+)"), PUA_PERIOD),
     # Roman numeral list items/ordinals (e.g. " IV. ", " X. ")
-    Rule(re.compile(r"((?:(?<=^)|(?<=\s))[VXI]+)\.(?=\s+)", re.IGNORECASE), rf"\1{PUA_PERIOD}"),
+    Rule(re.compile(r"((?:(?<=^)|(?<=\s))[VXI]+)\.(?=\s+)", re.IGNORECASE), r"\g<1>" + PUA_PERIOD),
 )

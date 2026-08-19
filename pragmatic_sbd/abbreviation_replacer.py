@@ -35,14 +35,14 @@ def replace_pre_number_abbr(txt: str, abbr: str) -> str:
     """Mask periods in number-preceding abbreviations (e.g. 'No. 5', 'pp. (1-3)')."""
     escaped_abbr = re.escape(abbr.strip())
     pattern = rf"((?:(?<=^)|(?<=\s))(?i:{escaped_abbr}))\.(?=(\s*\d|\s+\())"
-    return re.sub(pattern, lambda m: m.group(1) + PUA_PERIOD, txt)
+    return re.sub(pattern, r"\g<1>" + PUA_PERIOD, txt)
 
 
 def replace_prepositive_abbr(txt: str, abbr: str) -> str:
     """Mask periods in prepositive titles and honorifics (e.g. 'Mr. Jones', 'Gen. 1:1')."""
     escaped_abbr = re.escape(abbr.strip())
     pattern = rf"((?:(?<=^)|(?<=\s))(?i:{escaped_abbr}))\.(?=(\s|:\d+))"
-    return re.sub(pattern, lambda m: m.group(1) + PUA_PERIOD, txt)
+    return re.sub(pattern, r"\g<1>" + PUA_PERIOD, txt)
 
 
 def replace_period_of_abbr(txt: str, abbr: str) -> str:
@@ -52,7 +52,7 @@ def replace_period_of_abbr(txt: str, abbr: str) -> str:
         rf"((?:(?<=^)|(?<=\s))(?i:{escaped_abbr}))\."
         rf"(?=[.:\-?,!\"\'“”«»]|\s+(?:[a-zа-яё]|I\s|I'm|I'll|\d|\(|\"|'|«|„))"
     )
-    return re.sub(pattern, lambda m: m.group(1) + PUA_PERIOD, txt)
+    return re.sub(pattern, r"\g<1>" + PUA_PERIOD, txt)
 
 
 def replace_multi_period_abbreviations(text: str, lang: str = "") -> str:
@@ -164,7 +164,7 @@ def replace_abbreviations(text: str, lang: str = "") -> str:
     text = POSSESSIVE_ABBR_REGEX.sub(PUA_PERIOD, text)
     text = KOMMANDITGESELLSCHAFT_REGEX.sub(PUA_PERIOD, text)
     for _ in range(3):
-        text = SINGLE_UPPERCASE_LETTER_REGEX.sub(lambda m: m.group(1) + PUA_PERIOD, text)
+        text = SINGLE_UPPERCASE_LETTER_REGEX.sub(r"\g<1>" + PUA_PERIOD, text)
 
     # 2. Multi-period abbreviations (e.g., 'i.e.', 'e.g.', 'U.S.A.', 'т.б.')
     text = replace_multi_period_abbreviations(text, lang=lang)
@@ -182,7 +182,7 @@ def replace_abbreviations(text: str, lang: str = "") -> str:
     text = "".join(lines)
 
     # 5. Single-letter lowercase initials (e.g., 'z. B.')
-    text = SINGLE_LOWERCASE_LETTER_REGEX.sub(lambda m: m.group(1) + PUA_PERIOD, text)
+    text = SINGLE_LOWERCASE_LETTER_REGEX.sub(r"\g<1>" + PUA_PERIOD, text)
 
     # 6. AM/PM rules from common
     from .lang.common import common as common_module

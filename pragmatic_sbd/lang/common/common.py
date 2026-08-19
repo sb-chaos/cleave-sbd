@@ -70,7 +70,7 @@ COMMON_ABBREVIATION_RULES: tuple[Rule, ...] = (
     # German corporate entity: "Co. KG"
     Rule(re.compile(r"(?<=Co)\.(?=\sKG)"), PUA_PERIOD),
     # Single-letter initials at line start or mid-sentence (e.g. "J. Doe", "A. Smith")
-    Rule(re.compile(r"((?:(?<=^)|(?<=\s))[A-Z])\.(?=,?\s)"), rf"\1{PUA_PERIOD}"),
+    Rule(re.compile(r"((?:(?<=^)|(?<=\s))[A-Z])\.(?=,?\s)"), r"\g<1>" + PUA_PERIOD),
 )
 
 # Unmasks the terminal period in a.m. / p.m. ONLY when it ends a sentence before a capitalized word
@@ -90,6 +90,6 @@ NUMBER_RULES: tuple[Rule, ...] = (
     # Numbered list items at line start or after newline (e.g. "1. ", "12. ", "1)")
     Rule(
         re.compile(rf"((?:(?<=^)|(?<=[\r\n{PUA_NEWLINE}]))\d{{1,3}})\.(?=\s\S|\))"),
-        rf"\1{PUA_PERIOD}",
+        r"\g<1>" + PUA_PERIOD,
     ),
 )

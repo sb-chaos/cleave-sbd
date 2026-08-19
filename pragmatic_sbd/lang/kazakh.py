@@ -66,7 +66,7 @@ MULTI_PERIOD_ABBREVIATION_REGEX = re.compile(
 # Language-specific transformation rules
 RULES: tuple[Rule, ...] = (
     # Cyrillic single-letter initials at line start or mid-sentence (e.g. " А. ")
-    Rule(re.compile(r"((?:(?<=^)|(?<=\s))[А-ЯЁ])\.(?=\s)"), rf"\1{PUA_PERIOD}"),
+    Rule(re.compile(r"((?:(?<=^)|(?<=\s))[А-ЯЁ])\.(?=\s)"), r"\g<1>" + PUA_PERIOD),
     # Protect question mark before dialogue dash (e.g. "? —")
     Rule(re.compile(r"\?(?=\s*[-\u2014]\s*)"), PUA_QUESTION),
     # Protect exclamation mark before dialogue dash (e.g. "! —")

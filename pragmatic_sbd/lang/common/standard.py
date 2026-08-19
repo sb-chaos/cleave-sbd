@@ -158,7 +158,7 @@ COMMON_RULES: tuple[Rule, ...] = (
     Rule(re.compile(r"!(?=,\s[a-z])"), PUA_EXCLAMATION),
     Rule(re.compile(r"!(?=\s[a-z])"), PUA_EXCLAMATION),
     # Protect periods in alphanumeric words/emails (e.g. site.com)
-    Rule(re.compile(r"([a-zA-Z0-9_])\.([a-zA-Z0-9_])"), rf"\1{PUA_PERIOD}\2"),
+    Rule(re.compile(r"([a-zA-Z0-9_])\.([a-zA-Z0-9_])"), r"\g<1>" + PUA_PERIOD + r"\g<2>"),
 )
 
 DOUBLE_PUNCTUATION_RULES: tuple[Rule, ...] = (
