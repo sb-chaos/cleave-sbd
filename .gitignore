@@ -36,6 +36,8 @@ htmlcov/
 coverage.xml
 *.cover
 .hypothesis/
+ignored_tests/
+benchmarks/
 
 # Type Checking & Linting (Ruff, Basedpyright, Mypy, etc.)
 .ruff_cache/

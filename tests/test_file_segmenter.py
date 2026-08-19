@@ -18,7 +18,7 @@ def segment_text_file(
     input_file_str: str = INPUT_FILE,
     output_file_str: str = OUTPUT_FILE,
     language: str = "en",
-    clean: bool = False,
+    clean: bool = True,
     char_span: bool = False,
 ) -> list[str]:
     """Read text from an input path, segment into sentences, and write numbered sections to output path.

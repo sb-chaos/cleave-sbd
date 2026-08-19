@@ -1,12 +1,11 @@
 """Public API layer for sentence boundary disambiguation and segmentation."""
 
-import re
 from dataclasses import dataclass
 
-from pragmatic_sbd.cleaner import Cleaner
+from pragmatic_sbd.disambiguator import Disambiguator
 from pragmatic_sbd.lang import get_language_module
 from pragmatic_sbd.lang.common import unmask_all
-from pragmatic_sbd.processor import Processor
+from pragmatic_sbd.normalizer import Normalizer
 
 
 @dataclass(slots=True, frozen=True)
@@ -71,24 +70,24 @@ class Segmenter:
             return []
 
         if self.clean:
-            cleaned_text = Cleaner(
+            cleaned_text = Normalizer(
                 text=text,
                 lang=self.language,
                 doc_type=self.doc_type,
                 char_span=False,
-            ).clean()
-            sentences = Processor(
+            ).normalize()
+            sentences = Disambiguator(
                 text=cleaned_text or "",
                 lang=self.language,
                 char_span=False,
-            ).process()
+            ).disambiguate()
             return [unmask_all(s) for s in sentences]
 
-        sentences = Processor(
+        sentences = Disambiguator(
             text=text,
             lang=self.language,
             char_span=self.char_span,
-        ).process()
+        ).disambiguate()
 
         if self.char_span:
             return self.sentences_with_char_spans(text, sentences)
@@ -99,16 +98,23 @@ class Segmenter:
         """Calculate start and end character offsets sequentially against the original source text."""
         sent_spans: list[TextSpan] = []
         prior_end_char_idx: int = 0
+        orig_len: int = len(original_text)
+
         for sent in sentences:
-            pattern = re.compile(rf"{re.escape(sent)}\s*")
-            match = pattern.search(original_text, pos=prior_end_char_idx)
-            if match:
-                sent_spans.append(
-                    TextSpan(
-                        sent=unmask_all(match.group(0)),
-                        start=match.start(),
-                        end=match.end(),
-                    )
+            start_idx = original_text.find(sent, prior_end_char_idx)
+            if start_idx == -1:
+                continue
+            end_idx = start_idx + len(sent)
+            while end_idx < orig_len and original_text[end_idx].isspace():
+                end_idx += 1
+
+            sent_spans.append(
+                TextSpan(
+                    sent=unmask_all(original_text[start_idx:end_idx]),
+                    start=start_idx,
+                    end=end_idx,
                 )
-                prior_end_char_idx = match.end()
+            )
+            prior_end_char_idx = end_idx
+
         return sent_spans

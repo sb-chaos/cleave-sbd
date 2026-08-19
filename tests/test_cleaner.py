@@ -1,6 +1,7 @@
 import pytest
 from pragmatic_sbd.cleaner import Cleaner
 from pragmatic_sbd.lang import Language
+from pragmatic_sbd.normalizer import Normalizer
 
 TEST_TOBE_CLEANED_DATA = [
     ("It was a cold \nnight in the city.", "It was a cold night in the city."),
@@ -12,22 +13,25 @@ TEST_TOBE_CLEANED_DATA = [
 
 
 @pytest.mark.parametrize("text,expected_cleaned_sents", TEST_TOBE_CLEANED_DATA)
-def test_cleaner(text, expected_cleaned_sents):
+def test_cleaner(text: str, expected_cleaned_sents: str):
     """SBD tests from Pragmatic Segmenter"""
     cleaned_text = Cleaner(text, Language.get_language_code("en")).clean()
     assert cleaned_text == expected_cleaned_sents
 
+    norm_text = Normalizer(text, Language.get_language_code("en")).normalize()
+    assert norm_text == expected_cleaned_sents
 
-def test_cleaner_doesnt_mutate_input(text="It was a cold \nnight in the city."):
-    cleaned_text = Cleaner(text, Language.get_language_code("en")).clean()
+
+def test_cleaner_doesnt_mutate_input(text: str = "It was a cold \nnight in the city."):
+    _ = Cleaner(text, Language.get_language_code("en")).clean()
     assert text == "It was a cold \nnight in the city."
 
 
-def test_cleaner_none_input(text=None):
+def test_cleaner_none_input(text: str | None = None):
     cleaned_text = Cleaner(text, Language.get_language_code("en")).clean()
     assert cleaned_text == text
 
 
-def test_cleaner_no_input(text=""):
+def test_cleaner_no_input(text: str = ""):
     cleaned_text = Cleaner(text, Language.get_language_code("en")).clean()
     assert cleaned_text == text
