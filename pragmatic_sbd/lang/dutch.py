@@ -3,7 +3,7 @@
 Includes an extensive legal, administrative, and standard Dutch abbreviation lexicon.
 """
 
-from .common.standard import Rule
+from .common import Rule
 
 ISO_CODE = "nl"
 

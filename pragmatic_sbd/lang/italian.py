@@ -3,7 +3,7 @@
 Includes extensive Italian abbreviation sets, prepositive titles, and numbers.
 """
 
-from .common.standard import Rule
+from .common import Rule
 
 ISO_CODE = "it"
 

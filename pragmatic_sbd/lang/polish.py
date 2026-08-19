@@ -3,7 +3,7 @@
 Includes standard Polish linguistic, grammatical, and general abbreviations.
 """
 
-from .common.standard import Rule
+from .common import Rule
 
 ISO_CODE = "pl"
 

@@ -1,6 +1,6 @@
 import pytest
 from pragmatic_sbd.cleaner import Cleaner
-from pragmatic_sbd.languages import Language
+from pragmatic_sbd.lang import Language
 
 TEST_TOBE_CLEANED_DATA = [
     ("It was a cold \nnight in the city.", "It was a cold night in the city."),

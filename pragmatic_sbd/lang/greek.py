@@ -8,7 +8,7 @@ In Greek, the semicolon (;) serves as the question mark:
 
 import re
 
-from .common.standard import Rule
+from .common import Rule
 
 ISO_CODE = "el"
 

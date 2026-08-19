@@ -3,7 +3,7 @@
 Includes standard French abbreviations and title/administrative forms.
 """
 
-from .common.standard import Rule
+from .common import Rule
 
 ISO_CODE = "fr"
 

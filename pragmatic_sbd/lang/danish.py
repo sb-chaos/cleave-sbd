@@ -6,7 +6,7 @@ an extensive abbreviation lexicon.
 
 import re
 
-from .common.standard import PUA_PERIOD, Rule
+from .common import PUA_PERIOD, Rule
 
 ISO_CODE = "da"
 

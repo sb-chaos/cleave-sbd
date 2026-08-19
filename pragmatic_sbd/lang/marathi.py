@@ -5,7 +5,7 @@ Reference grammar rules: https://gopract.com/Pages/Marathi-Grammar-Viramchinah.a
 
 import re
 
-from .common.standard import Rule
+from .common import Rule
 
 ISO_CODE = "mr"
 

@@ -4,8 +4,8 @@ import re
 from dataclasses import dataclass
 
 from pragmatic_sbd.cleaner import Cleaner
-from pragmatic_sbd.lang.common.standard import unmask_all
-from pragmatic_sbd.languages import get_language_module
+from pragmatic_sbd.lang import get_language_module
+from pragmatic_sbd.lang.common import unmask_all
 from pragmatic_sbd.processor import Processor
 
 
@@ -29,6 +29,7 @@ class TextSpan:
 Text = TextSpan
 
 
+@dataclass(slots=True, frozen=True)
 class Segmenter:
     """Splits input text into sentences with optional cleaning and character offset spans.
 
@@ -45,28 +46,22 @@ class Segmenter:
         ValueError: If `doc_type` is 'pdf' but `clean` is False.
     """
 
-    def __init__(
-        self,
-        language: str = "en",
-        clean: bool = False,
-        doc_type: str = "",
-        char_span: bool = False,
-    ) -> None:
-        if clean and char_span:
+    language: str = "en"
+    clean: bool = False
+    doc_type: str = ""
+    char_span: bool = False
+
+    def __post_init__(self) -> None:
+        if self.clean and self.char_span:
             raise ValueError(
                 "char_span must be False if clean is True. Since `clean=True` will modify original text."
             )
-        if doc_type == "pdf" and not clean:
+        if self.doc_type == "pdf" and not self.clean:
             raise ValueError(
                 "`doc_type='pdf'` should have `clean=True` & "
                 "`char_span` should be False since original"
                 "text will be modified."
             )
-
-        self.language: str = language
-        self.clean: bool = clean
-        self.doc_type: str = doc_type
-        self.char_span: bool = char_span
         if self.language:
             get_language_module(self.language)
 

@@ -6,7 +6,7 @@ German-style quotation marks („ ... “ and ,, ... “), and abbreviation lexi
 
 import re
 
-from .common.standard import PUA_PERIOD, Rule
+from .common import PUA_PERIOD, Rule
 
 ISO_CODE = "de"
 
@@ -75,6 +75,8 @@ GERMAN_DATE_REGEX = re.compile(rf"(?<=\d)\.(?=\s*(?:{_MONTHS_PATTERN}))")
 
 # Language-specific transformation rules
 RULES: tuple[Rule, ...] = (
+    # German corporate entities: e.g. "Co. KG", "Co. GmbH"
+    Rule(re.compile(r"(?<=Co)\.(?=\s*(?:KG|GmbH|OHG|AG)\b)", re.IGNORECASE), PUA_PERIOD),
     # German ordinal dates (e.g. "1. Januar")
     Rule(GERMAN_DATE_REGEX, PUA_PERIOD),
     # Positive and negative ordinal numbers (e.g. " 1. ", " 12. ", " -5. ")

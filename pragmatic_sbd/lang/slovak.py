@@ -7,7 +7,7 @@ abbreviation lexicon.
 
 import re
 
-from .common.standard import PUA_PERIOD, Rule
+from .common import PUA_PERIOD, Rule
 
 ISO_CODE = "sk"
 
@@ -51,6 +51,7 @@ PREPOSITIVE_ABBREVIATIONS: frozenset[str] = frozenset({
     "st",
 })
 REPLACE_ALL_ABBR_PERIODS = True
+SUPPORTS_ALPHA_LISTS = False
 
 # Deduplicated Slovak Abbreviations
 ABBREVIATIONS: frozenset[str] = frozenset({

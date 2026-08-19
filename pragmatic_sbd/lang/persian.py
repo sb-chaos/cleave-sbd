@@ -8,7 +8,7 @@ Persian uses Arabic-script punctuation marks and specific colon/comma rules:
 
 import re
 
-from .common.standard import PUA_ARABIC_COMMA, PUA_COLON, Rule
+from .common import PUA_ARABIC_COMMA, PUA_COLON, Rule
 
 ISO_CODE = "fa"
 

@@ -1,5 +1,5 @@
 import pytest
-from pragmatic_sbd.languages import LANGUAGE_CODES, Language
+from pragmatic_sbd.lang import LANGUAGE_CODES, Language
 
 
 def test_lang_code2instance_mapping():

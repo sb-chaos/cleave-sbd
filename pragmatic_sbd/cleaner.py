@@ -1,24 +1,20 @@
 """Stateless normalization and cleaning pipeline for text segmentation."""
 
 from collections.abc import Sequence
+from dataclasses import dataclass
 
-from pragmatic_sbd.clean.rules import HTML, PDF, CleanRules as cr
-from pragmatic_sbd.lang.common.standard import Rule
-
-URL_EMAIL_KEYWORDS: tuple[str, ...] = (
-    ".com",
-    ".net",
-    ".org",
-    ".io",
-    ".gov",
-    ".edu",
-    "http://",
-    "https://",
-    "@",
-    "www.",
+from pragmatic_sbd.clean import rules as cr
+from pragmatic_sbd.clean.rules import (
+    HTML_RULES,
+    PDF_NEW_LINE_MID_SENTENCE,
+    PDF_NEW_LINE_MID_SENTENCE_NOSPACE,
+    URL_EMAIL_KEYWORDS,
 )
+from pragmatic_sbd.lang import get_language_module
+from pragmatic_sbd.lang.common import Rule
 
 
+@dataclass(slots=True)
 class Cleaner:
     """Stateless text normalizer and cleaner.
 
@@ -26,23 +22,19 @@ class Cleaner:
     prior to sentence boundary disambiguation.
     """
 
-    def __init__(
-        self,
-        text: str | None = "",
-        lang: str = "",
-        doc_type: str = "",
-        char_span: bool = False,
-        rules: Sequence[Rule] = (),
-    ) -> None:
-        self.text: str | None = text
-        self.lang: str = lang
-        self.doc_type: str = doc_type
-        self.char_span: bool = char_span
-        from pragmatic_sbd.languages import get_language_module
+    text: str | None = ""
+    lang: str = ""
+    doc_type: str = ""
+    char_span: bool = False
+    rules: Sequence[Rule] = ()
 
-        lang_mod = get_language_module(lang) if lang else None
+    def __post_init__(self) -> None:
+        lang_mod = get_language_module(self.lang) if self.lang else None
         lang_clean_rules: tuple[Rule, ...] = getattr(lang_mod, "CLEAN_RULES", ()) if lang_mod else ()
-        self.rules: tuple[Rule, ...] = tuple(rules) + lang_clean_rules
+        if lang_clean_rules:
+            self.rules = tuple(self.rules) + lang_clean_rules
+        elif not isinstance(self.rules, tuple):
+            self.rules = tuple(self.rules)
 
     def clean(self, text: str | None = None) -> str | None:
         """Run the complete cleaning pipeline on input text.
@@ -76,7 +68,7 @@ class Cleaner:
     @staticmethod
     def strip_html(text: str) -> str:
         """Strip HTML tags and escaped HTML entities."""
-        for rule in HTML.rules:
+        for rule in HTML_RULES:
             text = rule.pattern.sub(rule.replacement, text)
         return text
 
@@ -126,9 +118,9 @@ class Cleaner:
     def remove_pdf_line_breaks(text: str) -> str:
         """Handle PDF-specific line-wrap breaks and bullet points."""
         text = cr.NL_BEFORE_BULLET.pattern.sub(cr.NL_BEFORE_BULLET.replacement, text)
-        text = PDF.new_line_mid_sentence.pattern.sub(PDF.new_line_mid_sentence.replacement, text)
-        return PDF.new_line_mid_sentence_nospace.pattern.sub(
-            PDF.new_line_mid_sentence_nospace.replacement, text
+        text = PDF_NEW_LINE_MID_SENTENCE.pattern.sub(PDF_NEW_LINE_MID_SENTENCE.replacement, text)
+        return PDF_NEW_LINE_MID_SENTENCE_NOSPACE.pattern.sub(
+            PDF_NEW_LINE_MID_SENTENCE_NOSPACE.replacement, text
         )
 
     def replace_newlines(self, text: str, doc_type: str | None = None) -> str:

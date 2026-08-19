@@ -8,7 +8,7 @@ Handles Japanese-specific paired punctuation and mid-word newline cleaning:
 
 import re
 
-from .common.standard import Rule
+from .common import Rule
 
 ISO_CODE = "ja"
 

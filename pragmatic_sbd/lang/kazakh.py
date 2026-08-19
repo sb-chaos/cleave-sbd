@@ -6,7 +6,7 @@ and dialogue dashes following question or exclamation marks.
 
 import re
 
-from .common.standard import (
+from .common import (
     PUA_EXCLAMATION,
     PUA_PERIOD,
     PUA_QUESTION,

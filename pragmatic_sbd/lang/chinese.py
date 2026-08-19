@@ -7,7 +7,7 @@ Handles Chinese-specific paired bracket and quotation masking:
 
 import re
 
-from .common.standard import Rule
+from .common import Rule
 
 ISO_CODE = "zh"
 

@@ -7,7 +7,7 @@ Urdu script uses distinctive sentence-ending punctuation marks:
 
 import re
 
-from .common.standard import Rule
+from .common import Rule
 
 ISO_CODE = "ur"
 

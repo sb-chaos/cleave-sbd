@@ -3,7 +3,7 @@
 Includes standard Spanish abbreviations, titles, prefixes, and numeric reference terms.
 """
 
-from .common.standard import Rule
+from .common import Rule
 
 ISO_CODE = "es"
 

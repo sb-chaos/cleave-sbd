@@ -9,7 +9,7 @@ Arabic uses distinctive punctuation marks and colon/comma behaviors:
 
 import re
 
-from .common.standard import PUA_ARABIC_COMMA, PUA_COLON, Rule
+from .common import PUA_ARABIC_COMMA, PUA_COLON, Rule
 
 ISO_CODE = "ar"
 

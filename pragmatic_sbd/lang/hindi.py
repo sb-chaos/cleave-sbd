@@ -7,7 +7,7 @@ Devanagari script uses distinctive sentence-ending punctuation:
 
 import re
 
-from .common.standard import Rule
+from .common import Rule
 
 ISO_CODE = "hi"
 

@@ -1,6 +1,6 @@
 import re
 
-from .common.standard import Rule
+from .common import PUA_PERIOD, Rule
 
 ISO_CODE = "bg"
 
@@ -26,4 +26,7 @@ ABBREVIATIONS: frozenset[str] = frozenset({
 # fmt: on
 
 # Language-specific replacement rules
-RULES: tuple[Rule, ...] = ()
+RULES: tuple[Rule, ...] = (
+    # Cyrillic single-letter initials at line start or mid-sentence (e.g. " А. ")
+    Rule(re.compile(r"((?:(?<=^)|(?<=\s))[А-ЯЁ])\.(?=\s)"), r"\g<1>" + PUA_PERIOD),
+)
