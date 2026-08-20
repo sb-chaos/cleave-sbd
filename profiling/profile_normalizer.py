@@ -2,20 +2,18 @@ import re
 import time
 from pathlib import Path
 
-URL_EMAIL_KEYWORDS = (
-    ".com", ".net", ".org", ".io", ".gov", ".edu",
-    "http://", "https://", "@", "www."
-)
+URL_EMAIL_KEYWORDS = (".com", ".net", ".org", ".io", ".gov", ".edu", "http://", "https://", "@", "www.")
 
 NO_SPACE_SENTENCE_ALPHA = re.compile(r"(?<=[a-z])\.(?=[A-Z])")
 NO_SPACE_SENTENCE_DIGIT = re.compile(r"(?<=\d)\.(?=[A-Z])")
 NO_SPACE_SENTENCE_COMBINED = re.compile(r"(?<=[a-z\d])\.(?=[A-Z])")
 
+
 def current_impl(text: str) -> str:
     if "." not in text:
         return text
     words = text.split(" ")
-    cleaned_words = []
+    cleaned_words: list[str] = []
     for word in words:
         if "." not in word:
             cleaned_words.append(word)
@@ -28,6 +26,7 @@ def current_impl(text: str) -> str:
         w = NO_SPACE_SENTENCE_DIGIT.sub(". ", w)
         cleaned_words.append(w)
     return " ".join(cleaned_words)
+
 
 def optimized_impl(text: str) -> str:
     if "." not in text:
@@ -54,7 +53,10 @@ def optimized_impl(text: str) -> str:
 
     return NO_SPACE_SENTENCE_COMBINED.sub(replace_no_space_sentence, text)
 
+
 def main():
+    res1: str = ""
+    res2: str = ""
     path = Path("benchmarks/pg100.txt")
     if not path.exists():
         print("Benchmark file not found.")
@@ -83,6 +85,7 @@ def main():
 
     print(f"Speedup: {time_current / time_opt:.2f}x")
     assert res1 == res2, "Outputs do not match!"
+
 
 if __name__ == "__main__":
     main()

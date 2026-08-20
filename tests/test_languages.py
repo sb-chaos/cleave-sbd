@@ -32,8 +32,12 @@ def test_toml_configs_validity():
         assert isinstance(config.number_abbreviations, frozenset)
         assert isinstance(config.sentence_starters, frozenset)
         assert config.punctuations is None or isinstance(config.punctuations, frozenset)
-        assert config.sentence_boundary_regex is None or isinstance(config.sentence_boundary_regex, re.Pattern)
-        assert config.multi_period_abbreviation_regex is None or isinstance(config.multi_period_abbreviation_regex, re.Pattern)
+        assert config.sentence_boundary_regex is None or isinstance(
+            config.sentence_boundary_regex, re.Pattern
+        )
+        assert config.multi_period_abbreviation_regex is None or isinstance(
+            config.multi_period_abbreviation_regex, re.Pattern
+        )
         assert isinstance(config.rules, tuple)
         for r in config.rules:
             assert isinstance(r.pattern, re.Pattern)
@@ -45,4 +49,3 @@ def test_toml_configs_validity():
         assert isinstance(config.paired_punctuation_patterns, tuple)
         for p in config.paired_punctuation_patterns:
             assert isinstance(p, re.Pattern)
-

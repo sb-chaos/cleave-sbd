@@ -587,11 +587,7 @@ def get_language_abbreviation_data(lang: str) -> LanguageAbbreviationData:
     compound_set = {abbr.lower().strip() for abbr in compound_list}
 
     prep_clean = sorted(
-        [
-            abbr.strip()
-            for abbr in prepositive
-            if abbr.strip() and abbr.lower().strip() not in compound_set
-        ],
+        [abbr.strip() for abbr in prepositive if abbr.strip() and abbr.lower().strip() not in compound_set],
         key=len,
         reverse=True,
     )
@@ -601,20 +597,14 @@ def get_language_abbreviation_data(lang: str) -> LanguageAbbreviationData:
         prepositive_regex = re.compile(rf"((?:(?<=^)|(?<=\s))(?i:{prep_pattern}))\.(?=(\s|:\d+))")
 
     num_clean = sorted(
-        [
-            abbr.strip()
-            for abbr in number_abbr
-            if abbr.strip() and abbr.lower().strip() not in compound_set
-        ],
+        [abbr.strip() for abbr in number_abbr if abbr.strip() and abbr.lower().strip() not in compound_set],
         key=len,
         reverse=True,
     )
     number_abbr_regex: re.Pattern[str] | None = None
     if num_clean:
         num_pattern = "|".join(re.escape(abbr) for abbr in num_clean)
-        number_abbr_regex = re.compile(
-            rf"((?:(?<=^)|(?<=\s))(?i:{num_pattern}))\.(?=(\s*\d|\s+\())"
-        )
+        number_abbr_regex = re.compile(rf"((?:(?<=^)|(?<=\s))(?i:{num_pattern}))\.(?=(\s*\d|\s+\())")
 
     prep_set = {abbr.lower().strip() for abbr in prepositive if abbr.strip()}
     num_set = {abbr.lower().strip() for abbr in number_abbr if abbr.strip()} - prep_set
@@ -1010,9 +1000,7 @@ class Disambiguator:
                         matched_text = match.group(0)
                         if quote_regex.search(matched_text):
                             parts = split_quote_regex.split(matched_text)
-                            segments.extend(
-                                unmask_all(part).strip() for part in parts if part.strip()
-                            )
+                            segments.extend(unmask_all(part).strip() for part in parts if part.strip())
                         else:
                             cleaned_segment = unmask_all(matched_text).strip()
                             if cleaned_segment:

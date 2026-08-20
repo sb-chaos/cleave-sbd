@@ -94,9 +94,7 @@ class Normalizer:
 
     def __post_init__(self) -> None:
         lang_module = get_language_module(self.lang) if self.lang else None
-        lang_clean_rules: tuple[Rule, ...] = (
-            lang_module.clean_rules if lang_module is not None else ()
-        )
+        lang_clean_rules: tuple[Rule, ...] = lang_module.clean_rules if lang_module is not None else ()
         if lang_clean_rules:
             self.rules = tuple(self.rules) + lang_clean_rules
         elif not isinstance(self.rules, tuple):
