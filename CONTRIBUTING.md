@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # Contributing to pragmatic-sbd
 
 Thank you for your interest in contributing to **pragmatic-sbd**!
@@ -175,4 +175,3 @@ referencing the issue number in the commit message. Finally, fix the bug, make
 sure your test passes and reference the issue in your commit message.
 
 Thank you for contributing! ✨ 🍰 ✨
->>>>>>> add-type-annotations
