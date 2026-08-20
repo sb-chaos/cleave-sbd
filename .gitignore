@@ -36,9 +36,12 @@ htmlcov/
 coverage.xml
 *.cover
 .hypothesis/
+<<<<<<< HEAD
 ignored_tests/
 personal_notes/
 benchmarks/
+=======
+>>>>>>> add-type-annotations
 
 # Type Checking & Linting (Ruff, Basedpyright, Mypy, etc.)
 .ruff_cache/
@@ -73,7 +76,10 @@ site/
 # OS-generated files
 .DS_Store
 Thumbs.db
+<<<<<<< HEAD
 AGENTS.md
 uv.lock
 .aider*
 start_aider_server.sh
+=======
+>>>>>>> add-type-annotations

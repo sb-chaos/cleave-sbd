@@ -1,10 +1,16 @@
 # pragmatic-sbd: Pragmatic Sentence Boundary Disambiguation
 
+<<<<<<< HEAD
 [![CI](https://github.com/sblasing/pragmatic-sbd/actions/workflows/python-package.yml/badge.svg)](https://github.com/sblasing/pragmatic-sbd/actions/workflows/python-package.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![Typing: Strict](https://img.shields.io/badge/typing-strict-green.svg)](https://peps.python.org/pep-0561/)
 [![Code Style: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+=======
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
+[![Typing: Strict](https://img.shields.io/badge/typing-strict-green.svg)](https://peps.python.org/pep-0561/)
+>>>>>>> add-type-annotations
 
 **pragmatic-sbd** is a high-performance, strictly-typed sentence boundary disambiguation (SBD) engine. It isolates sentence boundaries across complex edge cases—including abbreviations, honorifics, numbers, lists, ellipses, and quotations—with zero machine learning dependencies.
 
@@ -13,10 +19,16 @@
 ## Features
 
 * **Zero Heavy Dependencies:** Pure Python logic without bloated neural models, PyTorch, or GPU requirements.
+<<<<<<< HEAD
 * **Declarative & Length-Preserving:** Length-preserving PUA sentinel substitutions ensure $1:1$ character offset invariance for precise span extraction.
 * **Strictly Typed:** Fully typed and verified in strict mode with Basedpyright/Pyright (PEP 561 compliant with `py.typed`).
 * **Multilingual Support:** Out-of-the-box rule sets for 22 languages.
 * **High Performance:** Pre-compiled regular expressions and immutable lookup tables.
+=======
+* **Declarative & Length-Preserving:** Length-preserving PUA sentinel substitutions ensure $1:1$ character offset invariance for span extraction.
+* **Strictly Typed:** Fully typed and verified in strict mode with Basedpyright/Pyright (PEP 561 compliant).
+* **Multilingual Support:** Out-of-the-box rule sets for 22 languages.
+>>>>>>> add-type-annotations
 
 ---
 
@@ -26,12 +38,15 @@
 pip install pragmatic-sbd
 ```
 
+<<<<<<< HEAD
 Or with `uv`:
 
 ```bash
 uv add pragmatic-sbd
 ```
 
+=======
+>>>>>>> add-type-annotations
 ---
 
 ## Quickstart
@@ -50,6 +65,7 @@ print(sentences)
 
 ### Character Span Mode
 
+<<<<<<< HEAD
 Extract start and end character offsets alongside segmented sentences:
 
 ```python
@@ -64,6 +80,13 @@ for span in spans:
 # Output:
 # 'Hello world!' -> [0:12]
 # 'This is a test.' -> [13:28]
+=======
+```python
+seg = pragmatic_sbd.Segmenter(language="en", char_span=True)
+spans = seg.segment(text)
+for span in spans:
+    print(f"{span.sent!r} -> [{span.start}:{span.end}]")
+>>>>>>> add-type-annotations
 ```
 
 ---
@@ -72,15 +95,22 @@ for span in spans:
 
 | Parameter | Type | Default | Description |
 | --- | --- | --- | --- |
+<<<<<<< HEAD
 | `language` | `str` | `"en"` | Two-letter ISO 639-1 language code (e.g., `"en"`, `"de"`, `"fr"`, `"es"`, `"ja"`). |
 | `clean` | `bool` | `False` | When `True`, normalizes noisy formatting (e.g., consecutive whitespace, unusual line breaks) before splitting. |
 | `doc_type` | `str` | `""` | Set to `"pdf"` for OCR/PDF extracted line break handling. Requires `clean=True`. |
+=======
+| `language` | `str` | `"en"` | Two-letter ISO language code (e.g., `"en"`, `"de"`, `"fr"`, `"es"`, `"ja"`). |
+| `clean` | `bool` | `False` | When `True`, normalizes noisy formatting (e.g., consecutive whitespace, unusual line breaks) before splitting. |
+| `doc_type` | `str` | `""` | Set to `"pdf"` for OCR/PDF extracted line break handling. |
+>>>>>>> add-type-annotations
 | `char_span` | `bool` | `False` | When `True`, returns character offset spans (`TextSpan`) instead of plain strings. |
 
 ---
 
 ## Supported Languages
 
+<<<<<<< HEAD
 | Code | Language | Code | Language | Code | Language |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | `am` | Amharic | `el` | Greek | `mr` | Marathi |
@@ -144,3 +174,12 @@ uv run --with nltk,stanza,blingfire,syntok python tests/bigtext_speed_benchmark.
 ## License
 
 MIT License. See [LICENSE](LICENSE) for details.
+=======
+`am`, `ar`, `bg`, `da`, `de`, `el`, `en`, `es`, `fa`, `fr`, `hi`, `hy`, `it`, `ja`, `kk`, `mr`, `nl`, `pl`, `ru`, `sk`, `ur`, `zh`.
+
+---
+
+## License
+
+MIT License. See [LICENSE](https://github.com/nipunsadvilkar/pySBD/LICENSE) for details.
+>>>>>>> add-type-annotations

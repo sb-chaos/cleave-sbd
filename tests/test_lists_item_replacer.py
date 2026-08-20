@@ -1,13 +1,21 @@
 """Unit tests for the refactored list item masking engine."""
 
 import pytest
+<<<<<<< HEAD
 from pragmatic_sbd.lang.common import (
+=======
+from pragmatic_sbd.lang.common.standard import (
+>>>>>>> add-type-annotations
     PUA_LEFT_PAREN,
     PUA_PERIOD,
     PUA_RIGHT_PAREN,
     unmask_all,
 )
+<<<<<<< HEAD
 from pragmatic_sbd.disambiguator import mask_list_items
+=======
+from pragmatic_sbd.lists_item_replacer import ListItemReplacer, mask_list_items
+>>>>>>> add-type-annotations
 
 
 class TestListItemMasking:
@@ -107,3 +115,13 @@ class TestListItemMasking:
         for s in samples:
             masked = mask_list_items(s)
             assert len(masked) == len(s), f"Length mismatch for {s!r}: {len(masked)} != {len(s)}"
+<<<<<<< HEAD
+=======
+
+    def test_legacy_class_interface(self) -> None:
+        replacer = ListItemReplacer("1. Item 1 2. Item 2")
+        result = replacer.add_line_break()
+        assert len(result) == len("1. Item 1 2. Item 2")
+        assert replacer.ROMAN_NUMERALS
+        assert replacer.LATIN_NUMERALS
+>>>>>>> add-type-annotations

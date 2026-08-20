@@ -1,11 +1,16 @@
 import pytest
+<<<<<<< HEAD
 from pragmatic_sbd.lang import LANGUAGE_CODES, Language
+=======
+from pragmatic_sbd.languages import LANGUAGE_CODES, Language
+>>>>>>> add-type-annotations
 
 
 def test_lang_code2instance_mapping():
     for code, language_module in LANGUAGE_CODES.items():
         assert Language.get_language_code(code) == language_module
 
+<<<<<<< HEAD
 
 def test_exception_on_no_lang_code_provided():
     with pytest.raises(ValueError) as e:
@@ -49,3 +54,14 @@ def test_toml_configs_validity():
         assert isinstance(config.paired_punctuation_patterns, tuple)
         for p in config.paired_punctuation_patterns:
             assert isinstance(p, re.Pattern)
+=======
+def test_exception_on_no_lang_code_provided():
+    with pytest.raises(ValueError) as e:
+        Language.get_language_code('')
+    assert "Provide valid language ID i.e. ISO code." in str(e.value)
+
+def test_exception_on_unsupported_lang_code_provided():
+    with pytest.raises(ValueError) as e:
+        Language.get_language_code('elvish')
+    assert "Provide valid language ID i.e. ISO code." in str(e.value)
+>>>>>>> add-type-annotations
