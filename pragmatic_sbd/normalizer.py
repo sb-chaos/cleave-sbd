@@ -22,32 +22,34 @@ URL_EMAIL_KEYWORDS: tuple[str, ...] = (
 )
 
 # Text & Whitespace Normalization Rules
-NL_IN_WORD = Rule(re.compile(r"\n(?=[a-zA-Z]{1,2}\n)"))
-DOUBLE_NL_SPACE = Rule(re.compile(r"\n \n"), "\r")
-DOUBLE_NL = Rule(re.compile(r"\n\n"), "\r")
-NL_BEFORE_PERIOD = Rule(re.compile(r"\n(?=\.(\s|\n))"))
-NL_TO_CR = Rule(re.compile(r"\n"), "\r")
-ESCAPED_NL = Rule(re.compile(r"\\n"), "\n")
-ESCAPED_CR = Rule(re.compile(r"\\r"), "\r")
-TYPO_ESCAPED_NL = Rule(re.compile(r"\\\ n"), "\n")
-TYPO_ESCAPED_CR = Rule(re.compile(r"\\\ r"), "\r")
-INLINE_FORMATTING = Rule(re.compile(r"{b\^&gt;\d*&lt;b\^}|{b\^>\d*<b\^}"))
-TABLE_OF_CONTENTS = Rule(re.compile(r"\.{4,}\s*\d+-*\d*"), "\r")
-CONSECUTIVE_PERIODS = Rule(re.compile(r"\.{5,}"), " ")
-CONSECUTIVE_SLASHES = Rule(re.compile(r"/{3}"))
-NO_SPACE_SENTENCE_COMBINED = re.compile(r"(?<=[a-z\d])\.(?=[A-Z])")
-NL_IN_SENTENCE = Rule(re.compile(r"(?<=\s)\n(?=([a-z]|\())"))
-NL_BEFORE_BULLET = Rule(re.compile(r"\n(?=•)"), "\r")
-NORMAL_QUOTES = Rule(re.compile(r"''|``"), '"')
+NL_IN_WORD: Rule = Rule(re.compile(r"\n(?=[a-zA-Z]{1,2}\n)"))
+DOUBLE_NL_SPACE: Rule = Rule(re.compile(r"\n \n"), "\r")
+DOUBLE_NL: Rule = Rule(re.compile(r"\n\n"), "\r")
+NL_BEFORE_PERIOD: Rule = Rule(re.compile(r"\n(?=\.(\s|\n))"))
+NL_TO_CR: Rule = Rule(re.compile(r"\n"), "\r")
+ESCAPED_NL: Rule = Rule(re.compile(r"\\n"), "\n")
+ESCAPED_CR: Rule = Rule(re.compile(r"\\r"), "\r")
+TYPO_ESCAPED_NL: Rule = Rule(re.compile(r"\\\ n"), "\n")
+TYPO_ESCAPED_CR: Rule = Rule(re.compile(r"\\\ r"), "\r")
+INLINE_FORMATTING: Rule = Rule(re.compile(r"{b\^&gt;\d*&lt;b\^}|{b\^>\d*<b\^}"))
+TABLE_OF_CONTENTS: Rule = Rule(re.compile(r"\.{4,}\s*\d+-*\d*"), "\r")
+CONSECUTIVE_PERIODS: Rule = Rule(re.compile(r"\.{5,}"), " ")
+CONSECUTIVE_SLASHES: Rule = Rule(re.compile(r"/{3}"))
+NO_SPACE_SENTENCE_COMBINED: re.Pattern[str] = re.compile(r"(?<=[a-z\d])\.(?=[A-Z])")
+NL_IN_SENTENCE: Rule = Rule(re.compile(r"(?<=\s)\n(?=([a-z]|\())"))
+NL_BEFORE_BULLET: Rule = Rule(re.compile(r"\n(?=•)"), "\r")
+NORMAL_QUOTES: Rule = Rule(re.compile(r"''|``"), '"')
 
 # HTML Rules
-HTML_TAG_RULE = Rule(re.compile(r"<\/?\w+((\s+\w+(\s*=\s*(?:\".*?\"|'.*?'|[\^'\">\s]+))?)+\s*|\s*)\/?>"))
-HTML_ESCAPED_TAG_RULE = Rule(re.compile(r"&lt;\/?[^gt;]*gt;"))
+HTML_TAG_RULE: Rule = Rule(
+    re.compile(r"<\/?\w+((\s+\w+(\s*=\s*(?:\".*?\"|'.*?'|[\^'\">\s]+))?)+\s*|\s*)\/?>")
+)
+HTML_ESCAPED_TAG_RULE: Rule = Rule(re.compile(r"&lt;\/?[^gt;]*gt;"))
 HTML_RULES: tuple[Rule, ...] = (HTML_TAG_RULE, HTML_ESCAPED_TAG_RULE)
 
 # PDF Rules
-PDF_NEW_LINE_MID_SENTENCE = Rule(re.compile(r"(?<=[^\n]\s)\n(?=\S)"))
-PDF_NEW_LINE_MID_SENTENCE_NOSPACE = Rule(re.compile(r"\n(?=[a-z])"), " ")
+PDF_NEW_LINE_MID_SENTENCE: Rule = Rule(re.compile(r"(?<=[^\n]\s)\n(?=\S)"))
+PDF_NEW_LINE_MID_SENTENCE_NOSPACE: Rule = Rule(re.compile(r"\n(?=[a-z])"), " ")
 
 
 def _replace_no_space_sentence(match: re.Match[str]) -> str:
@@ -64,7 +66,7 @@ def _replace_no_space_sentence(match: re.Match[str]) -> str:
         word_end += 1
 
     word = text[word_start:word_end].lower()
-    if any(k in word for k in URL_EMAIL_KEYWORDS):
+    if any(keyword in word for keyword in URL_EMAIL_KEYWORDS):
         return match.group(0)
     return ". "
 
@@ -91,13 +93,10 @@ class Normalizer:
     rules: Sequence[Rule] = ()
 
     def __post_init__(self) -> None:
-        lang_mod = get_language_module(self.lang) if self.lang else None
-        lang_clean_rules: tuple[Rule, ...] = ()
-        if lang_mod:
-            if isinstance(lang_mod, LanguageConfig):
-                lang_clean_rules = lang_mod.clean_rules
-            else:
-                lang_clean_rules = getattr(lang_mod, "CLEAN_RULES", ())
+        lang_module = get_language_module(self.lang) if self.lang else None
+        lang_clean_rules: tuple[Rule, ...] = (
+            lang_module.clean_rules if lang_module is not None else ()
+        )
         if lang_clean_rules:
             self.rules = tuple(self.rules) + lang_clean_rules
         elif not isinstance(self.rules, tuple):
@@ -297,4 +296,3 @@ class Normalizer:
         text = ESCAPED_CR.pattern.sub(ESCAPED_CR.replacement, text)
         text = TYPO_ESCAPED_NL.pattern.sub(TYPO_ESCAPED_NL.replacement, text)
         return TYPO_ESCAPED_CR.pattern.sub(TYPO_ESCAPED_CR.replacement, text)
-

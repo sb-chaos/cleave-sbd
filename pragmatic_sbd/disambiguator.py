@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from functools import lru_cache
-from typing import TYPE_CHECKING
+from types import ModuleType
 
 from pragmatic_sbd.lang import LanguageConfig, get_language_module
 from pragmatic_sbd.lang.common import (
@@ -53,9 +53,6 @@ from pragmatic_sbd.lang.common import (
     mask_single_quote_punctuation,
     unmask_all,
 )
-
-if TYPE_CHECKING:
-    # from types import ModuleType  # remove unused import
 
 LINE_SPLIT_REGEX = re.compile(rf"(?:\r\n|\r|\n|{PUA_NEWLINE})")
 
@@ -116,68 +113,103 @@ def _mask_numbered_lists(text: str) -> str:
         return text
 
     items: list[tuple[int, bool, int, int, str, int, int, int, int, bool]] = []
-    for m in matches:
-        lead = m.group("lead") or ""
-        m_start, m_end = m.span()
-        has_bullet = any(b in lead for b in _BULLET_CHARS)
+    for match in matches:
+        leading_chars = match.group("lead") or ""
+        match_start, match_end = match.span()
+        has_bullet = any(bullet in leading_chars for bullet in _BULLET_CHARS)
 
-        lead_space_idx = -1
-        if lead and lead[0] in _LEAD_WHITESPACE and m_start > 0:
-            lead_space_idx = m_start
+        leading_space_index = -1
+        if leading_chars and leading_chars[0] in _LEAD_WHITESPACE and match_start > 0:
+            leading_space_index = match_start
 
-        if m.group("num_p") is not None:
-            val = int(m.group("num_p"))
-            lparen_idx = m.start("lparen")
-            rparen_idx = m_end - 1
+        if match.group("num_p") is not None:
+            item_value = int(match.group("num_p"))
+            lparen_index = match.start("lparen")
+            rparen_index = match_end - 1
             items.append(
-                (val, True, m_start, m_end, "", -1, lparen_idx, rparen_idx, lead_space_idx, has_bullet)
+                (
+                    item_value,
+                    True,
+                    match_start,
+                    match_end,
+                    "",
+                    -1,
+                    lparen_index,
+                    rparen_index,
+                    leading_space_index,
+                    has_bullet,
+                )
             )
         else:
-            val = int(m.group("num"))
-            delim = m.group("delim") or ""
-            delim_start = m.start("delim")
-            items.append((val, False, m_start, m_end, delim, delim_start, -1, -1, lead_space_idx, has_bullet))
+            item_value = int(match.group("num"))
+            delimiter = match.group("delim") or ""
+            delimiter_start = match.start("delim")
+            items.append(
+                (
+                    item_value,
+                    False,
+                    match_start,
+                    match_end,
+                    delimiter,
+                    delimiter_start,
+                    -1,
+                    -1,
+                    leading_space_index,
+                    has_bullet,
+                )
+            )
 
     is_list_item: list[bool] = [False] * len(items)
-    for i, (val, _, m_start, _, _, _, _, _, _, has_bullet) in enumerate(items):
+    for index, (item_value, _, match_start, _, _, _, _, _, _, has_bullet) in enumerate(items):
         if has_bullet:
-            is_list_item[i] = True
-        elif i + 1 < len(items) and items[i + 1][0] == val + 1:
-            is_list_item[i] = True
-            is_list_item[i + 1] = True
+            is_list_item[index] = True
+        elif index + 1 < len(items) and items[index + 1][0] == item_value + 1:
+            is_list_item[index] = True
+            is_list_item[index + 1] = True
         elif (
-            i > 0
+            index > 0
             and (
-                items[i - 1][0] == val - 1
-                or (items[i - 1][0] == 9 and val == 0)
-                or (items[i - 1][0] == 0 and val == 9)
+                items[index - 1][0] == item_value - 1
+                or (items[index - 1][0] == 9 and item_value == 0)
+                or (items[index - 1][0] == 0 and item_value == 9)
             )
-        ) or (val == 1 and (m_start == 0 or text[m_start - 1] in ("\n", "\r"))):
-            is_list_item[i] = True
+        ) or (item_value == 1 and (match_start == 0 or text[match_start - 1] in ("\n", "\r"))):
+            is_list_item[index] = True
 
     if not any(is_list_item):
         return text
 
     replacements: dict[int, str] = {}
-    for i, is_valid in enumerate(is_list_item):
+    for index, is_valid in enumerate(is_list_item):
         if not is_valid:
             continue
-        _, is_parens, _, _, delim, delim_start, lparen_idx, rparen_idx, lead_space_idx, _ = items[i]
+        (
+            _,
+            is_parens,
+            _,
+            _,
+            delimiter,
+            delimiter_start,
+            lparen_index,
+            rparen_index,
+            leading_space_index,
+            _,
+        ) = items[index]
 
         if is_parens:
-            if lparen_idx >= 0 and text[lparen_idx] == "(":
-                replacements[lparen_idx] = PUA_LEFT_PAREN
-            if rparen_idx >= 0 and text[rparen_idx] == ")":
-                replacements[rparen_idx] = PUA_RIGHT_PAREN
+            if lparen_index >= 0 and text[lparen_index] == "(":
+                replacements[lparen_index] = PUA_LEFT_PAREN
+            if rparen_index >= 0 and text[rparen_index] == ")":
+                replacements[rparen_index] = PUA_RIGHT_PAREN
         else:
-            dot_offset = delim.find(".")
+            dot_offset = delimiter.find(".")
             if dot_offset >= 0:
-                replacements[delim_start + dot_offset] = PUA_PERIOD
+                replacements[delimiter_start + dot_offset] = PUA_PERIOD
 
-        if lead_space_idx >= 0 and text[lead_space_idx] == " ":
-            preceding_str = text[max(0, lead_space_idx - 4) : lead_space_idx]
+        if leading_space_index >= 0 and text[leading_space_index] == " ":
+            preceding_str = text[max(0, leading_space_index - 4) : leading_space_index]
             if not preceding_str.lower().endswith("for"):
-                replacements[lead_space_idx] = "\r"
+                replacements[leading_space_index] = "\r"
 
     return _apply_replacements(text, replacements)
 
@@ -196,71 +228,104 @@ def _mask_alphabetical_lists(text: str) -> str:
         return text
 
     items: list[tuple[str, bool, int, int, str, int, int, int, int, bool]] = []
-    for m in matches:
-        lead = m.group("lead") or ""
-        m_start, m_end = m.span()
-        has_bullet = any(b in lead for b in _BULLET_CHARS)
+    for match in matches:
+        leading_chars = match.group("lead") or ""
+        match_start, match_end = match.span()
+        has_bullet = any(bullet in leading_chars for bullet in _BULLET_CHARS)
 
-        lead_space_idx = -1
-        if lead and lead[0] in _LEAD_WHITESPACE and m_start > 0:
-            lead_space_idx = m_start
+        leading_space_index = -1
+        if leading_chars and leading_chars[0] in _LEAD_WHITESPACE and match_start > 0:
+            leading_space_index = match_start
 
-        if m.group("letter_p") is not None:
-            letter = m.group("letter_p").lower()
-            lparen_idx = m.start("lparen")
-            rparen_idx = m_end - 1
+        if match.group("letter_p") is not None:
+            letter = match.group("letter_p").lower()
+            lparen_index = match.start("lparen")
+            rparen_index = match_end - 1
             items.append(
-                (letter, True, m_start, m_end, "", -1, lparen_idx, rparen_idx, lead_space_idx, has_bullet)
+                (
+                    letter,
+                    True,
+                    match_start,
+                    match_end,
+                    "",
+                    -1,
+                    lparen_index,
+                    rparen_index,
+                    leading_space_index,
+                    has_bullet,
+                )
             )
         else:
-            letter = m.group("letter").lower()
-            delim = m.group("delim") or ""
-            delim_start = m.start("delim")
+            letter = match.group("letter").lower()
+            delimiter = match.group("delim") or ""
+            delimiter_start = match.start("delim")
             items.append(
-                (letter, False, m_start, m_end, delim, delim_start, -1, -1, lead_space_idx, has_bullet)
+                (
+                    letter,
+                    False,
+                    match_start,
+                    match_end,
+                    delimiter,
+                    delimiter_start,
+                    -1,
+                    -1,
+                    leading_space_index,
+                    has_bullet,
+                )
             )
 
     is_list_item: list[bool] = [False] * len(items)
-    for i, (letter, _, _, _, _, _, _, _, _, has_bullet) in enumerate(items):
-        curr_idx = LATIN_NUMERALS.get(letter, -1)
-        if curr_idx < 0:
+    for index, (letter, _, _, _, _, _, _, _, _, has_bullet) in enumerate(items):
+        current_index = LATIN_NUMERALS.get(letter, -1)
+        if current_index < 0:
             continue
 
         if has_bullet:
-            is_list_item[i] = True
-        if i + 1 < len(items):
-            next_letter = items[i + 1][0]
-            next_idx = LATIN_NUMERALS.get(next_letter, -1)
-            if next_idx == curr_idx + 1:
-                is_list_item[i] = True
-                is_list_item[i + 1] = True
-        if i > 0:
-            prev_letter = items[i - 1][0]
-            prev_idx = LATIN_NUMERALS.get(prev_letter, -1)
-            if prev_idx == curr_idx - 1:
-                is_list_item[i] = True
+            is_list_item[index] = True
+        if index + 1 < len(items):
+            next_letter = items[index + 1][0]
+            next_index = LATIN_NUMERALS.get(next_letter, -1)
+            if next_index == current_index + 1:
+                is_list_item[index] = True
+                is_list_item[index + 1] = True
+        if index > 0:
+            previous_letter = items[index - 1][0]
+            previous_index = LATIN_NUMERALS.get(previous_letter, -1)
+            if previous_index == current_index - 1:
+                is_list_item[index] = True
 
     if not any(is_list_item):
         return text
 
     replacements: dict[int, str] = {}
-    for i, is_valid in enumerate(is_list_item):
+    for index, is_valid in enumerate(is_list_item):
         if not is_valid:
             continue
-        _, is_parens, _, _, delim, delim_start, lparen_idx, rparen_idx, lead_space_idx, _ = items[i]
+        (
+            _,
+            is_parens,
+            _,
+            _,
+            delimiter,
+            delimiter_start,
+            lparen_index,
+            rparen_index,
+            leading_space_index,
+            _,
+        ) = items[index]
 
         if is_parens:
-            if lparen_idx >= 0 and text[lparen_idx] == "(":
-                replacements[lparen_idx] = PUA_LEFT_PAREN
-            if rparen_idx >= 0 and text[rparen_idx] == ")":
-                replacements[rparen_idx] = PUA_RIGHT_PAREN
+            if lparen_index >= 0 and text[lparen_index] == "(":
+                replacements[lparen_index] = PUA_LEFT_PAREN
+            if rparen_index >= 0 and text[rparen_index] == ")":
+                replacements[rparen_index] = PUA_RIGHT_PAREN
         else:
-            dot_offset = delim.find(".")
+            dot_offset = delimiter.find(".")
             if dot_offset >= 0:
-                replacements[delim_start + dot_offset] = PUA_PERIOD
+                replacements[delimiter_start + dot_offset] = PUA_PERIOD
 
-        if lead_space_idx >= 0 and text[lead_space_idx] == " ":
-            replacements[lead_space_idx] = "\r"
+        if leading_space_index >= 0 and text[leading_space_index] == " ":
+            replacements[leading_space_index] = "\r"
 
     return _apply_replacements(text, replacements)
 
@@ -282,96 +347,114 @@ def _mask_parenthesized_and_roman_lists(text: str) -> str:
     replacements: dict[int, str] = {}
 
     if roman_parens_matches:
-        r_items: list[tuple[str, int, int, int, int, int]] = []
-        for m in roman_parens_matches:
-            roman = m.group("roman").lower()
-            lead = m.group("lead") or ""
-            m_start, m_end = m.span()
-            roman_start = m.start("roman")
+        roman_paren_items: list[tuple[str, int, int, int, int, int]] = []
+        for match in roman_parens_matches:
+            roman = match.group("roman").lower()
+            leading_chars = match.group("lead") or ""
+            match_start, match_end = match.span()
+            roman_start = match.start("roman")
 
             if roman in ROMAN_NUMERALS_SET:
-                lead_space_idx = -1
-                if lead and lead[0] in _LEAD_WHITESPACE and m_start > 0:
-                    lead_space_idx = m_start
-                lparen_idx = roman_start - 1
-                rparen_idx = m_end - 1
-                r_items.append((roman, m_start, m_end, lparen_idx, rparen_idx, lead_space_idx))
+                leading_space_index = -1
+                if leading_chars and leading_chars[0] in _LEAD_WHITESPACE and match_start > 0:
+                    leading_space_index = match_start
+                lparen_index = roman_start - 1
+                rparen_index = match_end - 1
+                roman_paren_items.append(
+                    (
+                        roman,
+                        match_start,
+                        match_end,
+                        lparen_index,
+                        rparen_index,
+                        leading_space_index,
+                    )
+                )
 
-        is_valid_r: list[bool] = [False] * len(r_items)
-        for i, (roman, m_start, m_end, _, _, _) in enumerate(r_items):
-            curr_idx = ROMAN_NUMERALS[roman]
-            if i + 1 < len(r_items):
-                next_roman = r_items[i + 1][0]
-                next_idx = ROMAN_NUMERALS[next_roman]
-                if next_idx == curr_idx + 1:
-                    is_valid_r[i] = True
-                    is_valid_r[i + 1] = True
-            if i > 0:
-                prev_roman = r_items[i - 1][0]
-                prev_idx = ROMAN_NUMERALS[prev_roman]
-                if prev_idx == curr_idx - 1:
-                    is_valid_r[i] = True
+        is_valid_roman_paren: list[bool] = [False] * len(roman_paren_items)
+        for index, (roman, match_start, match_end, _, _, _) in enumerate(roman_paren_items):
+            current_index = ROMAN_NUMERALS[roman]
+            if index + 1 < len(roman_paren_items):
+                next_roman = roman_paren_items[index + 1][0]
+                next_index = ROMAN_NUMERALS[next_roman]
+                if next_index == current_index + 1:
+                    is_valid_roman_paren[index] = True
+                    is_valid_roman_paren[index + 1] = True
+            if index > 0:
+                previous_roman = roman_paren_items[index - 1][0]
+                previous_index = ROMAN_NUMERALS[previous_roman]
+                if previous_index == current_index - 1:
+                    is_valid_roman_paren[index] = True
             elif (
-                m_start == 0
-                or text[m_start - 1] in ("\n", "\r")
-                or (m_end < len(text) and bool(re.match(r"\s+[A-Z]", text[m_end:])))
+                match_start == 0
+                or text[match_start - 1] in ("\n", "\r")
+                or (match_end < len(text) and bool(re.match(r"\s+[A-Z]", text[match_end:])))
             ):
-                is_valid_r[i] = True
+                is_valid_roman_paren[index] = True
 
-        for i, is_valid in enumerate(is_valid_r):
+        for index, is_valid in enumerate(is_valid_roman_paren):
             if not is_valid:
                 continue
-            _, _, _, lparen_idx, rparen_idx, lead_space_idx = r_items[i]
-            if lparen_idx >= 0 and text[lparen_idx] == "(":
-                replacements[lparen_idx] = PUA_LEFT_PAREN
-            if rparen_idx >= 0 and text[rparen_idx] == ")":
-                replacements[rparen_idx] = PUA_RIGHT_PAREN
-            if lead_space_idx >= 0 and text[lead_space_idx] == " ":
-                replacements[lead_space_idx] = "\r"
+            _, _, _, lparen_index, rparen_index, leading_space_index = roman_paren_items[index]
+            if lparen_index >= 0 and text[lparen_index] == "(":
+                replacements[lparen_index] = PUA_LEFT_PAREN
+            if rparen_index >= 0 and text[rparen_index] == ")":
+                replacements[rparen_index] = PUA_RIGHT_PAREN
+            if leading_space_index >= 0 and text[leading_space_index] == " ":
+                replacements[leading_space_index] = "\r"
 
     if roman_delim_matches:
-        roman_items: list[tuple[str, int, int, str, int, int]] = []
-        for m in roman_delim_matches:
-            roman = m.group("roman").lower()
-            lead = m.group("lead") or ""
-            delim = m.group("delim") or ""
-            m_start, m_end = m.span()
-            delim_start = m.start("delim")
+        roman_delim_items: list[tuple[str, int, int, str, int, int]] = []
+        for match in roman_delim_matches:
+            roman = match.group("roman").lower()
+            leading_chars = match.group("lead") or ""
+            delimiter = match.group("delim") or ""
+            match_start, match_end = match.span()
+            delimiter_start = match.start("delim")
 
             if roman in ROMAN_NUMERALS_SET:
-                lead_space_idx = -1
-                if lead and lead[0] in _LEAD_WHITESPACE and m_start > 0:
-                    lead_space_idx = m_start
-                roman_items.append((roman, m_start, m_end, delim, delim_start, lead_space_idx))
+                leading_space_index = -1
+                if leading_chars and leading_chars[0] in _LEAD_WHITESPACE and match_start > 0:
+                    leading_space_index = match_start
+                roman_delim_items.append(
+                    (
+                        roman,
+                        match_start,
+                        match_end,
+                        delimiter,
+                        delimiter_start,
+                        leading_space_index,
+                    )
+                )
 
-        is_roman_item: list[bool] = [False] * len(roman_items)
-        for i, (roman, m_start, _, _, _, _) in enumerate(roman_items):
-            curr_idx = ROMAN_NUMERALS[roman]
-            if i + 1 < len(roman_items):
-                next_roman = roman_items[i + 1][0]
-                next_idx = ROMAN_NUMERALS[next_roman]
-                if next_idx == curr_idx + 1:
-                    is_roman_item[i] = True
-                    is_roman_item[i + 1] = True
-            if i > 0:
-                prev_roman = roman_items[i - 1][0]
-                prev_idx = ROMAN_NUMERALS[prev_roman]
-                if prev_idx == curr_idx - 1:
-                    is_roman_item[i] = True
-            elif curr_idx == 0 and (m_start == 0 or text[m_start - 1] in ("\n", "\r")):
-                is_roman_item[i] = True
+        is_valid_roman_delim: list[bool] = [False] * len(roman_delim_items)
+        for index, (roman, match_start, _, _, _, _) in enumerate(roman_delim_items):
+            current_index = ROMAN_NUMERALS[roman]
+            if index + 1 < len(roman_delim_items):
+                next_roman = roman_delim_items[index + 1][0]
+                next_index = ROMAN_NUMERALS[next_roman]
+                if next_index == current_index + 1:
+                    is_valid_roman_delim[index] = True
+                    is_valid_roman_delim[index + 1] = True
+            if index > 0:
+                previous_roman = roman_delim_items[index - 1][0]
+                previous_index = ROMAN_NUMERALS[previous_roman]
+                if previous_index == current_index - 1:
+                    is_valid_roman_delim[index] = True
+            elif current_index == 0 and (match_start == 0 or text[match_start - 1] in ("\n", "\r")):
+                is_valid_roman_delim[index] = True
 
-        for i, is_valid in enumerate(is_roman_item):
+        for index, is_valid in enumerate(is_valid_roman_delim):
             if not is_valid:
                 continue
-            _, _, _, delim, delim_start, lead_space_idx = roman_items[i]
+            _, _, _, delimiter, delimiter_start, leading_space_index = roman_delim_items[index]
 
-            dot_offset = delim.find(".")
+            dot_offset = delimiter.find(".")
             if dot_offset >= 0:
-                replacements[delim_start + dot_offset] = PUA_PERIOD
+                replacements[delimiter_start + dot_offset] = PUA_PERIOD
 
-            if lead_space_idx >= 0 and text[lead_space_idx] == " ":
-                replacements[lead_space_idx] = "\r"
+            if leading_space_index >= 0 and text[leading_space_index] == " ":
+                replacements[leading_space_index] = "\r"
 
     return _apply_replacements(text, replacements)
 
@@ -389,8 +472,7 @@ def mask_list_items(text: str, lang: str = "") -> str:
     if not text:
         return text
 
-    lang_module = get_language_module(lang) if lang else None
-    supports_alpha: bool = getattr(lang_module, "SUPPORTS_ALPHA_LISTS", True) if lang_module else True
+    supports_alpha: bool = True
 
     if "•" in text or "⁃" in text:
         text = re.sub(r"(?<=\S)\s(?=[•⁃])", "\r", text)
@@ -435,26 +517,24 @@ def get_language_abbreviation_data(lang: str) -> LanguageAbbreviationData:
         The pre-compiled abbreviation patterns for the language.
     """
     lang_module = get_language_module(lang) if lang else None
-    if isinstance(lang_module, LanguageConfig):
-        abbreviations = lang_module.abbreviations
-        prepositive = lang_module.prepositive_abbreviations
-        number_abbr = lang_module.number_abbreviations
-        replace_all = lang_module.replace_all_abbr_periods
-        sentence_starters = lang_module.sentence_starters
+    if lang_module is not None:
+        abbreviations: frozenset[str] = lang_module.abbreviations
+        prepositive: frozenset[str] = lang_module.prepositive_abbreviations
+        number_abbr: frozenset[str] = lang_module.number_abbreviations
+        replace_all: bool = lang_module.replace_all_abbr_periods
+        sentence_starters: frozenset[str] = lang_module.sentence_starters
     else:
-        abbreviations = getattr(lang_module, "ABBREVIATIONS", frozenset[str]) if lang_module else frozenset()
-        prepositive = (
-            getattr(lang_module, "PREPOSITIVE_ABBREVIATIONS", frozenset[str]) if lang_module else frozenset()
-        )
-        number_abbr = getattr(lang_module, "NUMBER_ABBREVIATIONS", frozenset) if lang_module else frozenset()
-        replace_all = getattr(lang_module, "REPLACE_ALL_ABBR_PERIODS", False) if lang_module else False
-        sentence_starters = (
-            getattr(lang_module, "SENTENCE_STARTERS", frozenset) if lang_module else frozenset()
-        )
+        abbreviations = frozenset()
+        prepositive = frozenset()
+        number_abbr = frozenset()
+        replace_all = False
+        sentence_starters = frozenset()
 
     boundary_starters_regex: re.Pattern[str] | None = None
     if sentence_starters:
-        starters_pattern = "|".join(re.escape(w) for w in sorted(sentence_starters, key=len, reverse=True))
+        starters_pattern = "|".join(
+            re.escape(word) for word in sorted(sentence_starters, key=len, reverse=True)
+        )
         boundary_starters_regex = re.compile(
             rf"((?:U{PUA_PERIOD}S|U\.S|U{PUA_PERIOD}K|E{PUA_PERIOD}U|E\.U|"
             rf"U{PUA_PERIOD}S{PUA_PERIOD}A|U\.S\.A|I|i{PUA_PERIOD}v|I{PUA_PERIOD}V|i\.v|I\.V))"
@@ -463,18 +543,20 @@ def get_language_abbreviation_data(lang: str) -> LanguageAbbreviationData:
 
     if replace_all:
         all_abbr_clean = sorted(
-            {a.strip() for a in (abbreviations | prepositive | number_abbr) if a.strip()},
+            {abbr.strip() for abbr in (abbreviations | prepositive | number_abbr) if abbr.strip()},
             key=len,
             reverse=True,
         )
-        non_dot = [a for a in all_abbr_clean if not a.endswith(".")]
+        non_dot = [abbr for abbr in all_abbr_clean if not abbr.endswith(".")]
         dot_regex: re.Pattern[str] | None = None
         if non_dot:
-            dot_regex = re.compile(rf"((?:(?<=^)|(?<=\s))(?i:{'|'.join(re.escape(a) for a in non_dot)}))\.")
+            dot_regex = re.compile(
+                rf"((?:(?<=^)|(?<=\s))(?i:{'|'.join(re.escape(abbr) for abbr in non_dot)}))\."
+            )
         exact_regex: re.Pattern[str] | None = None
         if all_abbr_clean:
             exact_regex = re.compile(
-                rf"((?:(?<=^)|(?<=\s))(?i:{'|'.join(re.escape(a) for a in all_abbr_clean)}))(?=(\s|$|[.:\-?,!\"\'“”«»]))"
+                rf"((?:(?<=^)|(?<=\s))(?i:{'|'.join(re.escape(abbr) for abbr in all_abbr_clean)}))(?=(\s|$|[.:\-?,!\"\'“”«»]))"
             )
         return LanguageAbbreviationData(
             replace_all=True,
@@ -489,58 +571,68 @@ def get_language_abbreviation_data(lang: str) -> LanguageAbbreviationData:
 
     all_raw = abbreviations | prepositive | number_abbr
     compound_list = sorted(
-        {a.strip() for a in all_raw if ("." in a or " " in a) and a.strip()},
+        {abbr.strip() for abbr in all_raw if ("." in abbr or " " in abbr) and abbr.strip()},
         key=len,
         reverse=True,
     )
     compound_abbr_regex: re.Pattern[str] | None = None
     if compound_list:
-        compound_pattern = "|".join(re.escape(a) for a in compound_list)
+        compound_pattern = "|".join(re.escape(abbr) for abbr in compound_list)
         compound_abbr_regex = re.compile(
             rf"((?:(?<=^)|(?<=\s))(?i:{compound_pattern}))"
             r"[\u200e\u200f\u202a-\u202e\u2066-\u2069]*\.?[\u200e\u200f\u202a-\u202e\u2066-\u2069]*"
             rf"(?=[.:\-?,!\"\'“”«»]|\s+(?:[a-zа-яё\u0600-\u06ff]|I\s|I'm|I'll|\d|\(|\"|'|«|„))"
         )
 
-    compound_set = {a.lower().strip() for a in compound_list}
+    compound_set = {abbr.lower().strip() for abbr in compound_list}
 
     prep_clean = sorted(
-        [a.strip() for a in prepositive if a.strip() and a.lower().strip() not in compound_set],
+        [
+            abbr.strip()
+            for abbr in prepositive
+            if abbr.strip() and abbr.lower().strip() not in compound_set
+        ],
         key=len,
         reverse=True,
     )
     prepositive_regex: re.Pattern[str] | None = None
     if prep_clean:
-        prep_pattern = "|".join(re.escape(a) for a in prep_clean)
+        prep_pattern = "|".join(re.escape(abbr) for abbr in prep_clean)
         prepositive_regex = re.compile(rf"((?:(?<=^)|(?<=\s))(?i:{prep_pattern}))\.(?=(\s|:\d+))")
 
     num_clean = sorted(
-        [a.strip() for a in number_abbr if a.strip() and a.lower().strip() not in compound_set],
+        [
+            abbr.strip()
+            for abbr in number_abbr
+            if abbr.strip() and abbr.lower().strip() not in compound_set
+        ],
         key=len,
         reverse=True,
     )
     number_abbr_regex: re.Pattern[str] | None = None
     if num_clean:
-        num_pattern = "|".join(re.escape(a) for a in num_clean)
-        number_abbr_regex = re.compile(rf"((?:(?<=^)|(?<=\s))(?i:{num_pattern}))\.(?=(\s*\d|\s+\())")
+        num_pattern = "|".join(re.escape(abbr) for abbr in num_clean)
+        number_abbr_regex = re.compile(
+            rf"((?:(?<=^)|(?<=\s))(?i:{num_pattern}))\.(?=(\s*\d|\s+\())"
+        )
 
-    prep_set = {a.lower().strip() for a in prepositive if a.strip()}
-    num_set = {a.lower().strip() for a in number_abbr if a.strip()} - prep_set
+    prep_set = {abbr.lower().strip() for abbr in prepositive if abbr.strip()}
+    num_set = {abbr.lower().strip() for abbr in number_abbr if abbr.strip()} - prep_set
     std_clean = sorted(
         {
-            a.strip()
-            for a in abbreviations
-            if a.strip()
-            and a.lower().strip() not in compound_set
-            and a.lower().strip() not in prep_set
-            and a.lower().strip() not in num_set
+            abbr.strip()
+            for abbr in abbreviations
+            if abbr.strip()
+            and abbr.lower().strip() not in compound_set
+            and abbr.lower().strip() not in prep_set
+            and abbr.lower().strip() not in num_set
         },
         key=len,
         reverse=True,
     )
     standard_abbr_regex: re.Pattern[str] | None = None
     if std_clean:
-        std_pattern = "|".join(re.escape(a) for a in std_clean)
+        std_pattern = "|".join(re.escape(abbr) for abbr in std_clean)
         standard_abbr_regex = re.compile(
             rf"((?:(?<=^)|(?<=\s))(?i:{std_pattern}))"
             r"[\u200e\u200f\u202a-\u202e\u2066-\u2069]*\."
@@ -621,13 +713,9 @@ def replace_multi_period_abbreviations(text: str, lang: str = "") -> str:
         The text with all periods in multi-period abbreviations masked.
     """
     lang_module = get_language_module(lang) if lang else None
-    mpa_pattern = None
-    if isinstance(lang_module, LanguageConfig):
-        mpa_pattern = lang_module.multi_period_abbreviation_regex
-    else:
-        mpa_pattern = getattr(lang_module, "MULTI_PERIOD_ABBREVIATION_REGEX", None)
-    mpa_pattern = mpa_pattern or MULTI_PERIOD_DEFAULT_REGEX
-    return mpa_pattern.sub(lambda m: m.group(0).replace(".", PUA_PERIOD), text)
+    mpa_pattern = lang_module.multi_period_abbreviation_regex if lang_module is not None else None
+    pattern = mpa_pattern if mpa_pattern is not None else MULTI_PERIOD_DEFAULT_REGEX
+    return pattern.sub(lambda m: m.group(0).replace(".", PUA_PERIOD), text)
 
 
 def replace_abbreviation_as_sentence_boundary(text: str, lang: str = "") -> str:
@@ -706,12 +794,7 @@ def replace_abbreviations(text: str, lang: str = "") -> str:
     text = replace_multi_period_abbreviations(text, lang=lang)
 
     lang_module = get_language_module(lang) if lang else None
-    lang_rules: tuple[Rule, ...] = ()
-    if lang_module:
-        if isinstance(lang_module, LanguageConfig):
-            lang_rules = lang_module.rules
-        else:
-            lang_rules = getattr(lang_module, "RULES", ())
+    lang_rules: tuple[Rule, ...] = lang_module.rules if lang_module is not None else ()
     for rule in lang_rules:
         text = rule.pattern.sub(rule.replacement, text)
 
@@ -751,12 +834,9 @@ def mask_between_punctuation(text: str, lang: str = "") -> str:
         text = pattern.sub(handler, text)
 
     lang_module = get_language_module(lang) if lang else None
-    lang_paired_patterns: tuple[re.Pattern[str], ...] = ()
-    if lang_module:
-        if isinstance(lang_module, LanguageConfig):
-            lang_paired_patterns = lang_module.paired_punctuation_patterns
-        else:
-            lang_paired_patterns = getattr(lang_module, "PAIRED_PUNCTUATION_PATTERNS", ())
+    lang_paired_patterns: tuple[re.Pattern[str], ...] = (
+        lang_module.paired_punctuation_patterns if lang_module is not None else ()
+    )
     for custom_pattern in lang_paired_patterns:
         text = custom_pattern.sub(mask_punctuation, text)
 
@@ -774,14 +854,14 @@ class Disambiguator:
 
     Args:
         text: The text string to disambiguate. Defaults to "".
-        lang: Two-letter ISO language code or pre-loaded module. Defaults to "".
+        lang: Two-letter ISO language code or pre-loaded module/config. Defaults to "".
         char_span: If True, tracks character spans. Defaults to False.
     """
 
     text: str = ""
-    lang: str | ModuleType = ""
+    lang: str | ModuleType | LanguageConfig = ""
     char_span: bool = False
-    lang_module: ModuleType | None = field(init=False, default=None)
+    lang_module: LanguageConfig | None = field(init=False, default=None)
     lang_code: str = field(init=False, default="")
 
     def __post_init__(self) -> None:
@@ -790,7 +870,7 @@ class Disambiguator:
         if isinstance(self.lang, str):
             self.lang_code = self.lang
         elif self.lang_module:
-            self.lang_code = getattr(self.lang_module, "ISO_CODE", "")
+            self.lang_code = self.lang_module.iso_code
         else:
             self.lang_code = ""
 
@@ -839,10 +919,10 @@ class Disambiguator:
             The text with breaks around parentheticals.
         """
 
-        def _paren_replace(m: re.Match[str]) -> str:
-            match = m.group(0)
-            sub1 = PARENS_LEAD_SPACE_REGEX.sub("\r", match)
-            return PARENS_TRAIL_SPACE_REGEX.sub("\r", sub1)
+        def _paren_replace(match: re.Match[str]) -> str:
+            matched_text = match.group(0)
+            leading_space_replaced = PARENS_LEAD_SPACE_REGEX.sub("\r", matched_text)
+            return PARENS_TRAIL_SPACE_REGEX.sub("\r", leading_space_replaced)
 
         return PARENS_BETWEEN_DOUBLE_QUOTES_REGEX.sub(_paren_replace, text)
 
@@ -858,22 +938,17 @@ class Disambiguator:
         for rule in NUMBER_RULES:
             text = rule.pattern.sub(rule.replacement, text)
 
-        def _ref_sub(m: re.Match[str]) -> str:
-            ref = m.group("ref")
-            space = m.group("space") or ""
-            if m.end() == len(m.string):
-                return f"{PUA_PERIOD}{ref}"
-            return f"{PUA_PERIOD}{ref}{space}\r"
+        def _ref_sub(match: re.Match[str]) -> str:
+            reference = match.group("ref")
+            trailing_space = match.group("space") or ""
+            if match.end() == len(match.string):
+                return f"{PUA_PERIOD}{reference}"
+            return f"{PUA_PERIOD}{reference}{trailing_space}\r"
 
         text = NUMBERED_REFERENCE_REGEX.sub(_ref_sub, text)
 
-        if self.lang_module:
-            lang_rules = (
-                self.lang_module.rules
-                if isinstance(self.lang_module, LanguageConfig)
-                else getattr(self.lang_module, "RULES", ())
-            )
-            for rule in lang_rules:
+        if self.lang_module is not None:
+            for rule in self.lang_module.rules:
                 text = rule.pattern.sub(rule.replacement, text)
 
         return text
@@ -888,8 +963,8 @@ class Disambiguator:
             The text with contiguous punctuation masked.
         """
 
-        def _cont_repl(m: re.Match[str]) -> str:
-            return m.group(1).replace("!", PUA_EXCLAMATION).replace("?", PUA_QUESTION)
+        def _cont_repl(match: re.Match[str]) -> str:
+            return match.group(1).replace("!", PUA_EXCLAMATION).replace("?", PUA_QUESTION)
 
         text = CONTINUOUS_PUNCTUATION_REGEX.sub(_cont_repl, text)
         for rule in DOUBLE_PUNCTUATION_RULES:
@@ -907,57 +982,48 @@ class Disambiguator:
         Returns:
             A list of final unmasked, trimmed sentence strings.
         """
-        boundary_regex_val = None
-        punctuations_val = None
-        if self.lang_module:
-            if isinstance(self.lang_module, LanguageConfig):
-                boundary_regex_val = self.lang_module.sentence_boundary_regex
-                punctuations_val = self.lang_module.punctuations
-            else:
-                boundary_regex_val = getattr(self.lang_module, "SENTENCE_BOUNDARY_REGEX", None)
-                punctuations_val = getattr(self.lang_module, "PUNCTUATIONS", None)
-
-        boundary_regex = boundary_regex_val or SENTENCE_BOUNDARY_REGEX
-        punctuations = punctuations_val or PUNCTUATIONS
+        boundary_regex = (
+            self.lang_module.sentence_boundary_regex
+            if self.lang_module and self.lang_module.sentence_boundary_regex is not None
+            else SENTENCE_BOUNDARY_REGEX
+        )
+        punctuations = (
+            self.lang_module.punctuations
+            if self.lang_module and self.lang_module.punctuations is not None
+            else PUNCTUATIONS
+        )
 
         search_punctuations = punctuations | _PUA_SEARCH_PUNCTUATIONS
 
-        quote_regex = (
-            getattr(self.lang_module, "QUOTATION_AT_END_OF_SENTENCE_REGEX", None)
-            if self.lang_module
-            else None
-        ) or QUOTATION_AT_END_OF_SENTENCE_REGEX
-
-        split_quote_regex = (
-            getattr(self.lang_module, "SPLIT_SPACE_QUOTATION_AT_END_OF_SENTENCE_REGEX", None)
-            if self.lang_module
-            else None
-        ) or SPLIT_SPACE_QUOTATION_AT_END_OF_SENTENCE_REGEX
+        quote_regex = QUOTATION_AT_END_OF_SENTENCE_REGEX
+        split_quote_regex = SPLIT_SPACE_QUOTATION_AT_END_OF_SENTENCE_REGEX
 
         segments: list[str] = []
         for line in LINE_SPLIT_REGEX.split(text):
             if not line:
                 continue
             if not search_punctuations.isdisjoint(line):
-                proc_line = line if line[-1] in punctuations else (line + PUA_TEMP_END_PUNCT)
-                matches = list(boundary_regex.finditer(proc_line))
+                processed_line = line if line[-1] in punctuations else (line + PUA_TEMP_END_PUNCT)
+                matches = list(boundary_regex.finditer(processed_line))
                 if matches:
-                    for m in matches:
-                        match_str = m.group(0)
-                        if quote_regex.search(match_str):
-                            parts = split_quote_regex.split(match_str)
-                            segments.extend(unmask_all(p).strip() for p in parts if p.strip())
+                    for match in matches:
+                        matched_text = match.group(0)
+                        if quote_regex.search(matched_text):
+                            parts = split_quote_regex.split(matched_text)
+                            segments.extend(
+                                unmask_all(part).strip() for part in parts if part.strip()
+                            )
                         else:
-                            cleaned_seg = unmask_all(match_str).strip()
-                            if cleaned_seg:
-                                segments.append(cleaned_seg)
+                            cleaned_segment = unmask_all(matched_text).strip()
+                            if cleaned_segment:
+                                segments.append(cleaned_segment)
                 else:
-                    raw = unmask_all(line).strip()
-                    if raw:
-                        segments.append(raw)
+                    raw_line = unmask_all(line).strip()
+                    if raw_line:
+                        segments.append(raw_line)
             else:
-                raw = unmask_all(line).strip()
-                if raw:
-                    segments.append(raw)
+                raw_line = unmask_all(line).strip()
+                if raw_line:
+                    segments.append(raw_line)
 
         return segments

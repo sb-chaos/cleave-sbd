@@ -203,14 +203,14 @@ EXCLAMATION_WORDS: tuple[str, ...] = (
 )
 
 EXCLAMATION_WORDS_REGEX: re.Pattern[str] = re.compile(
-    "|".join(re.escape(w) for w in sorted(EXCLAMATION_WORDS, key=len, reverse=True))
+    "|".join(re.escape(word) for word in sorted(EXCLAMATION_WORDS, key=len, reverse=True))
 )
 
 
 def mask_exclamation_words(text: str) -> str:
     """Mask exclamation marks within known proper nouns and click consonants."""
     return EXCLAMATION_WORDS_REGEX.sub(
-        lambda m: m.group(0).replace("!", PUA_EXCLAMATION),
+        lambda match: match.group(0).replace("!", PUA_EXCLAMATION),
         text,
     )
 
@@ -406,8 +406,8 @@ SINGLE_LOWERCASE_LETTER_REGEX: re.Pattern[str] = re.compile(
 AM_PM_REGEX: re.Pattern[str] = re.compile(r"(?<=\d)\s*(?:a\.m|p\.m|am|pm)\b", re.IGNORECASE)
 
 ROMAN_NUMERALS: dict[str, int] = {
-    r: i
-    for i, r in enumerate(
+    roman: index
+    for index, roman in enumerate(
         (
             "i", "ii", "iii", "iv", "v", "vi", "vii", "viii", "ix", "x",
             "xi", "xii", "xiii", "xiv", "xv", "xvi", "xvii", "xviii", "xix", "xx",
@@ -415,4 +415,4 @@ ROMAN_NUMERALS: dict[str, int] = {
     )
 }
 ROMAN_NUMERALS_SET: frozenset[str] = frozenset(ROMAN_NUMERALS.keys())
-LATIN_NUMERALS: dict[str, int] = {c: i for i, c in enumerate(string.ascii_lowercase)}
+LATIN_NUMERALS: dict[str, int] = {char: index for index, char in enumerate(string.ascii_lowercase)}

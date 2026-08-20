@@ -19,9 +19,9 @@ class TextSpan:
     def __repr__(self) -> str:
         return self.sent
 
-    def __eq__(self, ts: object) -> bool:
-        if isinstance(ts, TextSpan):
-            return self.sent == ts.sent and self.start == ts.start and self.end == ts.end
+    def __eq__(self, other: object) -> bool:
+        if isinstance(other, TextSpan):
+            return self.sent == other.sent and self.start == other.start and self.end == other.end
         return False
 
 
@@ -85,7 +85,7 @@ class Segmenter:
                 lang=self.language,
                 char_span=False,
             ).disambiguate()
-            return [unmask_all(s) for s in sentences]
+            return [unmask_all(sentence) for sentence in sentences]
 
         sentences = Disambiguator(
             text=text,
@@ -96,7 +96,7 @@ class Segmenter:
         if self.char_span:
             return self.sentences_with_char_spans(text, sentences)
 
-        return [unmask_all(s) for s in sentences]
+        return [unmask_all(sentence) for sentence in sentences]
 
     def sentences_with_char_spans(self, original_text: str, sentences: list[str]) -> list[TextSpan]:
         """Calculate start and end character offsets sequentially against the original source text.
