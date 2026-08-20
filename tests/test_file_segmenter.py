@@ -70,7 +70,7 @@ def segment_text_file(
 
     output_lines: list[str] = [
         f"=== pragmatic_sbd Segmentation Output ({len(raw_segments)} Sentences) ===",
-        f"Input File : {input_path.resolve()}",
+        f"Input File : {input_path.as_posix()}",
         f"Language   : {language}",
         f"Clean      : {clean}",
         f"Char Span  : {char_span}",

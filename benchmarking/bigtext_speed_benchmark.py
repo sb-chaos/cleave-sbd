@@ -280,7 +280,7 @@ def load_benchmark_text(
 
     if target_path.exists():
         text = target_path.read_text(encoding="utf-8", errors="replace")
-        return text, f"Loaded from existing file: {target_path.resolve()}"
+        return text, f"Loaded from existing file: {target_path.as_posix()}"
 
     if auto_download:
         target_path.parent.mkdir(parents=True, exist_ok=True)
@@ -290,7 +290,7 @@ def load_benchmark_text(
             with urllib.request.urlopen(req, timeout=15) as resp:
                 content = resp.read().decode("utf-8", errors="replace")
                 target_path.write_text(content, encoding="utf-8")
-                return content, f"Downloaded from {url} and saved to {target_path.resolve()}"
+                return content, f"Downloaded from {url} and saved to {target_path.as_posix()}"
         except Exception as exc:
             print(f"Warning: Failed to download from {url}: {exc}. Using fallback text.", file=sys.stderr)
 
