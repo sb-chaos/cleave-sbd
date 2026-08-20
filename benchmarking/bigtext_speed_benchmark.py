@@ -119,7 +119,6 @@ def setup_nltk() -> tuple[TokenizerFn | None, str | None]:
     """NLTK sent_tokenize."""
     try:
         nltk: Any = importlib.import_module("nltk")  # pyright: ignore[reportExplicitAny,reportUnknownMemberType]
-        # Check if punkt tokenizer models are accessible
         try:
             nltk.sent_tokenize("Test sentence. Another sentence.")  # pyright: ignore[reportAny]
         except LookupError:
@@ -145,6 +144,8 @@ def setup_spacy_sentencizer() -> tuple[TokenizerFn | None, str | None]:
         nlp.add_pipe("sentencizer")  # pyright: ignore[reportAny]
 
         def tokenize(text: str) -> list[str]:
+            if len(text) > nlp.max_length:
+                nlp.max_length = len(text) + 100000
             doc: Any = nlp(text)  # pyright: ignore[reportAny,reportExplicitAny]
             return [sent.text for sent in doc.sents]  # pyright: ignore[reportAny]
 
@@ -158,15 +159,25 @@ def setup_spacy_sentencizer() -> tuple[TokenizerFn | None, str | None]:
 def setup_spacy_dep() -> tuple[TokenizerFn | None, str | None]:
     """spaCy en_core_web_sm dependency parse sentence segmenter."""
     try:
-        spacy: Any = importlib.import_module("spacy")  # pyright: ignore[reportExplicitAny,reportUnknownMemberType]
+        spacy: Any = importlib.import_module("spacy")
         try:
-            nlp: Any = spacy.load("en_core_web_sm", disable=["ner"])  # pyright: ignore[reportAny,reportExplicitAny]
+            nlp: Any = spacy.load("en_core_web_sm", disable=["ner"])
         except Exception:
-            return None, "spacy model 'en_core_web_sm' not installed"
+            try:
+                spacy_cli: Any = importlib.import_module("spacy.cli")
+                spacy_cli.download("en_core_web_sm")
+                nlp = spacy.load("en_core_web_sm", disable=["ner"])
+            except Exception as exc:
+                return (
+                    None,
+                    f"spacy model 'en_core_web_sm' not installed (install via: uv pip install en_core_web_sm): {exc}",
+                )
 
         def tokenize(text: str) -> list[str]:
-            doc: Any = nlp(text)  # pyright: ignore[reportAny,reportExplicitAny]
-            return [sent.text for sent in doc.sents]  # pyright: ignore[reportAny]
+            if len(text) > nlp.max_length:
+                nlp.max_length = len(text) + 100000
+            doc: Any = nlp(text)
+            return [sent.text for sent in doc.sents]
 
         return tokenize, None
     except ImportError:
@@ -201,12 +212,21 @@ def setup_stanza() -> tuple[TokenizerFn | None, str | None]:
     """Stanza tokenize pipeline."""
     try:
         stanza: Any = importlib.import_module("stanza")  # pyright: ignore[reportExplicitAny,reportUnknownMemberType]
-        pipeline_inst: Any = stanza.Pipeline(  # pyright: ignore[reportAny,reportExplicitAny]
-            lang="en",
-            processors="tokenize",
-            download_method=None,
-            verbose=False,
-        )
+        try:
+            pipeline_inst: Any = stanza.Pipeline(  # pyright: ignore[reportAny,reportExplicitAny]
+                lang="en",
+                processors="tokenize",
+                download_method=None,
+                verbose=False,
+            )
+        except Exception:
+            stanza.download("en", processors="tokenize", verbose=False)
+            pipeline_inst = stanza.Pipeline(
+                lang="en",
+                processors="tokenize",
+                download_method=None,
+                verbose=False,
+            )
 
         def tokenize(text: str) -> list[str]:
             doc: Any = pipeline_inst(text)  # pyright: ignore[reportAny,reportExplicitAny]
@@ -283,7 +303,7 @@ def run_benchmark(
     warmup: int = 1,
     selected_engines: list[str] | None = None,
 ) -> list[EngineResult]:
-    """Run speed benchmarks across all selected tokenizers."""
+    """Run speed benchmarks across all selected tokenizers with terminal progress tracking."""
     text_bytes = len(text.encode("utf-8"))
     text_chars = len(text)
     text_mb = text_bytes / (1024 * 1024)
@@ -291,12 +311,18 @@ def run_benchmark(
     results: list[EngineResult] = []
     baseline_mean_s: float | None = None
 
+    print(
+        f"\n>>> Running benchmark configuration: {warmup} warmup pass(es) | {iterations} timed pass(es) per engine\n",
+        file=sys.stderr,
+    )
+
     for name, setup_fn in AVAILABLE_ENGINES:
         if selected_engines and not any(sel.lower() in name.lower() for sel in selected_engines):
             continue
 
         fn, err_msg = setup_fn()
         if fn is None:
+            print(f"{name}: Unavailable ({err_msg or 'Disabled'})", file=sys.stderr)
             results.append(
                 EngineResult(
                     name=name,
@@ -306,19 +332,28 @@ def run_benchmark(
             )
             continue
 
-        # Warmup iterations
-        for _ in range(max(0, warmup)):
+        # Warmup passes
+        for w in range(max(0, warmup)):
+            pass_label = f"warmup {w + 1}"
+            print(f"{name}: pass {pass_label} started...", end="", flush=True, file=sys.stderr)
+            t0 = time.perf_counter()
             _ = fn(text)
+            elapsed = time.perf_counter() - t0
+            print(f"\r{name}: pass {pass_label} took {elapsed:.4f} seconds - complete", file=sys.stderr)
 
         # Timed iterations
         times: list[float] = []
         sentence_count: int = 0
-        for _ in range(max(1, iterations)):
+        for i in range(max(1, iterations)):
+            pass_label = f"#{i + 1}"
+            print(f"{name}: pass {pass_label} started...", end="", flush=True, file=sys.stderr)
             t0 = time.perf_counter()
             segments = fn(text)
             t1 = time.perf_counter()
-            times.append(t1 - t0)
+            elapsed = t1 - t0
+            times.append(elapsed)
             sentence_count = len(segments)
+            print(f"\r{name}: pass {pass_label} took {elapsed:.4f} seconds - complete", file=sys.stderr)
 
         min_s = min(times)
         mean_s = statistics.mean(times)
@@ -352,6 +387,7 @@ def run_benchmark(
                 raw_times_s=times,
             )
         )
+        print("", file=sys.stderr)  # Spacing line between engines
 
     return results
 

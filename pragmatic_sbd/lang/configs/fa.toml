@@ -1,0 +1,17 @@
+iso_code = "fa"
+punctuations = [
+    "!",
+    ".",
+    ":",
+    "?",
+    "\u061f",
+]
+sentence_boundary_regex = ".*?[:.!?\u061f]|.*?$"
+
+[[rules]]
+pattern = "(?<=\\d):(?=\\d)"
+replacement = "\ue00d"
+
+[[rules]]
+pattern = "\u060c(?=\\s\\S+\u060c)"
+replacement = "\ue00c"

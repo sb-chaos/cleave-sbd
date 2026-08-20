@@ -37,6 +37,7 @@ coverage.xml
 *.cover
 .hypothesis/
 ignored_tests/
+personal_notes/
 benchmarks/
 
 # Type Checking & Linting (Ruff, Basedpyright, Mypy, etc.)
@@ -72,5 +73,5 @@ site/
 # OS-generated files
 .DS_Store
 Thumbs.db
-agents.md
+Agents.md
 uv.lock

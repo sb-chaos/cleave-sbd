@@ -1,0 +1,9 @@
+iso_code = "ja"
+paired_punctuation_patterns = [
+    "\\uff08(?=(?P<tmp>[^\\uff08\\uff09]+|\\\\{2}|\\\\.)*)(?P=tmp)\\uff09",
+    "\\u300c(?=(?P<tmp>[^\\u300c\\u300d]+|\\\\{2}|\\\\.)*)(?P=tmp)\\u300d",
+]
+
+[[clean_rules]]
+pattern = "(?<=\\u306e)\\n(?=\\S)"
+replacement = ""

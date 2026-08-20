@@ -111,14 +111,15 @@ Benchmarks evaluated on the **Complete Works of William Shakespeare** (`pg100.tx
 
 | Engine | Sentences Found | Mean Latency | Min Latency | Throughput | Status / Speedup |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **`pragmatic-sbd` (`clean=False`)** | **176,430** | **4,557.73 ms** | 4,554.94 ms | **1.14 MB/s** | **1.00x (Baseline)** |
-| **`pragmatic-sbd` (`char_span=True`)** | **176,430** | **4,766.19 ms** | 4,754.82 ms | **1.09 MB/s** | **0.96x** |
-| **`pragmatic-sbd` (`clean=True`)** | **176,442** | **5,285.47 ms** | 5,264.46 ms | **0.98 MB/s** | **0.86x** |
+| **`pragmatic-sbd` (`clean=False`)** | 176,430 | 4,489.86 ms | 4,470.52 ms | 1.16 MB/s | 1.00x (Baseline) |
+| **`pragmatic-sbd` (`clean=True`)** | 176,442 | 4,510.56 ms | 4,501.86 ms | 1.15 MB/s | 1.00x |
+| **`pragmatic-sbd` (`char_span=True`)** | 176,430 | 4,589.46 ms | 4,563.51 ms | 1.13 MB/s | 0.98x |
+| **spaCy `sentencizer`** | 109,084 | 4,862.67 ms | 4,758.62 ms | 1.07 MB/s | 0.97x |
 | **BlingFire** | 107,489 | 164.11 ms | 161.32 ms | 31.62 MB/s | 27.77x |
 | **NLTK `sent_tokenize`** | 105,488 | 726.35 ms | 724.30 ms | 7.15 MB/s | 6.27x |
 | **Syntok** | 112,612 | 3,871.09 ms | 3,811.82 ms | 1.34 MB/s | 1.18x |
 | **Stanford Stanza** | 127,102 | 48,151.78 ms | 45,269.77 ms | 0.11 MB/s | 0.09x *(~10.6x slower)* |
-| **spaCy** | — | — | — | — | **Refused / Setup Failure** |
+| **spaCy `en_core_web_sm`** | — | — | — | — | **Refused / Setup Failure** |
 | **pySBD** | — | >900,000 ms | — | <0.005 MB/s | **DNF (Timed out >15 min)** |
 
 ---

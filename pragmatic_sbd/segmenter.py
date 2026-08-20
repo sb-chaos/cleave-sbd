@@ -25,9 +25,6 @@ class TextSpan:
         return False
 
 
-Text = TextSpan
-
-
 @dataclass(slots=True, frozen=True)
 class Segmenter:
     """Splits input text into sentences with optional cleaning and character offset spans.
@@ -65,7 +62,14 @@ class Segmenter:
             get_language_module(self.language)
 
     def segment(self, text: str = "") -> list[str] | list[TextSpan]:
-        """Segment the input text into a list of sentences or TextSpan objects."""
+        """Segment the input text into a list of sentences or TextSpan objects.
+
+        Args:
+            text: The raw text string to segment. Defaults to "".
+
+        Returns:
+            A list of sentence strings, or TextSpan objects if char_span is True.
+        """
         if not text or text.isspace():
             return []
 
@@ -95,7 +99,15 @@ class Segmenter:
         return [unmask_all(s) for s in sentences]
 
     def sentences_with_char_spans(self, original_text: str, sentences: list[str]) -> list[TextSpan]:
-        """Calculate start and end character offsets sequentially against the original source text."""
+        """Calculate start and end character offsets sequentially against the original source text.
+
+        Args:
+            original_text: The original, unmodified text.
+            sentences: Segmented sentence strings to locate.
+
+        Returns:
+            A list of TextSpan objects containing the sentences and their start/end offsets.
+        """
         sent_spans: list[TextSpan] = []
         prior_end_char_idx: int = 0
         orig_len: int = len(original_text)

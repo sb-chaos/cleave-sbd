@@ -1,0 +1,8 @@
+iso_code = "am"
+punctuations = [
+    "!",
+    "?",
+    "\u1362",
+    "\u1367",
+]
+sentence_boundary_regex = ".*?[\u1367\u1362!?]|.*?$"

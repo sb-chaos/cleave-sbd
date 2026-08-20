@@ -1,0 +1,7 @@
+iso_code = "mr"
+punctuations = [
+    "!",
+    ".",
+    "?",
+]
+sentence_boundary_regex = ".*?[.!?]|.*?$"
