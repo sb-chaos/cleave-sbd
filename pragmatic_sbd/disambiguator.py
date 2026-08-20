@@ -55,7 +55,7 @@ from pragmatic_sbd.lang.common import (
 )
 
 if TYPE_CHECKING:
-    from types import ModuleType
+    # from types import ModuleType  # remove unused import
 
 LINE_SPLIT_REGEX = re.compile(rf"(?:\r\n|\r|\n|{PUA_NEWLINE})")
 
