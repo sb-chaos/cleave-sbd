@@ -1,11 +1,7 @@
 === pragmatic_sbd Segmentation Output (8 Sentences) ===
 Input File : tests/sample_input.txt
 Language   : en
-<<<<<<< HEAD
 Clean      : True
-=======
-Clean      : False
->>>>>>> add-type-annotations
 Char Span  : False
 ============================================================
 

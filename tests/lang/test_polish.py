@@ -2,19 +2,11 @@
 import pytest
 
 GOLDEN_PL_RULES_TEST_CASES = [
-<<<<<<< HEAD
     ("To słowo bałt. jestskrótem.", ["To słowo bałt. jestskrótem."]),
 ]
 
 
 @pytest.mark.parametrize("text,expected_sents", GOLDEN_PL_RULES_TEST_CASES)
-=======
-("To słowo bałt. jestskrótem.",
- ["To słowo bałt. jestskrótem."]),
-]
-
-@pytest.mark.parametrize('text,expected_sents', GOLDEN_PL_RULES_TEST_CASES)
->>>>>>> add-type-annotations
 def test_pl_sbd(pl_default_fixture, text, expected_sents):
     """Polish language SBD tests"""
     segments = pl_default_fixture.segment(text)

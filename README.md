@@ -141,10 +141,6 @@ Benchmarks evaluated on the **Complete Works of William Shakespeare** (`pg100.tx
 
 ```bash
 uv run --with nltk,stanza,blingfire,syntok python tests/bigtext_speed_benchmark.py
-```
-
----
-
 ## License
 
 MIT License. See [LICENSE](LICENSE) for details.

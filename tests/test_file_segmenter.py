@@ -18,11 +18,7 @@ def segment_text_file(
     input_file_str: str = INPUT_FILE,
     output_file_str: str = OUTPUT_FILE,
     language: str = "en",
-<<<<<<< HEAD
     clean: bool = True,
-=======
-    clean: bool = False,
->>>>>>> add-type-annotations
     char_span: bool = False,
 ) -> list[str]:
     """Read text from an input path, segment into sentences, and write numbered sections to output path.
@@ -59,11 +55,7 @@ def segment_text_file(
             "Hello world! This is the first test sentence. My name is Dr. Jonas E. Smith "
             "and I work in Washington, D.C. at 10.5% growth rate. Is this sentence number four?\n\n"
             "Here begins a new paragraph. Please refer to Fig. 1.2 on p. 45 for further details. "
-<<<<<<< HEAD
             '"We will succeed!" said the director. The end.'
-=======
-            "\"We will succeed!\" said the director. The end."
->>>>>>> add-type-annotations
         )
         input_path.write_text(default_sample, encoding="utf-8")
 
@@ -78,11 +70,7 @@ def segment_text_file(
 
     output_lines: list[str] = [
         f"=== pragmatic_sbd Segmentation Output ({len(raw_segments)} Sentences) ===",
-<<<<<<< HEAD
         f"Input File : {input_path.as_posix()}",
-=======
-        f"Input File : {input_path.resolve()}",
->>>>>>> add-type-annotations
         f"Language   : {language}",
         f"Clean      : {clean}",
         f"Char Span  : {char_span}",

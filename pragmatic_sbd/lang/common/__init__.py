@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 """Common language rules, Unicode PUA definitions, lexicons, and compiled regex patterns."""
 
 from .rules import (
@@ -142,6 +141,3 @@ __all__ = [
     "mask_single_quote_punctuation",
     "unmask_all",
 ]
-=======
-"""Common language rules and standards."""
->>>>>>> add-type-annotations
