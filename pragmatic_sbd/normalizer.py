@@ -1,10 +1,9 @@
 """Stateless normalization and cleaning pipeline for text segmentation."""
 
+import re
 from collections.abc import Sequence
 from dataclasses import dataclass
 from types import ModuleType
-
-import re
 
 from pragmatic_sbd.lang import LanguageConfig, get_language_module
 from pragmatic_sbd.lang.common import Rule

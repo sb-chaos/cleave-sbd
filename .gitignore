@@ -73,5 +73,5 @@ site/
 # OS-generated files
 .DS_Store
 Thumbs.db
-Agents.md
+AGENTS.md
 uv.lock
