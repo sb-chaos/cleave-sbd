@@ -99,27 +99,32 @@ def mask_exclamation_words(text: str) -> str:
 # Numerals & List Symbols
 # =============================================================================
 
-ROMAN_NUMERALS: tuple[str, ...] = (
-    "i",
-    "ii",
-    "iii",
-    "iv",
-    "v",
-    "vi",
-    "vii",
-    "viii",
-    "ix",
-    "x",
-    "xi",
-    "xii",
-    "xiii",
-    "xiv",
-    "xv",
-    "xvi",
-    "xvii",
-    "xviii",
-    "xix",
-    "xx",
-)
+ROMAN_NUMERALS: dict[str, int] = {
+    r: i
+    for i, r in enumerate(
+        (
+            "i",
+            "ii",
+            "iii",
+            "iv",
+            "v",
+            "vi",
+            "vii",
+            "viii",
+            "ix",
+            "x",
+            "xi",
+            "xii",
+            "xiii",
+            "xiv",
+            "xv",
+            "xvi",
+            "xvii",
+            "xviii",
+            "xix",
+            "xx",
+        )
+    )
+}
 ROMAN_NUMERALS_SET: frozenset[str] = frozenset(ROMAN_NUMERALS)
-LATIN_NUMERALS: list[str] = list(string.ascii_lowercase)
+LATIN_NUMERALS: dict[str, int] = {c: i for i, c in enumerate(string.ascii_lowercase)}

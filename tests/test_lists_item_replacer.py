@@ -7,7 +7,7 @@ from pragmatic_sbd.lang.common import (
     PUA_RIGHT_PAREN,
     unmask_all,
 )
-from pragmatic_sbd.processor import ListItemReplacer, mask_list_items
+from pragmatic_sbd.disambiguator import mask_list_items
 
 
 class TestListItemMasking:
@@ -107,10 +107,3 @@ class TestListItemMasking:
         for s in samples:
             masked = mask_list_items(s)
             assert len(masked) == len(s), f"Length mismatch for {s!r}: {len(masked)} != {len(s)}"
-
-    def test_legacy_class_interface(self) -> None:
-        replacer = ListItemReplacer("1. Item 1 2. Item 2")
-        result = replacer.add_line_break()
-        assert len(result) == len("1. Item 1 2. Item 2")
-        assert replacer.ROMAN_NUMERALS
-        assert replacer.LATIN_NUMERALS

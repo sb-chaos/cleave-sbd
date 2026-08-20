@@ -66,7 +66,7 @@ class Segmenter:
 
     def segment(self, text: str = "") -> list[str] | list[TextSpan]:
         """Segment the input text into a list of sentences or TextSpan objects."""
-        if not text or not text.strip():
+        if not text or text.isspace():
             return []
 
         if self.clean:
@@ -110,7 +110,7 @@ class Segmenter:
 
             sent_spans.append(
                 TextSpan(
-                    sent=unmask_all(original_text[start_idx:end_idx]),
+                    sent=original_text[start_idx:end_idx],
                     start=start_idx,
                     end=end_idx,
                 )

@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from functools import lru_cache
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING
 
 from pragmatic_sbd.lang import get_language_module
 from pragmatic_sbd.lang.common import (
@@ -59,6 +59,19 @@ if TYPE_CHECKING:
 
 LINE_SPLIT_REGEX = re.compile(rf"(?:\r\n|\r|\n|{PUA_NEWLINE})")
 
+_BULLET_CHARS: frozenset[str] = frozenset({"•", "⁃"})
+_LEAD_WHITESPACE: frozenset[str] = frozenset({" ", "\t"})
+_PUA_SEARCH_PUNCTUATIONS: frozenset[str] = frozenset({
+    PUA_PERIOD,
+    PUA_EXCLAMATION,
+    PUA_QUESTION,
+    PUA_DOUBLE_QE,
+    PUA_DOUBLE_EQ,
+    PUA_DOUBLE_QQ,
+    PUA_DOUBLE_EE,
+    PUA_TEMP_END_PUNCT,
+})
+
 
 # =============================================================================
 # 1. List Item Masking
@@ -89,10 +102,10 @@ def _mask_numbered_lists(text: str) -> str:
     for m in matches:
         lead = m.group("lead") or ""
         m_start, m_end = m.span()
-        has_bullet = any(b in lead for b in ("•", "⁃"))
+        has_bullet = any(b in lead for b in _BULLET_CHARS)
 
         lead_space_idx = -1
-        if lead and lead[0] in (" ", "\t") and m_start > 0:
+        if lead and lead[0] in _LEAD_WHITESPACE and m_start > 0:
             lead_space_idx = m_start
 
         if m.group("num_p") is not None:
@@ -139,9 +152,10 @@ def _mask_numbered_lists(text: str) -> str:
                 replacements[lparen_idx] = PUA_LEFT_PAREN
             if rparen_idx >= 0 and text[rparen_idx] == ")":
                 replacements[rparen_idx] = PUA_RIGHT_PAREN
-        elif "." in delim:
-            dot_offset = delim.index(".")
-            replacements[delim_start + dot_offset] = PUA_PERIOD
+        else:
+            dot_offset = delim.find(".")
+            if dot_offset >= 0:
+                replacements[delim_start + dot_offset] = PUA_PERIOD
 
         if lead_space_idx >= 0 and text[lead_space_idx] == " ":
             preceding_str = text[max(0, lead_space_idx - 4) : lead_space_idx]
@@ -161,10 +175,10 @@ def _mask_alphabetical_lists(text: str) -> str:
     for m in matches:
         lead = m.group("lead") or ""
         m_start, m_end = m.span()
-        has_bullet = any(b in lead for b in ("•", "⁃"))
+        has_bullet = any(b in lead for b in _BULLET_CHARS)
 
         lead_space_idx = -1
-        if lead and lead[0] in (" ", "\t") and m_start > 0:
+        if lead and lead[0] in _LEAD_WHITESPACE and m_start > 0:
             lead_space_idx = m_start
 
         if m.group("letter_p") is not None:
@@ -184,7 +198,7 @@ def _mask_alphabetical_lists(text: str) -> str:
 
     is_list_item: list[bool] = [False] * len(items)
     for i, (letter, _, _, _, _, _, _, _, _, has_bullet) in enumerate(items):
-        curr_idx = LATIN_NUMERALS.index(letter) if letter in LATIN_NUMERALS else -1
+        curr_idx = LATIN_NUMERALS.get(letter, -1)
         if curr_idx < 0:
             continue
 
@@ -192,13 +206,13 @@ def _mask_alphabetical_lists(text: str) -> str:
             is_list_item[i] = True
         if i + 1 < len(items):
             next_letter = items[i + 1][0]
-            next_idx = LATIN_NUMERALS.index(next_letter) if next_letter in LATIN_NUMERALS else -1
+            next_idx = LATIN_NUMERALS.get(next_letter, -1)
             if next_idx == curr_idx + 1:
                 is_list_item[i] = True
                 is_list_item[i + 1] = True
         if i > 0:
             prev_letter = items[i - 1][0]
-            prev_idx = LATIN_NUMERALS.index(prev_letter) if prev_letter in LATIN_NUMERALS else -1
+            prev_idx = LATIN_NUMERALS.get(prev_letter, -1)
             if prev_idx == curr_idx - 1:
                 is_list_item[i] = True
 
@@ -216,9 +230,10 @@ def _mask_alphabetical_lists(text: str) -> str:
                 replacements[lparen_idx] = PUA_LEFT_PAREN
             if rparen_idx >= 0 and text[rparen_idx] == ")":
                 replacements[rparen_idx] = PUA_RIGHT_PAREN
-        elif "." in delim:
-            dot_offset = delim.index(".")
-            replacements[delim_start + dot_offset] = PUA_PERIOD
+        else:
+            dot_offset = delim.find(".")
+            if dot_offset >= 0:
+                replacements[delim_start + dot_offset] = PUA_PERIOD
 
         if lead_space_idx >= 0 and text[lead_space_idx] == " ":
             replacements[lead_space_idx] = "\r"
@@ -245,7 +260,7 @@ def _mask_parenthesized_and_roman_lists(text: str) -> str:
 
             if roman in ROMAN_NUMERALS_SET:
                 lead_space_idx = -1
-                if lead and lead[0] in (" ", "\t") and m_start > 0:
+                if lead and lead[0] in _LEAD_WHITESPACE and m_start > 0:
                     lead_space_idx = m_start
                 lparen_idx = roman_start - 1
                 rparen_idx = m_end - 1
@@ -253,16 +268,16 @@ def _mask_parenthesized_and_roman_lists(text: str) -> str:
 
         is_valid_r: list[bool] = [False] * len(r_items)
         for i, (roman, m_start, m_end, _, _, _) in enumerate(r_items):
-            curr_idx = ROMAN_NUMERALS.index(roman)
+            curr_idx = ROMAN_NUMERALS[roman]
             if i + 1 < len(r_items):
                 next_roman = r_items[i + 1][0]
-                next_idx = ROMAN_NUMERALS.index(next_roman)
+                next_idx = ROMAN_NUMERALS[next_roman]
                 if next_idx == curr_idx + 1:
                     is_valid_r[i] = True
                     is_valid_r[i + 1] = True
             if i > 0:
                 prev_roman = r_items[i - 1][0]
-                prev_idx = ROMAN_NUMERALS.index(prev_roman)
+                prev_idx = ROMAN_NUMERALS[prev_roman]
                 if prev_idx == curr_idx - 1:
                     is_valid_r[i] = True
             elif (
@@ -294,22 +309,22 @@ def _mask_parenthesized_and_roman_lists(text: str) -> str:
 
             if roman in ROMAN_NUMERALS_SET:
                 lead_space_idx = -1
-                if lead and lead[0] in (" ", "\t") and m_start > 0:
+                if lead and lead[0] in _LEAD_WHITESPACE and m_start > 0:
                     lead_space_idx = m_start
                 roman_items.append((roman, m_start, m_end, delim, delim_start, lead_space_idx))
 
         is_roman_item: list[bool] = [False] * len(roman_items)
         for i, (roman, m_start, _, _, _, _) in enumerate(roman_items):
-            curr_idx = ROMAN_NUMERALS.index(roman)
+            curr_idx = ROMAN_NUMERALS[roman]
             if i + 1 < len(roman_items):
                 next_roman = roman_items[i + 1][0]
-                next_idx = ROMAN_NUMERALS.index(next_roman)
+                next_idx = ROMAN_NUMERALS[next_roman]
                 if next_idx == curr_idx + 1:
                     is_roman_item[i] = True
                     is_roman_item[i + 1] = True
             if i > 0:
                 prev_roman = roman_items[i - 1][0]
-                prev_idx = ROMAN_NUMERALS.index(prev_roman)
+                prev_idx = ROMAN_NUMERALS[prev_roman]
                 if prev_idx == curr_idx - 1:
                     is_roman_item[i] = True
             elif curr_idx == 0 and (m_start == 0 or text[m_start - 1] in ("\n", "\r")):
@@ -320,8 +335,8 @@ def _mask_parenthesized_and_roman_lists(text: str) -> str:
                 continue
             _, _, _, delim, delim_start, lead_space_idx = roman_items[i]
 
-            if "." in delim:
-                dot_offset = delim.index(".")
+            dot_offset = delim.find(".")
+            if dot_offset >= 0:
                 replacements[delim_start + dot_offset] = PUA_PERIOD
 
             if lead_space_idx >= 0 and text[lead_space_idx] == " ":
@@ -338,7 +353,8 @@ def mask_list_items(text: str, lang: str = "") -> str:
     lang_module = get_language_module(lang) if lang else None
     supports_alpha: bool = getattr(lang_module, "SUPPORTS_ALPHA_LISTS", True) if lang_module else True
 
-    text = re.sub(r"(?<=\S)\s(?=[•⁃])", "\r", text)
+    if "•" in text or "⁃" in text:
+        text = re.sub(r"(?<=\S)\s(?=[•⁃])", "\r", text)
     text = _mask_parenthesized_and_roman_lists(text)
     text = _mask_numbered_lists(text)
     if supports_alpha:
@@ -681,9 +697,6 @@ class Disambiguator:
         # 7. Boundary splitting
         return self._split_into_segments(text)
 
-    # Backward compatibility alias
-    process = disambiguate
-
     def _check_for_parens_between_quotes(self, text: str) -> str:
         """Insert break delimiters around parenthetical citations between double quotes."""
 
@@ -737,16 +750,7 @@ class Disambiguator:
             getattr(self.lang_module, "PUNCTUATIONS", None) if self.lang_module else None
         ) or PUNCTUATIONS
 
-        search_punctuations = punctuations | {
-            PUA_PERIOD,
-            PUA_EXCLAMATION,
-            PUA_QUESTION,
-            PUA_DOUBLE_QE,
-            PUA_DOUBLE_EQ,
-            PUA_DOUBLE_QQ,
-            PUA_DOUBLE_EE,
-            PUA_TEMP_END_PUNCT,
-        }
+        search_punctuations = punctuations | _PUA_SEARCH_PUNCTUATIONS
 
         quote_regex = (
             getattr(self.lang_module, "QUOTATION_AT_END_OF_SENTENCE_REGEX", None)
@@ -764,7 +768,7 @@ class Disambiguator:
         for line in LINE_SPLIT_REGEX.split(text):
             if not line:
                 continue
-            if any(p in line for p in search_punctuations):
+            if not search_punctuations.isdisjoint(line):
                 proc_line = line if line[-1] in punctuations else (line + PUA_TEMP_END_PUNCT)
                 matches = list(boundary_regex.finditer(proc_line))
                 if matches:
@@ -787,66 +791,3 @@ class Disambiguator:
                     segments.append(raw)
 
         return segments
-
-
-# =============================================================================
-# Legacy Compatibility Wrappers
-# =============================================================================
-
-
-@dataclass(slots=True)
-class ListItemReplacer:
-    """Legacy compatibility wrapper for list item masking."""
-
-    ROMAN_NUMERALS: ClassVar[list[str]] = list(ROMAN_NUMERALS)
-    LATIN_NUMERALS: ClassVar[list[str]] = LATIN_NUMERALS
-
-    text: str
-
-    def add_line_break(self) -> str:
-        self.text = mask_list_items(self.text)
-        return self.text
-
-    def replace_parens(self) -> str:
-        return _mask_parenthesized_and_roman_lists(self.text)
-
-    def format_numbered_list_with_parens(self) -> None:
-        self.text = _mask_numbered_lists(self.text)
-
-    def replace_periods_in_numbered_list(self) -> None:
-        self.text = _mask_numbered_lists(self.text)
-
-    def format_numbered_list_with_periods(self) -> None:
-        self.text = _mask_numbered_lists(self.text)
-
-    def format_alphabetical_lists(self) -> str:
-        self.text = _mask_alphabetical_lists(self.text)
-        return self.text
-
-    def format_roman_numeral_lists(self) -> str:
-        self.text = _mask_parenthesized_and_roman_lists(self.text)
-        return self.text
-
-
-@dataclass(slots=True)
-class AbbreviationReplacer:
-    """Legacy compatibility wrapper for abbreviation disambiguation."""
-
-    text: str
-    lang: str = ""
-
-    def replace(self) -> str:
-        return replace_abbreviations(self.text, self.lang)
-
-    def replace_abbreviation_as_sentence_boundary(self) -> None:
-        self.text = replace_abbreviation_as_sentence_boundary(self.text, self.lang)
-
-    def replace_multi_period_abbreviations(self) -> None:
-        self.text = replace_multi_period_abbreviations(self.text, self.lang)
-
-    def search_for_abbreviations_in_string(self, text: str) -> str:
-        return search_for_abbreviations_in_string(text, self.lang)
-
-
-# Backward compatibility alias
-Processor = Disambiguator

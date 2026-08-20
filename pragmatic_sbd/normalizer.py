@@ -143,9 +143,3 @@ class Normalizer:
         text = cr.TYPO_ESCAPED_NL.pattern.sub(cr.TYPO_ESCAPED_NL.replacement, text)
         return cr.TYPO_ESCAPED_CR.pattern.sub(cr.TYPO_ESCAPED_CR.replacement, text)
 
-    # Backward compatibility alias
-    clean = normalize
-
-
-# Backward compatibility alias
-Cleaner = Normalizer
