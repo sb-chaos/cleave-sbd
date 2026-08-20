@@ -61,16 +61,18 @@ LINE_SPLIT_REGEX = re.compile(rf"(?:\r\n|\r|\n|{PUA_NEWLINE})")
 
 _BULLET_CHARS: frozenset[str] = frozenset({"•", "⁃"})
 _LEAD_WHITESPACE: frozenset[str] = frozenset({" ", "\t"})
-_PUA_SEARCH_PUNCTUATIONS: frozenset[str] = frozenset({
-    PUA_PERIOD,
-    PUA_EXCLAMATION,
-    PUA_QUESTION,
-    PUA_DOUBLE_QE,
-    PUA_DOUBLE_EQ,
-    PUA_DOUBLE_QQ,
-    PUA_DOUBLE_EE,
-    PUA_TEMP_END_PUNCT,
-})
+_PUA_SEARCH_PUNCTUATIONS: frozenset[str] = frozenset(
+    {
+        PUA_PERIOD,
+        PUA_EXCLAMATION,
+        PUA_QUESTION,
+        PUA_DOUBLE_QE,
+        PUA_DOUBLE_EQ,
+        PUA_DOUBLE_QQ,
+        PUA_DOUBLE_EE,
+        PUA_TEMP_END_PUNCT,
+    }
+)
 
 
 # =============================================================================
@@ -440,11 +442,15 @@ def get_language_abbreviation_data(lang: str) -> LanguageAbbreviationData:
         replace_all = lang_module.replace_all_abbr_periods
         sentence_starters = lang_module.sentence_starters
     else:
-        abbreviations = getattr(lang_module, "ABBREVIATIONS", frozenset()) if lang_module else frozenset()
-        prepositive = getattr(lang_module, "PREPOSITIVE_ABBREVIATIONS", frozenset()) if lang_module else frozenset()
-        number_abbr = getattr(lang_module, "NUMBER_ABBREVIATIONS", frozenset()) if lang_module else frozenset()
+        abbreviations = getattr(lang_module, "ABBREVIATIONS", frozenset[str]) if lang_module else frozenset()
+        prepositive = (
+            getattr(lang_module, "PREPOSITIVE_ABBREVIATIONS", frozenset[str]) if lang_module else frozenset()
+        )
+        number_abbr = getattr(lang_module, "NUMBER_ABBREVIATIONS", frozenset) if lang_module else frozenset()
         replace_all = getattr(lang_module, "REPLACE_ALL_ABBR_PERIODS", False) if lang_module else False
-        sentence_starters = getattr(lang_module, "SENTENCE_STARTERS", frozenset()) if lang_module else frozenset()
+        sentence_starters = (
+            getattr(lang_module, "SENTENCE_STARTERS", frozenset) if lang_module else frozenset()
+        )
 
     boundary_starters_regex: re.Pattern[str] | None = None
     if sentence_starters:
