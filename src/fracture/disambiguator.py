@@ -11,28 +11,27 @@ from fracture.rules import (
     ALPHA_LIST_REGEX,
     AM_PM_RULES,
     BETWEEN_SINGLE_QUOTES_REGEX,
+    BULLET_CHARS,
     COMMON_RULES,
     CONTINUOUS_PUNCTUATION_REGEX,
     DOUBLE_PUNCTUATION_RULES,
     ELLIPSIS_RULES,
     KOMMANDITGESELLSCHAFT_REGEX,
     LATIN_NUMERALS,
+    LEAD_WHITESPACE,
+    LINE_SPLIT_REGEX,
     MULTI_PERIOD_DEFAULT_REGEX,
     NUMBER_LIST_REGEX,
     NUMBER_RULES,
     NUMBERED_REFERENCE_REGEX,
     PARENS_BETWEEN_DOUBLE_QUOTES_REGEX,
     POSSESSIVE_ABBR_REGEX,
-    PUA_DOUBLE_EE,
-    PUA_DOUBLE_EQ,
-    PUA_DOUBLE_QE,
-    PUA_DOUBLE_QQ,
     PUA_EXCLAMATION,
     PUA_LEFT_PAREN,
-    PUA_NEWLINE,
     PUA_PERIOD,
     PUA_QUESTION,
     PUA_RIGHT_PAREN,
+    PUA_SEARCH_PUNCTUATIONS,
     PUA_TEMP_END_PUNCT,
     PUNCTUATIONS,
     QUOTATION_AT_END_OF_SENTENCE_REGEX,
@@ -47,29 +46,18 @@ from fracture.rules import (
     STANDARD_PAIRED_PATTERNS,
     WORD_WITH_LEADING_APOSTROPHE,
     Rule,
+    build_compound_abbr_regex,
+    build_number_abbr_regex,
+    build_prepositive_abbr_regex,
+    build_replace_all_dot_regex,
+    build_replace_all_exact_regex,
+    build_sentence_starters_boundary_regex,
+    build_standard_abbr_regex,
     mask_exclamation_words,
     mask_punctuation,
     mask_single_quote_punctuation,
     unmask_all,
 )
-
-LINE_SPLIT_REGEX = re.compile(rf"(?:\r\n|\r|\n|{PUA_NEWLINE})")
-
-_BULLET_CHARS: frozenset[str] = frozenset({"•", "⁃"})
-_LEAD_WHITESPACE: frozenset[str] = frozenset({" ", "\t"})
-_PUA_SEARCH_PUNCTUATIONS: frozenset[str] = frozenset(
-    {
-        PUA_PERIOD,
-        PUA_EXCLAMATION,
-        PUA_QUESTION,
-        PUA_DOUBLE_QE,
-        PUA_DOUBLE_EQ,
-        PUA_DOUBLE_QQ,
-        PUA_DOUBLE_EE,
-        PUA_TEMP_END_PUNCT,
-    }
-)
-
 
 # =============================================================================
 # 1. List Item Masking
@@ -115,10 +103,10 @@ def _mask_numbered_lists(text: str) -> str:
     for match in matches:
         leading_chars = match.group("lead") or ""
         match_start, match_end = match.span()
-        has_bullet = any(bullet in leading_chars for bullet in _BULLET_CHARS)
+        has_bullet = any(bullet in leading_chars for bullet in BULLET_CHARS)
 
         leading_space_index = -1
-        if leading_chars and leading_chars[0] in _LEAD_WHITESPACE and match_start > 0:
+        if leading_chars and leading_chars[0] in LEAD_WHITESPACE and match_start > 0:
             leading_space_index = match_start
 
         if match.group("num_p") is not None:
@@ -235,10 +223,10 @@ def _mask_alphabetical_lists(text: str) -> str:
     for match in matches:
         leading_chars = match.group("lead") or ""
         match_start, match_end = match.span()
-        has_bullet = any(bullet in leading_chars for bullet in _BULLET_CHARS)
+        has_bullet = any(bullet in leading_chars for bullet in BULLET_CHARS)
 
         leading_space_index = -1
-        if leading_chars and leading_chars[0] in _LEAD_WHITESPACE and match_start > 0:
+        if leading_chars and leading_chars[0] in LEAD_WHITESPACE and match_start > 0:
             leading_space_index = match_start
 
         if match.group("letter_p") is not None:
@@ -362,7 +350,7 @@ def _mask_parenthesized_and_roman_lists(text: str) -> str:
                 leading_space_index = -1
                 if (
                     leading_chars
-                    and leading_chars[0] in _LEAD_WHITESPACE
+                    and leading_chars[0] in LEAD_WHITESPACE
                     and match_start > 0
                 ):
                     leading_space_index = match_start
@@ -431,7 +419,7 @@ def _mask_parenthesized_and_roman_lists(text: str) -> str:
                 leading_space_index = -1
                 if (
                     leading_chars
-                    and leading_chars[0] in _LEAD_WHITESPACE
+                    and leading_chars[0] in LEAD_WHITESPACE
                     and match_start > 0
                 ):
                     leading_space_index = match_start
@@ -555,16 +543,9 @@ def get_language_abbreviation_data(
         replace_all = False
         sentence_starters = frozenset()
 
-    boundary_starters_regex: re.Pattern[str] | None = None
-    if sentence_starters:
-        starters_pattern = "|".join(
-            re.escape(word) for word in sorted(sentence_starters, key=len, reverse=True)
-        )
-        boundary_starters_regex = re.compile(
-            rf"((?:U{PUA_PERIOD}S|U\.S|U{PUA_PERIOD}K|E{PUA_PERIOD}U|E\.U|"
-            rf"U{PUA_PERIOD}S{PUA_PERIOD}A|U\.S\.A|I|i{PUA_PERIOD}v|I{PUA_PERIOD}V|i\.v|I\.V))"
-            rf"{PUA_PERIOD}(?=\s+(?:{starters_pattern})\b)"
-        )
+    boundary_starters_regex: re.Pattern[str] | None = (
+        build_sentence_starters_boundary_regex(sentence_starters)
+    )
 
     if replace_all:
         all_abbr_clean = sorted(
@@ -577,24 +558,14 @@ def get_language_abbreviation_data(
             reverse=True,
         )
         non_dot = [abbr for abbr in all_abbr_clean if not abbr.endswith(".")]
-        dot_regex: re.Pattern[str] | None = None
-        if non_dot:
-            dot_regex = re.compile(
-                rf"((?:(?<=^)|(?<=\s))(?i:{'|'.join(re.escape(abbr) for abbr in non_dot)}))\."
-            )
-        exact_regex: re.Pattern[str] | None = None
-        if all_abbr_clean:
-            exact_regex = re.compile(
-                rf"((?:(?<=^)|(?<=\s))(?i:{'|'.join(re.escape(abbr) for abbr in all_abbr_clean)}))(?=(\s|$|[.:\-?,!\"\'“”«»]))"
-            )
         return LanguageAbbreviationData(
             replace_all=True,
             compound_abbr_regex=None,
             prepositive_regex=None,
             number_abbr_regex=None,
             standard_abbr_regex=None,
-            replace_all_dot_regex=dot_regex,
-            replace_all_exact_regex=exact_regex,
+            replace_all_dot_regex=build_replace_all_dot_regex(non_dot),
+            replace_all_exact_regex=build_replace_all_exact_regex(all_abbr_clean),
             sentence_boundary_starters_regex=boundary_starters_regex,
         )
 
@@ -608,14 +579,9 @@ def get_language_abbreviation_data(
         key=len,
         reverse=True,
     )
-    compound_abbr_regex: re.Pattern[str] | None = None
-    if compound_list:
-        compound_pattern = "|".join(re.escape(abbr) for abbr in compound_list)
-        compound_abbr_regex = re.compile(
-            rf"((?:(?<=^)|(?<=\s))(?i:{compound_pattern}))"
-            r"[\u200e\u200f\u202a-\u202e\u2066-\u2069]*\.?[\u200e\u200f\u202a-\u202e\u2066-\u2069]*"
-            rf"(?=[.:\-?,!\"\'“”«»]|\s+(?:[a-zа-яё\u0600-\u06ff]|I\s|I'm|I'll|\d|\(|\"|'|«|„))"
-        )
+    compound_abbr_regex: re.Pattern[str] | None = build_compound_abbr_regex(
+        compound_list
+    )
 
     compound_set = {abbr.lower().strip() for abbr in compound_list}
 
@@ -628,12 +594,7 @@ def get_language_abbreviation_data(
         key=len,
         reverse=True,
     )
-    prepositive_regex: re.Pattern[str] | None = None
-    if prep_clean:
-        prep_pattern = "|".join(re.escape(abbr) for abbr in prep_clean)
-        prepositive_regex = re.compile(
-            rf"((?:(?<=^)|(?<=\s))(?i:{prep_pattern}))\.(?=(\s|:\d+))"
-        )
+    prepositive_regex: re.Pattern[str] | None = build_prepositive_abbr_regex(prep_clean)
 
     num_clean = sorted(
         [
@@ -644,12 +605,7 @@ def get_language_abbreviation_data(
         key=len,
         reverse=True,
     )
-    number_abbr_regex: re.Pattern[str] | None = None
-    if num_clean:
-        num_pattern = "|".join(re.escape(abbr) for abbr in num_clean)
-        number_abbr_regex = re.compile(
-            rf"((?:(?<=^)|(?<=\s))(?i:{num_pattern}))\.(?=(\s*\d|\s+\())"
-        )
+    number_abbr_regex: re.Pattern[str] | None = build_number_abbr_regex(num_clean)
 
     prep_set = {abbr.lower().strip() for abbr in prepositive if abbr.strip()}
     num_set = {abbr.lower().strip() for abbr in number_abbr if abbr.strip()} - prep_set
@@ -665,15 +621,7 @@ def get_language_abbreviation_data(
         key=len,
         reverse=True,
     )
-    standard_abbr_regex: re.Pattern[str] | None = None
-    if std_clean:
-        std_pattern = "|".join(re.escape(abbr) for abbr in std_clean)
-        standard_abbr_regex = re.compile(
-            rf"((?:(?<=^)|(?<=\s))(?i:{std_pattern}))"
-            r"[\u200e\u200f\u202a-\u202e\u2066-\u2069]*\."
-            r"[\u200e\u200f\u202a-\u202e\u2066-\u2069]*"
-            rf"(?=[.:\-?,!\"\'“”«»]|\s+(?:[a-zа-яё\u0600-\u06ff]|I\s|I'm|I'll|\d|\(|\"|'|«|„))"
-        )
+    standard_abbr_regex: re.Pattern[str] | None = build_standard_abbr_regex(std_clean)
 
     return LanguageAbbreviationData(
         replace_all=False,
@@ -1032,7 +980,7 @@ def _split_into_segments(
         else PUNCTUATIONS
     )
 
-    search_punctuations = punctuations | _PUA_SEARCH_PUNCTUATIONS
+    search_punctuations = punctuations | PUA_SEARCH_PUNCTUATIONS
 
     quote_regex = QUOTATION_AT_END_OF_SENTENCE_REGEX
     split_quote_regex = SPLIT_SPACE_QUOTATION_AT_END_OF_SENTENCE_REGEX

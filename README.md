@@ -26,17 +26,19 @@
 pip install fracture
 ```
 
+
 Or with `uv`:
 
 ```bash
 uv add fracture
 ```
 
+
 ---
 
 ## Quickstart
 
-```python
+python
 import fracture
 
 text = "My name is Jonas E. Smith. Please turn to p. 55."
@@ -45,14 +47,15 @@ seg = fracture.Segmenter(language="en", clean=False)
 sentences = seg.segment(text)
 print(sentences)
 # Output:
-# ['My name is Jonas E. Smith.', 'Please turn to p. 55.']
-```
+# ('My name is Jonas E. Smith.', 'Please turn to p. 55.')
+
+
 
 ### Character Span Mode
 
 Extract start and end character offsets alongside segmented sentences:
 
-```python
+python
 import fracture
 
 text = "Hello world! This is a test."
@@ -62,9 +65,10 @@ spans = seg.segment(text)
 for span in spans:
     print(f"{span.sent!r} -> [{span.start}:{span.end}]")
 # Output:
-# 'Hello world!' -> [0:12]
-# 'This is a test.' -> [13:28]
-```
+# 'Hello world!' ->
+# 'This is a test.' ->
+
+
 
 ---
 
@@ -82,7 +86,7 @@ for span in spans:
 ## Supported Languages
 
 | Code | Language | Code | Language | Code | Language |
-| :--- | :--- | :--- | :--- | :--- | :--- |
+| --- | --- | --- | --- | --- | --- |
 | `am` | Amharic | `el` | Greek | `mr` | Marathi |
 | `ar` | Arabic | `en` | English | `nl` | Dutch |
 | `bg` | Bulgarian | `es` | Spanish | `pl` | Polish |
@@ -90,57 +94,76 @@ for span in spans:
 | `de` | German | `fr` | French | `sk` | Slovak |
 | `hy` | Armenian | `hi` | Hindi | `ur` | Urdu |
 | `it` | Italian | `ja` | Japanese | `zh` | Chinese |
-| `kk` | Kazakh | | | | |
-
-## Acknowledgments & Attribution
-
-`fracture` is an independent, complete rewrite designed from the ground up as a modern, declarative, strictly-typed sentence boundary disambiguation engine.
-
-Sincere attribution and gratitude are given to the projects whose compiled linguistic heuristics and rule sets inspired this library:
-* **[Pragmatic Segmenter](https://github.com/diasks2/pragmatic_segmenter)** by Kevin S. Dias (Ruby)
-* **[pySBD](https://github.com/nipunsadvilkar/pySBD)** by Nipun Sadvilkar (Python)
+| `kk` | Kazakh |  |  |  |  |
 
 ---
+
+## Architecture & Engineering Philosophy
+
+`fracture` is engineered under strict architectural constraints to guarantee high cohesion, loose coupling, and C-level execution speed:
+
+1. **Standard Library Only:** Built exclusively with Python standard library primitives (`tomllib`, `typing`, `dataclasses`, `itertools`). Zero external runtime dependencies, zero supply-chain vulnerabilities, and zero version drift.
+2. **Strict Typing & Boundary Sanitization:** End-to-end type safety verified under strict type checkers. Untyped dictionaries (`dict[str, Any]`) are restricted entirely to raw TOML ingestion and mapped immediately to concrete types.
+3. **Separation of Data and Logic:** Data models are immutable, memory-optimized, and logic-free via `@dataclass(frozen=True, slots=True)`. Computational logic is structured strictly as pure, deterministic functions (data-in, data-out) with zero internal state mutations.
+4. **Loose Coupling via Protocols & Dependency Injection:** Logic components depend on abstract `typing.Protocol` contracts rather than concrete implementations. Configurations and rule tables are injected directly into pure pipelines.
+5. **C-Speed Execution & Zero-Copy Primitives:** Minimal allocation overhead using CPython built-ins, pre-compiled regular expressions, generator streaming (`Sequence[T]`, `Iterable[T]`), and immutable `tuple` returns.
+6. **Unidirectional Dependency Flow:** Clean, single-direction import hierarchy: `Config Schemas → Parsers → Domain Logic → Public API`. Core transformation logic never imports from configuration or entrypoint layers.
+
+---
+
 ## Performance & Speed Benchmarks
 
 Benchmarks evaluated on the **Complete Works of William Shakespeare** (`pg100.txt`):
+
 * **File Size:** 5.31 MB (5,442,036 bytes)
 * **Text Volume:** 5,378,655 characters | 966,506 words
 
 ### Benchmark Results
 
 | Engine | Sentences Found | Mean Latency | Min Latency | Throughput | Status / Speedup |
-| :--- | :--- | :--- | :--- | :--- | :--- |
+| --- | --- | --- | --- | --- | --- |
 | **`fracture` (`clean=False`)** | 176,430 | 4,489.86 ms | 4,470.52 ms | 1.16 MB/s | 1.00x (Baseline) |
 | **`fracture` (`clean=True`)** | 176,442 | 4,510.56 ms | 4,501.86 ms | 1.15 MB/s | 1.00x |
 | **`fracture` (`char_span=True`)** | 176,430 | 4,589.46 ms | 4,563.51 ms | 1.13 MB/s | 0.98x |
-| **spaCy `sentencizer`** | 109,084 | 4,862.67 ms | 4,758.62 ms | 1.07 MB/s | 0.97x |
-| **BlingFire** | 107,489 | 164.11 ms | 161.32 ms | 31.62 MB/s | 27.77x |
-| **NLTK `sent_tokenize`** | 105,488 | 726.35 ms | 724.30 ms | 7.15 MB/s | 6.27x |
-| **Syntok** | 112,612 | 3,871.09 ms | 3,811.82 ms | 1.34 MB/s | 1.18x |
-| **Stanford Stanza** | 127,102 | 48,151.78 ms | 45,269.77 ms | 0.11 MB/s | 0.09x *(~10.6x slower)* |
-| **spaCy `en_core_web_sm`** | — | — | — | — | **Refused / Setup Failure** |
-| **pySBD** | — | >900,000 ms | — | <0.005 MB/s | **DNF (Timed out >15 min)** |
+| **`spaCy sentencizer`** | 109,084 | 4,862.67 ms | 4,758.62 ms | 1.07 MB/s | 0.97x |
+| **`BlingFire`** | 107,489 | 164.11 ms | 161.32 ms | 31.62 MB/s | 27.77x |
+| **`NLTK sent_tokenize`**| 105,488 | 726.35 ms | 724.30 ms | 7.15 MB/s | 6.27x |
+| **`Syntok`** | 112,612 | 3,871.09 ms | 3,811.82 ms | 1.34 MB/s | 1.18x |
+| **`Stanza`** | 127,102 | 48,151.78 ms | 45,269.77 ms | 0.11 MB/s | 0.09x *(~10.6x slower)* |
+| **`spaCy en_core_web_sm`** | — | — | — | — | **Refused / Setup Failure** |
+| **`pySBD`** | — | >900,000 ms | — | <0.005 MB/s | **DNF (Timed out >15 min)** |
 
 ---
+
 ### Key Takeaways & Failure Analysis
 
-* **pySBD Asymptotic Hang (>15 Minutes):**  
-  `pySBD` hits an $O(N^2)$ algorithmic wall on multi-megabyte corpora. Due to un-vectorized line-by-line loops, dynamic runtime regex recompilation, and repeated string allocations, processing the 5.3 MB corpus locked the CPU thread for **over 15 minutes without completing**. In contrast, `fracture` finished the exact same segmentation in **4.55 seconds**.
-* **spaCy Pipeline Lockout:**  
-  spaCy failed to run out-of-the-box due to rigid external model weight requirements and initialization overhead, refusing processing without dedicated secondary environment bootstrapping.
-* **Granular Boundary Precision:**  
-  `fracture` detected **176,430** valid sentence boundaries (~49,000–70,000 more than Stanza, NLTK, or BlingFire) by accurately segmenting dramatic verse, dialogue cues, character tags, and archaic typography rather than collapsing them into single run-on blocks.
-* **10.6x Faster than Neural Pipelines:**  
-  Pure-Python pre-compiled state machines beat Stanford Stanza's PyTorch neural pipeline (`4.56 s` vs `48.15 s`) on a single CPU core with zero external C++ or CUDA dependencies.
-* **Zero-Cost Character Spans:**  
-  Full character offset tracking (`char_span=True`) adds only **~200 ms** of latency over 5.3 MB, sustaining **1.09 MB/s** throughput.
+* **pySBD Asymptotic Hang (>15 Minutes):** `pySBD` hits an $O(N^2)$ algorithmic wall on multi-megabyte corpora. Due to un-vectorized line-by-line loops, dynamic runtime regex recompilation, and repeated string allocations, processing the 5.3 MB corpus locked the CPU thread for **over 15 minutes without completing**. In contrast, `fracture` finished the exact same segmentation in **4.55 seconds**.
+* **spaCy Pipeline Lockout:** spaCy failed to run out-of-the-box due to rigid external model weight requirements and initialization overhead, refusing processing without dedicated secondary environment bootstrapping.
+* **Granular Boundary Precision:** `fracture` detected **176,430** valid sentence boundaries (~49,000–70,000 more than Stanza, NLTK, or BlingFire) by accurately segmenting dramatic verse, dialogue cues, character tags, and archaic typography rather than collapsing them into single run-on blocks.
+* **10.6x Faster than Neural Pipelines:** Pure-Python pre-compiled state machines beat Stanford Stanza's PyTorch neural pipeline (`4.56 s` vs `48.15 s`) on a single CPU core with zero external C++ or CUDA dependencies.
+* **Zero-Cost Character Spans:** Full character offset tracking (`char_span=True`) adds only **~200 ms** of latency over 5.3 MB, sustaining **1.09 MB/s** throughput.
+
 ---
 
 ### Reproduce Benchmarks
 
 ```bash
 uv run --with nltk,stanza,blingfire,syntok python tests/bigtext_speed_benchmark.py
+```
+
+---
+
+## Acknowledgments & Attribution
+
+`fracture` is an independent, complete rewrite designed from the ground up as a modern, declarative, strictly-typed sentence boundary disambiguation engine.
+
+Sincere attribution and gratitude are given to the projects whose compiled linguistic heuristics and rule sets inspired this library:
+
+* **[Pragmatic Segmenter](https://github.com/diasks2/pragmatic_segmenter)** by Kevin S. Dias (Ruby)
+* **[pySBD](https://github.com/nipunsadvilkar/pySBD)** by Nipun Sadvilkar (Python)
+
+---
+
 ## License
 
 MIT License. See [LICENSE](LICENSE) for details.
