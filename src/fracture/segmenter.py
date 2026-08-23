@@ -4,8 +4,8 @@ from dataclasses import dataclass
 
 from fracture.disambiguator import Disambiguator
 from fracture.lang import get_language_module
-from fracture.lang.common import unmask_all
 from fracture.normalizer import Normalizer
+from fracture.rules import unmask_all
 
 
 @dataclass(slots=True, frozen=True)

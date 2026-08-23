@@ -8,7 +8,7 @@ import tomllib
 from dataclasses import dataclass
 from types import ModuleType
 
-from fracture.lang.common import Rule
+from fracture.rules import Rule
 
 SUPPORTED_LANGUAGES: frozenset[str] = frozenset(
     {

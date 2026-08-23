@@ -8,7 +8,7 @@ from functools import lru_cache
 from types import ModuleType
 
 from fracture.lang import LanguageConfig, get_language_module
-from fracture.lang.common import (
+from fracture.rules import (
     ALPHA_LIST_REGEX,
     AM_PM_RULES,
     BETWEEN_SINGLE_QUOTES_REGEX,
