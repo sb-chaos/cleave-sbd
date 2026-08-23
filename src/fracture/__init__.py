@@ -1,12 +1,12 @@
 """fracture: Python Sentence Boundary Disambiguation."""
 
-from fracture.disambiguator import Disambiguator
-from fracture.normalizer import Normalizer
+from fracture.disambiguator import disambiguate
+from fracture.normalizer import normalize
 from fracture.segmenter import Segmenter, TextSpan
 
 __all__ = [
-    "Disambiguator",
-    "Normalizer",
     "Segmenter",
     "TextSpan",
+    "disambiguate",
+    "normalize",
 ]

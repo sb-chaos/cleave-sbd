@@ -18,7 +18,7 @@ PDF_CASES: Final[list[PdfCase]] = load_pdf_cases()
 def test_segmenter_empty_inputs(empty_input: str | None) -> None:
     """Verify segmenter returns an empty list for empty/null inputs."""
     seg = fracture.Segmenter(language="en", clean=False, char_span=False)
-    assert seg.segment(empty_input or "") == []
+    assert seg.segment(empty_input or "") == ()
 
 
 def test_segmenter_immutability() -> None:
@@ -39,7 +39,7 @@ def test_sbd_char_span_basic() -> None:
         TextSpan(sent="My name is Jonas E. Smith. ", start=0, end=27),
         TextSpan(sent="Please turn to p. 55.", start=27, end=48),
     ]
-    assert segments == expected
+    assert tuple(segments) == tuple(expected)
     assert text == "".join(s.sent for s in segments)
 
 
@@ -82,7 +82,7 @@ def test_same_sentence_different_char_span() -> None:
     seg = fracture.Segmenter(language="en", clean=False, char_span=True)
     raw_segments = seg.segment(text)
     segments = cast(list[TextSpan], raw_segments)
-    assert segments == expected_text_spans
+    assert tuple(segments) == tuple(expected_text_spans)
     assert text == "".join(s.sent for s in segments)
 
 

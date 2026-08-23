@@ -48,8 +48,16 @@ SPLIT_SPACE_QUOTATION_AT_END_OF_SENTENCE_REGEX = re.compile(
 PARENS_BETWEEN_DOUBLE_QUOTES_REGEX = re.compile(r'["”]\s\([^)]*\)\s["“]')
 CONTINUOUS_PUNCTUATION_REGEX = re.compile(r"(?<=\S)([!?]{3,})(?=(\s|\Z|$))")
 
+LINE_SPLIT_REGEX: re.Pattern[str] = re.compile(rf"(?:\r\n|\r|\n|{PUA_NEWLINE})")
+BULLET_CHARS: frozenset[str] = frozenset({"•", "⁃"})
+LEAD_WHITESPACE: frozenset[str] = frozenset({" ", "\t"})
+BULLET_SPACING_REGEX: re.Pattern[str] = re.compile(r"(?<=\S)\s(?=[•⁃])")
+SINGLE_QUOTE_SPACING_REGEX: re.Pattern[str] = re.compile(r"'\s")
+PARENS_LEAD_SPACE_REGEX: re.Pattern[str] = re.compile(r"\s(?=\()")
+PARENS_TRAIL_SPACE_REGEX: re.Pattern[str] = re.compile(r"(?<=\))\s")
+
 # Footnote / numbered references (e.g. "end of text.12 Next sentence", "martyr.[1]")
-NUMBERED_REFERENCE_REGEX = re.compile(
+NUMBERED_REFERENCE_REGEX: re.Pattern[str] = re.compile(
     rf"(?<=[^\d\s])(?:\.|{PUA_PERIOD})"
     r"(?P<ref>(?:\[(?:\d{1,3},?\s?-?\s?)*\b\d{1,3}\])+|(?:(?:\d{1,3}\s?)?\d{1,3}))"
     r"(?P<space>\s*)(?=(?:[A-Z]|\Z|$))"

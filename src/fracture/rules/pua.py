@@ -36,6 +36,19 @@ PUA_DOUBLE_EE = "\ue013"  # !!
 PUA_ELLIPSIS_DOT = "\ue020"  # Protected dot inside an ellipsis
 PUA_ELLIPSIS_SPACE = "\ue021"  # Protected space inside a spaced ellipsis
 
+PUA_SEARCH_PUNCTUATIONS: frozenset[str] = frozenset(
+    {
+        PUA_PERIOD,
+        PUA_EXCLAMATION,
+        PUA_QUESTION,
+        PUA_DOUBLE_QE,
+        PUA_DOUBLE_EQ,
+        PUA_DOUBLE_QQ,
+        PUA_DOUBLE_EE,
+        PUA_TEMP_END_PUNCT,
+    }
+)
+
 
 # =============================================================================
 # 2. Fast Unmask Translation Table

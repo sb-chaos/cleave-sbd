@@ -6,7 +6,7 @@ from typing import Final, cast
 import pytest
 
 import fracture
-from fracture.lang import SUPPORTED_LANGUAGES, Language, LanguageConfig
+from fracture.language import SUPPORTED_LANGUAGES, Language, LanguageConfig
 from tests.loaders import SbdCase, load_language_sbd_cases_with_metadata
 
 RAW_CASES_WITH_META: Final[list[tuple[SbdCase, str, bool]]] = (

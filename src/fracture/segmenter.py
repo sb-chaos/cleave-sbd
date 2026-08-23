@@ -1,10 +1,11 @@
 """Public API layer for sentence boundary disambiguation and segmentation."""
 
+from collections.abc import Sequence
 from dataclasses import dataclass
 
-from fracture.disambiguator import Disambiguator
-from fracture.lang import get_language_module
-from fracture.normalizer import Normalizer
+from fracture.disambiguator import disambiguate
+from fracture.language import get_language_module
+from fracture.normalizer import normalize
 from fracture.rules import unmask_all
 
 
@@ -65,46 +66,48 @@ class Segmenter:
         if self.language:
             get_language_module(self.language)
 
-    def segment(self, text: str = "") -> list[str] | list[TextSpan]:
-        """Segment the input text into a list of sentences or TextSpan objects.
+    def segment(self, text: str = "") -> tuple[str, ...] | tuple[TextSpan, ...]:
+        """Segment the input text into a sequence of sentences or TextSpan objects.
 
         Args:
             text: The raw text string to segment. Defaults to "".
 
         Returns:
-            A list of sentence strings, or TextSpan objects if char_span is True.
+            A tuple of sentence strings, or TextSpan objects if char_span is True.
         """
         if not text or text.isspace():
-            return []
+            return ()
+
+        config = get_language_module(self.language) if self.language else None
 
         if self.clean:
-            cleaned_text = Normalizer(
+            cleaned_text: str | None = normalize(
                 text=text,
-                lang=self.language,
+                config=config,
                 doc_type=self.doc_type,
                 char_span=False,
-            ).normalize()
-            sentences = Disambiguator(
+            )
+            sentences = disambiguate(
                 text=cleaned_text or "",
-                lang=self.language,
+                config=config,
                 char_span=False,
-            ).disambiguate()
-            return [unmask_all(sentence) for sentence in sentences]
+            )
+            return tuple(unmask_all(sentence) for sentence in sentences)
 
-        sentences = Disambiguator(
+        sentences = disambiguate(
             text=text,
-            lang=self.language,
+            config=config,
             char_span=self.char_span,
-        ).disambiguate()
+        )
 
         if self.char_span:
             return self.sentences_with_char_spans(text, sentences)
 
-        return [unmask_all(sentence) for sentence in sentences]
+        return tuple(unmask_all(sentence) for sentence in sentences)
 
     def sentences_with_char_spans(
-        self, original_text: str, sentences: list[str]
-    ) -> list[TextSpan]:
+        self, original_text: str, sentences: Sequence[str]
+    ) -> tuple[TextSpan, ...]:
         """Calculate start and end character offsets sequentially against the original source text.
 
         Args:
@@ -112,7 +115,7 @@ class Segmenter:
             sentences: Segmented sentence strings to locate.
 
         Returns:
-            A list of TextSpan objects containing the sentences and their start/end offsets.
+            A tuple of TextSpan objects containing the sentences and their start/end offsets.
         """
         sent_spans: list[TextSpan] = []
         prior_end_char_idx: int = 0
@@ -135,4 +138,4 @@ class Segmenter:
             )
             prior_end_char_idx = end_idx
 
-        return sent_spans
+        return tuple(sent_spans)

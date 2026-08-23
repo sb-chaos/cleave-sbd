@@ -3,11 +3,10 @@
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from functools import lru_cache
-from types import ModuleType
 
-from fracture.lang import LanguageConfig, get_language_module
+from fracture.language.protocols import LanguageProtocol
 from fracture.rules import (
     ALPHA_LIST_REGEX,
     AM_PM_RULES,
@@ -483,7 +482,7 @@ def _mask_parenthesized_and_roman_lists(text: str) -> str:
     return _apply_replacements(text, replacements)
 
 
-def mask_list_items(text: str, lang: str = "") -> str:
+def mask_list_items(text: str, config: LanguageProtocol | None = None) -> str:
     """Mask list item periods and delimiters with PUA sentinels.
 
     Args:
@@ -531,7 +530,9 @@ class LanguageAbbreviationData:
 
 
 @lru_cache(maxsize=32)
-def get_language_abbreviation_data(lang: str) -> LanguageAbbreviationData:
+def get_language_abbreviation_data(
+    config: LanguageProtocol | None,
+) -> LanguageAbbreviationData:
     """Pre-compile and cache unified category regexes per language.
 
     Args:
@@ -540,7 +541,7 @@ def get_language_abbreviation_data(lang: str) -> LanguageAbbreviationData:
     Returns:
         The pre-compiled abbreviation patterns for the language.
     """
-    lang_module = get_language_module(lang) if lang else None
+    lang_module = config
     if lang_module is not None:
         abbreviations: frozenset[str] = lang_module.abbreviations
         prepositive: frozenset[str] = lang_module.prepositive_abbreviations
@@ -736,7 +737,9 @@ def replace_period_of_abbr(text: str, abbr: str) -> str:
     return re.sub(pattern, lambda m: m.group(0).replace(".", PUA_PERIOD), text)
 
 
-def replace_multi_period_abbreviations(text: str, lang: str = "") -> str:
+def replace_multi_period_abbreviations(
+    text: str, config: LanguageProtocol | None = None
+) -> str:
     """Mask all periods inside multi-period acronyms and abbreviations.
 
     Args:
@@ -746,7 +749,7 @@ def replace_multi_period_abbreviations(text: str, lang: str = "") -> str:
     Returns:
         The text with all periods in multi-period abbreviations masked.
     """
-    lang_module = get_language_module(lang) if lang else None
+    lang_module = config
     mpa_pattern = (
         lang_module.multi_period_abbreviation_regex if lang_module is not None else None
     )
@@ -754,7 +757,9 @@ def replace_multi_period_abbreviations(text: str, lang: str = "") -> str:
     return pattern.sub(lambda m: m.group(0).replace(".", PUA_PERIOD), text)
 
 
-def replace_abbreviation_as_sentence_boundary(text: str, lang: str = "") -> str:
+def replace_abbreviation_as_sentence_boundary(
+    text: str, config: LanguageProtocol | None = None
+) -> str:
     """Restore terminal periods when an acronym is followed by a known sentence starter.
 
     Args:
@@ -764,13 +769,15 @@ def replace_abbreviation_as_sentence_boundary(text: str, lang: str = "") -> str:
     Returns:
         The text with proper periods restored at sentence boundaries.
     """
-    data = get_language_abbreviation_data(lang)
+    data = get_language_abbreviation_data(config)
     if data.sentence_boundary_starters_regex:
         return data.sentence_boundary_starters_regex.sub(r"\g<1>.", text)
     return text
 
 
-def search_for_abbreviations_in_string(text: str, lang: str = "") -> str:
+def search_for_abbreviations_in_string(
+    text: str, config: LanguageProtocol | None = None
+) -> str:
     """Scan string against all abbreviation sets defined in language configuration.
 
     Args:
@@ -783,7 +790,7 @@ def search_for_abbreviations_in_string(text: str, lang: str = "") -> str:
     if not text:
         return text
 
-    data = get_language_abbreviation_data(lang)
+    data = get_language_abbreviation_data(config)
     if data.replace_all:
         if data.replace_all_dot_regex:
             text = data.replace_all_dot_regex.sub(
@@ -813,7 +820,7 @@ def search_for_abbreviations_in_string(text: str, lang: str = "") -> str:
     return text
 
 
-def replace_abbreviations(text: str, lang: str = "") -> str:
+def replace_abbreviations(text: str, config: LanguageProtocol | None = None) -> str:
     """Disambiguate and mask abbreviations within text.
 
     Args:
@@ -831,21 +838,21 @@ def replace_abbreviations(text: str, lang: str = "") -> str:
     for _ in range(3):
         text = SINGLE_UPPERCASE_LETTER_REGEX.sub(r"\g<1>" + PUA_PERIOD, text)
 
-    text = replace_multi_period_abbreviations(text, lang=lang)
+    text = replace_multi_period_abbreviations(text, config=config)
 
-    lang_module = get_language_module(lang) if lang else None
+    lang_module = config
     lang_rules: tuple[Rule, ...] = lang_module.rules if lang_module is not None else ()
     for rule in lang_rules:
         text = rule.pattern.sub(rule.replacement, text)
 
-    text = search_for_abbreviations_in_string(text, lang=lang)
+    text = search_for_abbreviations_in_string(text, config=config)
 
     text = SINGLE_LOWERCASE_LETTER_REGEX.sub(r"\g<1>" + PUA_PERIOD, text)
 
     for rule in AM_PM_RULES:
         text = rule.pattern.sub(rule.replacement, text)
 
-    text = replace_abbreviation_as_sentence_boundary(text, lang=lang)
+    text = replace_abbreviation_as_sentence_boundary(text, config=config)
     return text
 
 
@@ -854,7 +861,7 @@ def replace_abbreviations(text: str, lang: str = "") -> str:
 # =============================================================================
 
 
-def mask_between_punctuation(text: str, lang: str = "") -> str:
+def mask_between_punctuation(text: str, config: LanguageProtocol | None = None) -> str:
     """Mask punctuation enclosed within paired quotes, brackets, parens, and dashes.
 
     Args:
@@ -873,7 +880,7 @@ def mask_between_punctuation(text: str, lang: str = "") -> str:
     for pattern, handler in STANDARD_PAIRED_PATTERNS:
         text = pattern.sub(handler, text)
 
-    lang_module = get_language_module(lang) if lang else None
+    lang_module = config
     lang_paired_patterns: tuple[re.Pattern[str], ...] = (
         lang_module.paired_punctuation_patterns if lang_module is not None else ()
     )
@@ -888,188 +895,176 @@ def mask_between_punctuation(text: str, lang: str = "") -> str:
 # =============================================================================
 
 
-@dataclass(slots=True)
-class Disambiguator:
-    """Orchestrates sentence boundary disambiguation and segmentation.
+"""Orchestrates sentence boundary disambiguation and segmentation.
+
+Args:
+    text: The text string to disambiguate. Defaults to "".
+    lang: Two-letter ISO language code or pre-loaded module/config. Defaults to "".
+    char_span: If True, tracks character spans. Defaults to False.
+"""
+
+
+def disambiguate(
+    text: str,
+    *,
+    config: LanguageProtocol | None = None,
+    char_span: bool = False,
+) -> tuple[str, ...]:
+    """Execute the full 1:1 length-preserving disambiguation and extraction pipeline.
+
+    Returns:
+        A list of segmented sentence strings.
+    """
+    if not text:
+        return ()
+
+    # 1. Lists: Mask list numbers and format markers
+    text = mask_list_items(text, config=config)
+
+    # 2. Abbreviations: Mask periods in honorifics, initials, acronyms
+    text = replace_abbreviations(text, config=config)
+
+    # 3. Numbers & Dates: Mask decimals, versions, timestamps
+    text = _mask_numbers_and_dates(text, config=config)
+
+    # 4. Exclamation words: Mask internal exclamation marks (e.g., 'Yahoo!')
+    text = mask_exclamation_words(text)
+
+    # 5. Paired punctuation: Mask enclosed periods/punctuation
+    text = _check_for_parens_between_quotes(text)
+    text = mask_between_punctuation(text, config=config)
+
+    # 6. Continuous & Common punctuation
+    text = _mask_continuous_punctuation(text)
+    for rule in COMMON_RULES:
+        text = rule.pattern.sub(rule.replacement, text)
+
+    # 7. Boundary splitting
+    return _split_into_segments(text, config=config)
+
+
+def _check_for_parens_between_quotes(text: str) -> str:
+    """Insert break delimiters around parenthetical citations between double quotes.
 
     Args:
-        text: The text string to disambiguate. Defaults to "".
-        lang: Two-letter ISO language code or pre-loaded module/config. Defaults to "".
-        char_span: If True, tracks character spans. Defaults to False.
+        text: The text string to process.
+
+    Returns:
+        The text with breaks around parentheticals.
     """
 
-    text: str = ""
-    lang: str | ModuleType | LanguageConfig = ""
-    char_span: bool = False
-    lang_module: LanguageConfig | None = field(init=False, default=None)
-    lang_code: str = field(init=False, default="")
+    def _paren_replace(match: re.Match[str]) -> str:
+        matched_text = match.group(0)
+        leading_space_replaced = PARENS_LEAD_SPACE_REGEX.sub("\r", matched_text)
+        return PARENS_TRAIL_SPACE_REGEX.sub("\r", leading_space_replaced)
 
-    def __post_init__(self) -> None:
-        self.text = self.text or ""
-        self.lang_module = get_language_module(self.lang) if self.lang else None
-        if isinstance(self.lang, str):
-            self.lang_code = self.lang
-        elif self.lang_module:
-            self.lang_code = self.lang_module.iso_code
-        else:
-            self.lang_code = ""
+    return PARENS_BETWEEN_DOUBLE_QUOTES_REGEX.sub(_paren_replace, text)
 
-    def disambiguate(self) -> list[str]:
-        """Execute the full 1:1 length-preserving disambiguation and extraction pipeline.
 
-        Returns:
-            A list of segmented sentence strings.
-        """
-        if not self.text:
-            return []
+def _mask_numbers_and_dates(text: str, config: LanguageProtocol | None = None) -> str:
+    """Mask periods in decimal numbers, timestamps, and date formats.
 
-        text = self.text
+    Args:
+        text: The text string to process.
 
-        # 1. Lists: Mask list numbers and format markers
-        text = mask_list_items(text, lang=self.lang_code)
+    Returns:
+        The text with number/date periods masked.
+    """
+    for rule in NUMBER_RULES:
+        text = rule.pattern.sub(rule.replacement, text)
 
-        # 2. Abbreviations: Mask periods in honorifics, initials, acronyms
-        text = replace_abbreviations(text, lang=self.lang_code)
+    def _ref_sub(match: re.Match[str]) -> str:
+        reference = match.group("ref")
+        trailing_space = match.group("space") or ""
+        if match.end() == len(match.string):
+            return f"{PUA_PERIOD}{reference}"
+        return f"{PUA_PERIOD}{reference}{trailing_space}\r"
 
-        # 3. Numbers & Dates: Mask decimals, versions, timestamps
-        text = self._mask_numbers_and_dates(text)
+    text = NUMBERED_REFERENCE_REGEX.sub(_ref_sub, text)
 
-        # 4. Exclamation words: Mask internal exclamation marks (e.g., 'Yahoo!')
-        text = mask_exclamation_words(text)
-
-        # 5. Paired punctuation: Mask enclosed periods/punctuation
-        text = self._check_for_parens_between_quotes(text)
-        text = mask_between_punctuation(text, lang=self.lang_code)
-
-        # 6. Continuous & Common punctuation
-        text = self._mask_continuous_punctuation(text)
-        for rule in COMMON_RULES:
+    if config is not None:
+        for rule in config.rules:
             text = rule.pattern.sub(rule.replacement, text)
 
-        # 7. Boundary splitting
-        return self._split_into_segments(text)
+    return text
 
-    def _check_for_parens_between_quotes(self, text: str) -> str:
-        """Insert break delimiters around parenthetical citations between double quotes.
 
-        Args:
-            text: The text string to process.
+def _mask_continuous_punctuation(text: str) -> str:
+    """Mask double punctuation marks and multi-dot ellipses.
 
-        Returns:
-            The text with breaks around parentheticals.
-        """
+    Args:
+        text: The text string to process.
 
-        def _paren_replace(match: re.Match[str]) -> str:
-            matched_text = match.group(0)
-            leading_space_replaced = PARENS_LEAD_SPACE_REGEX.sub("\r", matched_text)
-            return PARENS_TRAIL_SPACE_REGEX.sub("\r", leading_space_replaced)
+    Returns:
+        The text with contiguous punctuation masked.
+    """
 
-        return PARENS_BETWEEN_DOUBLE_QUOTES_REGEX.sub(_paren_replace, text)
+    def _cont_repl(match: re.Match[str]) -> str:
+        return match.group(1).replace("!", PUA_EXCLAMATION).replace("?", PUA_QUESTION)
 
-    def _mask_numbers_and_dates(self, text: str) -> str:
-        """Mask periods in decimal numbers, timestamps, and date formats.
+    text = CONTINUOUS_PUNCTUATION_REGEX.sub(_cont_repl, text)
+    for rule in DOUBLE_PUNCTUATION_RULES:
+        text = rule.pattern.sub(rule.replacement, text)
+    for rule in ELLIPSIS_RULES:
+        text = rule.pattern.sub(rule.replacement, text)
+    return text
 
-        Args:
-            text: The text string to process.
 
-        Returns:
-            The text with number/date periods masked.
-        """
-        for rule in NUMBER_RULES:
-            text = rule.pattern.sub(rule.replacement, text)
+def _split_into_segments(
+    text: str, config: LanguageProtocol | None = None
+) -> tuple[str, ...]:
+    """Split disambiguated text into sentence segments using boundary regex.
 
-        def _ref_sub(match: re.Match[str]) -> str:
-            reference = match.group("ref")
-            trailing_space = match.group("space") or ""
-            if match.end() == len(match.string):
-                return f"{PUA_PERIOD}{reference}"
-            return f"{PUA_PERIOD}{reference}{trailing_space}\r"
+    Args:
+        text: The fully masked text string.
 
-        text = NUMBERED_REFERENCE_REGEX.sub(_ref_sub, text)
+    Returns:
+        A list of final unmasked, trimmed sentence strings.
+    """
+    boundary_regex = (
+        config.sentence_boundary_regex
+        if config and config.sentence_boundary_regex is not None
+        else SENTENCE_BOUNDARY_REGEX
+    )
+    punctuations = (
+        config.punctuations
+        if config and config.punctuations is not None
+        else PUNCTUATIONS
+    )
 
-        if self.lang_module is not None:
-            for rule in self.lang_module.rules:
-                text = rule.pattern.sub(rule.replacement, text)
+    search_punctuations = punctuations | _PUA_SEARCH_PUNCTUATIONS
 
-        return text
+    quote_regex = QUOTATION_AT_END_OF_SENTENCE_REGEX
+    split_quote_regex = SPLIT_SPACE_QUOTATION_AT_END_OF_SENTENCE_REGEX
 
-    def _mask_continuous_punctuation(self, text: str) -> str:
-        """Mask double punctuation marks and multi-dot ellipses.
-
-        Args:
-            text: The text string to process.
-
-        Returns:
-            The text with contiguous punctuation masked.
-        """
-
-        def _cont_repl(match: re.Match[str]) -> str:
-            return (
-                match.group(1).replace("!", PUA_EXCLAMATION).replace("?", PUA_QUESTION)
+    segments: list[str] = []
+    for line in LINE_SPLIT_REGEX.split(text):
+        if not line:
+            continue
+        if not search_punctuations.isdisjoint(line):
+            processed_line = (
+                line if line[-1] in punctuations else (line + PUA_TEMP_END_PUNCT)
             )
-
-        text = CONTINUOUS_PUNCTUATION_REGEX.sub(_cont_repl, text)
-        for rule in DOUBLE_PUNCTUATION_RULES:
-            text = rule.pattern.sub(rule.replacement, text)
-        for rule in ELLIPSIS_RULES:
-            text = rule.pattern.sub(rule.replacement, text)
-        return text
-
-    def _split_into_segments(self, text: str) -> list[str]:
-        """Split disambiguated text into sentence segments using boundary regex.
-
-        Args:
-            text: The fully masked text string.
-
-        Returns:
-            A list of final unmasked, trimmed sentence strings.
-        """
-        boundary_regex = (
-            self.lang_module.sentence_boundary_regex
-            if self.lang_module and self.lang_module.sentence_boundary_regex is not None
-            else SENTENCE_BOUNDARY_REGEX
-        )
-        punctuations = (
-            self.lang_module.punctuations
-            if self.lang_module and self.lang_module.punctuations is not None
-            else PUNCTUATIONS
-        )
-
-        search_punctuations = punctuations | _PUA_SEARCH_PUNCTUATIONS
-
-        quote_regex = QUOTATION_AT_END_OF_SENTENCE_REGEX
-        split_quote_regex = SPLIT_SPACE_QUOTATION_AT_END_OF_SENTENCE_REGEX
-
-        segments: list[str] = []
-        for line in LINE_SPLIT_REGEX.split(text):
-            if not line:
-                continue
-            if not search_punctuations.isdisjoint(line):
-                processed_line = (
-                    line if line[-1] in punctuations else (line + PUA_TEMP_END_PUNCT)
-                )
-                matches = list(boundary_regex.finditer(processed_line))
-                if matches:
-                    for match in matches:
-                        matched_text = match.group(0)
-                        if quote_regex.search(matched_text):
-                            parts = split_quote_regex.split(matched_text)
-                            segments.extend(
-                                unmask_all(part).strip()
-                                for part in parts
-                                if part.strip()
-                            )
-                        else:
-                            cleaned_segment = unmask_all(matched_text).strip()
-                            if cleaned_segment:
-                                segments.append(cleaned_segment)
-                else:
-                    raw_line = unmask_all(line).strip()
-                    if raw_line:
-                        segments.append(raw_line)
+            matches = list(boundary_regex.finditer(processed_line))
+            if matches:
+                for match in matches:
+                    matched_text = match.group(0)
+                    if quote_regex.search(matched_text):
+                        parts = split_quote_regex.split(matched_text)
+                        segments.extend(
+                            unmask_all(part).strip() for part in parts if part.strip()
+                        )
+                    else:
+                        cleaned_segment = unmask_all(matched_text).strip()
+                        if cleaned_segment:
+                            segments.append(cleaned_segment)
             else:
                 raw_line = unmask_all(line).strip()
                 if raw_line:
                     segments.append(raw_line)
+        else:
+            raw_line = unmask_all(line).strip()
+            if raw_line:
+                segments.append(raw_line)
 
-        return segments
+    return tuple(segments)

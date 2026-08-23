@@ -114,6 +114,83 @@ AM_PM_REGEX: re.Pattern[str] = re.compile(
 MULTI_PERIOD_DEFAULT_REGEX: re.Pattern[str] = re.compile(
     r"\b[a-zA-Z\u0400-\u0500](?:\.[a-zA-Z\u0400-\u0500])+\.", re.IGNORECASE
 )
+ROMAN_UPPERCASE_FOLLOWING_REGEX: re.Pattern[str] = re.compile(r"\s+[A-Z]")
+
+
+def build_compound_abbr_regex(compound_list: list[str]) -> re.Pattern[str] | None:
+    """Build a regex matching compound abbreviations."""
+    if not compound_list:
+        return None
+    compound_pattern: str = "|".join(re.escape(abbr) for abbr in compound_list)
+    return re.compile(
+        rf"((?:(?<=^)|(?<=\s))(?i:{compound_pattern}))"
+        r"[\u200e\u200f\u202a-\u202e\u2066-\u2069]*\.?[\u200e\u200f\u202a-\u202e\u2066-\u2069]*"
+        rf"(?=[.:\-?,!\"\'“”«»]|\s+(?:[a-zа-яё\u0600-\u06ff]|I\s|I'm|I'll|\d|\(|\"|'|«|„))"
+    )
+
+
+def build_prepositive_abbr_regex(prep_clean: list[str]) -> re.Pattern[str] | None:
+    """Build a regex matching prepositive abbreviations."""
+    if not prep_clean:
+        return None
+    prep_pattern: str = "|".join(re.escape(abbr) for abbr in prep_clean)
+    return re.compile(rf"((?:(?<=^)|(?<=\s))(?i:{prep_pattern}))\.(?=(\s|:\d+))")
+
+
+def build_number_abbr_regex(num_clean: list[str]) -> re.Pattern[str] | None:
+    """Build a regex matching number-preceding abbreviations."""
+    if not num_clean:
+        return None
+    num_pattern: str = "|".join(re.escape(abbr) for abbr in num_clean)
+    return re.compile(rf"((?:(?<=^)|(?<=\s))(?i:{num_pattern}))\.(?=(\s*\d|\s+\())")
+
+
+def build_standard_abbr_regex(std_clean: list[str]) -> re.Pattern[str] | None:
+    """Build a regex matching standard abbreviations."""
+    if not std_clean:
+        return None
+    std_pattern: str = "|".join(re.escape(abbr) for abbr in std_clean)
+    return re.compile(
+        rf"((?:(?<=^)|(?<=\s))(?i:{std_pattern}))"
+        r"[\u200e\u200f\u202a-\u202e\u2066-\u2069]*\."
+        r"[\u200e\u200f\u202a-\u202e\u2066-\u2069]*"
+        rf"(?=[.:\-?,!\"\'“”«»]|\s+(?:[a-zа-яё\u0600-\u06ff]|I\s|I'm|I'll|\d|\(|\"|'|«|„))"
+    )
+
+
+def build_sentence_starters_boundary_regex(
+    sentence_starters: frozenset[str],
+) -> re.Pattern[str] | None:
+    """Build a regex matching acronyms followed by sentence starters."""
+    if not sentence_starters:
+        return None
+    starters_pattern: str = "|".join(
+        re.escape(word) for word in sorted(sentence_starters, key=len, reverse=True)
+    )
+    return re.compile(
+        rf"((?:U{PUA_PERIOD}S|U\.S|U{PUA_PERIOD}K|E{PUA_PERIOD}U|E\.U|"
+        rf"U{PUA_PERIOD}S{PUA_PERIOD}A|U\.S\.A|I|i{PUA_PERIOD}v|I{PUA_PERIOD}V|i\.v|I\.V))"
+        rf"{PUA_PERIOD}(?=\s+(?:{starters_pattern})\b)"
+    )
+
+
+def build_replace_all_dot_regex(non_dot: list[str]) -> re.Pattern[str] | None:
+    """Build a regex matching non-dot abbreviations for full replacement."""
+    if not non_dot:
+        return None
+    return re.compile(
+        rf"((?:(?<=^)|(?<=\s))(?i:{'|'.join(re.escape(abbr) for abbr in non_dot)}))\."
+    )
+
+
+def build_replace_all_exact_regex(all_abbr_clean: list[str]) -> re.Pattern[str] | None:
+    """Build a regex matching exact abbreviations for full replacement."""
+    if not all_abbr_clean:
+        return None
+    return re.compile(
+        rf"((?:(?<=^)|(?<=\s))(?i:{'|'.join(re.escape(abbr) for abbr in all_abbr_clean)}))(?=(\s|$|[.:\-?,!\"\'“”«»]))"
+    )
+
 
 ROMAN_NUMERALS: dict[str, int] = {
     roman: index

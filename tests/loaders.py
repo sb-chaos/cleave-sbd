@@ -103,7 +103,7 @@ class PdfCase(NamedTuple):
 def load_language_sbd_cases() -> list[SbdCase]:
     """Ingest language test cases from TOML and return typed SbdCase namedtuples."""
     sbd_cases: list[SbdCase] = []
-    language_directory: Path = DATA_DIR / "lang"
+    language_directory: Path = DATA_DIR / "language"
 
     for toml_path in sorted(language_directory.glob("*.toml")):
         language_name: str = toml_path.stem
