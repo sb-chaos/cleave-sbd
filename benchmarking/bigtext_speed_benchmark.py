@@ -11,9 +11,9 @@ Supported engines:
 - pysbd (if available)
 
 Usage:
-    uv run python tests/bigtext_speed_benchmark.py
-    uv run python tests/bigtext_speed_benchmark.py --iterations 5 --warmup 1
-    uv run python tests/bigtext_speed_benchmark.py --file path/to/text.txt
+    uv run python benchmarking/bigtext_speed_benchmark.py
+    uv run python benchmarking/bigtext_speed_benchmark.py --iterations 5 --warmup 1
+    uv run python benchmarking/bigtext_speed_benchmark.py --file path/to/text.txt
 """
 
 from __future__ import annotations

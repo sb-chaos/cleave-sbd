@@ -1,0 +1,20 @@
+[[golden_sk_rules]]
+text = "Ide o majiteľov firmy ABTrade s. r. o., ktorí stoja aj za ďalšími spoločnosťami, napr. XYZCorp a.s."
+expected = ["Ide o majiteľov firmy ABTrade s. r. o., ktorí stoja aj za ďalšími spoločnosťami, napr. XYZCorp a.s."]
+
+[[golden_sk_rules]]
+text = "„Prieskumy beriem na ľahkú váhu. V podstate ma to nezaujíma,“ reagoval Matovič na prieskum agentúry Focus."
+expected = ["„Prieskumy beriem na ľahkú váhu. V podstate ma to nezaujíma,“ reagoval Matovič na prieskum agentúry Focus."]
+
+[[golden_sk_rules]]
+text = "Toto sa mi podarilo až na 10. pokus, ale stálo to za to."
+expected = ["Toto sa mi podarilo až na 10. pokus, ale stálo to za to."]
+
+[[golden_sk_rules]]
+text = "Ide o príslušníkov XII. Pluku špeciálneho určenia."
+expected = ["Ide o príslušníkov XII. Pluku špeciálneho určenia."]
+
+[[golden_sk_rules]]
+text = "Spoločnosť bola založená 7. Apríla 2020, na zmluve však figuruje dátum 20. marec 2020."
+expected = ["Spoločnosť bola založená 7. Apríla 2020, na zmluve však figuruje dátum 20. marec 2020."]
+

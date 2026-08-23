@@ -1,0 +1,144 @@
+[[golden_it_rules]]
+text = "Salve Sig.ra Mengoni! Come sta oggi?"
+expected = ["Salve Sig.ra Mengoni!", "Come sta oggi?"]
+
+[[golden_it_rules]]
+text = "Una lettera si può iniziare in questo modo «Il/la sottoscritto/a.»."
+expected = ["Una lettera si può iniziare in questo modo «Il/la sottoscritto/a.»."]
+
+[[golden_it_rules]]
+text = "La casa costa 170.500.000,00€!"
+expected = ["La casa costa 170.500.000,00€!"]
+
+[[it_more]]
+text = "Salve Sig.ra Mengoni! Come sta oggi?"
+expected = ["Salve Sig.ra Mengoni!", "Come sta oggi?"]
+
+[[it_more]]
+text = "Buongiorno! Sono l'Ing. Mengozzi. È presente l'Avv. Cassioni?"
+expected = ["Buongiorno!", "Sono l'Ing. Mengozzi.", "È presente l'Avv. Cassioni?"]
+
+[[it_more]]
+text = "Mi fissi un appuntamento per mar. 23 Nov.. Grazie."
+expected = ["Mi fissi un appuntamento per mar. 23 Nov..", "Grazie."]
+
+[[it_more]]
+text = "Ecco il mio tel.:01234567. Mi saluti la Sig.na Manelli. Arrivederci."
+expected = ["Ecco il mio tel.:01234567.", "Mi saluti la Sig.na Manelli.", "Arrivederci."]
+
+[[it_more]]
+text = "La centrale meteor. si è guastata. Gli idraul. son dovuti andare a sistemarla."
+expected = ["La centrale meteor. si è guastata.", "Gli idraul. son dovuti andare a sistemarla."]
+
+[[it_more]]
+text = "Hanno creato un algoritmo allo st. d. arte. Si ringrazia lo psicol. Serenti."
+expected = ["Hanno creato un algoritmo allo st. d. arte.", "Si ringrazia lo psicol. Serenti."]
+
+[[it_more]]
+text = "Chiamate il V.Cte. delle F.P., adesso!"
+expected = ["Chiamate il V.Cte. delle F.P., adesso!"]
+
+[[it_more]]
+text = "Giancarlo ha sostenuto l'esame di econ. az.."
+expected = ["Giancarlo ha sostenuto l'esame di econ. az.."]
+
+[[it_more]]
+text = "Stava viaggiando a 90 km/h verso la provincia di TR quando il Dott. Mesini ha sentito un rumore e si fermò!"
+expected = ["Stava viaggiando a 90 km/h verso la provincia di TR quando il Dott. Mesini ha sentito un rumore e si fermò!"]
+
+[[it_more]]
+text = "Egregio Dir. Amm., le faccio sapere che l'ascensore non funziona."
+expected = ["Egregio Dir. Amm., le faccio sapere che l'ascensore non funziona."]
+
+[[it_more]]
+text = "Stava mangiando e/o dormendo."
+expected = ["Stava mangiando e/o dormendo."]
+
+[[it_more]]
+text = "Ricordatevi che dom 25 Set. sarà il compleanno di Maria; dovremo darle un regalo."
+expected = ["Ricordatevi che dom 25 Set. sarà il compleanno di Maria; dovremo darle un regalo."]
+
+[[it_more]]
+text = "La politica è quella della austerità; quindi verranno fatti tagli agli sprechi."
+expected = ["La politica è quella della austerità; quindi verranno fatti tagli agli sprechi."]
+
+[[it_more]]
+text = "Nel tribunale, l'Avv. Fabrizi ha urlato \"Io, l'illustrissimo Fabrizi, vi si oppone!\"."
+expected = ["Nel tribunale, l'Avv. Fabrizi ha urlato \"Io, l'illustrissimo Fabrizi, vi si oppone!\"."]
+
+[[it_more]]
+text = "Le parti fisiche di un computer (ad es. RAM, CPU, tastiera, mouse, etc.) sono definiti HW."
+expected = ["Le parti fisiche di un computer (ad es. RAM, CPU, tastiera, mouse, etc.) sono definiti HW."]
+
+[[it_more]]
+text = "La parola 'casa' è sinonimo di abitazione."
+expected = ["La parola 'casa' è sinonimo di abitazione."]
+
+[[it_more]]
+text = "La \"Mulino Bianco\" fa alimentari pre-confezionati."
+expected = ["La \"Mulino Bianco\" fa alimentari pre-confezionati."]
+
+[[it_more]]
+text = "\"Ei fu. Siccome immobile / dato il mortal sospiro / stette la spoglia immemore / orba di tanto spiro / [...]\" (Manzoni)."
+expected = ["\"Ei fu. Siccome immobile / dato il mortal sospiro / stette la spoglia immemore / orba di tanto spiro / [...]\" (Manzoni)."]
+
+[[it_more]]
+text = "Una lettera si può iniziare in questo modo «Il/la sottoscritto/a ... nato/a a ...»."
+expected = ["Una lettera si può iniziare in questo modo «Il/la sottoscritto/a ... nato/a a ...»."]
+
+[[it_more]]
+text = "Per casa, in uno degli esercizi per i bambini c'era \"3 + (14/7) = 5\""
+expected = ["Per casa, in uno degli esercizi per i bambini c'era \"3 + (14/7) = 5\""]
+
+[[it_more]]
+text = "Ai bambini è stato chiesto di fare \"4:2*2\""
+expected = ["Ai bambini è stato chiesto di fare \"4:2*2\""]
+
+[[it_more]]
+text = "La maestra esclamò: \"Bambini, quanto fa '2/3 + 4/3?'\"."
+expected = ["La maestra esclamò: \"Bambini, quanto fa '2/3 + 4/3?'\"."]
+
+[[it_more]]
+text = "Il motore misurava 120°C."
+expected = ["Il motore misurava 120°C."]
+
+[[it_more]]
+text = "Il volume era di 3m³."
+expected = ["Il volume era di 3m³."]
+
+[[it_more]]
+text = "La stanza misurava 20m²."
+expected = ["La stanza misurava 20m²."]
+
+[[it_more]]
+text = "1°C corrisponde a 33.8°F."
+expected = ["1°C corrisponde a 33.8°F."]
+
+[[it_more]]
+text = "Oggi è il 27-10-14."
+expected = ["Oggi è il 27-10-14."]
+
+[[it_more]]
+text = "La casa costa 170.500.000,00€!"
+expected = ["La casa costa 170.500.000,00€!"]
+
+[[it_more]]
+text = "Il corridore 103 è arrivato 4°."
+expected = ["Il corridore 103 è arrivato 4°."]
+
+[[it_more]]
+text = "Oggi è il 27/10/2014."
+expected = ["Oggi è il 27/10/2014."]
+
+[[it_more]]
+text = "Ecco l'elenco: 1.gelato, 2.carne, 3.riso."
+expected = ["Ecco l'elenco: 1.gelato, 2.carne, 3.riso."]
+
+[[it_more]]
+text = "Devi comprare : 1)pesce 2)sale."
+expected = ["Devi comprare : 1)pesce 2)sale."]
+
+[[it_more]]
+text = "La macchina viaggiava a 100 km/h."
+expected = ["La macchina viaggiava a 100 km/h."]
+

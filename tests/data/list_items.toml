@@ -1,0 +1,90 @@
+[[cases]]
+description = "empty string"
+input = ""
+expected_unmasked = ""
+expect_pua_period = false
+expect_pua_parens = false
+
+[[cases]]
+description = "numbered list with periods"
+input = "1. First item 2. Second item 3. Third item"
+expected_unmasked = "1. First item\r2. Second item\r3. Third item"
+expect_pua_period = true
+expect_pua_parens = false
+
+[[cases]]
+description = "numbered list with parens"
+input = "1) First item 2) Second item 3) Third item"
+expected_unmasked = "1) First item\r2) Second item\r3) Third item"
+expect_pua_period = false
+expect_pua_parens = false
+
+[[cases]]
+description = "numbered list with period and parens"
+input = "1.) First item 2.) Second item"
+expected_unmasked = "1.) First item\r2.) Second item"
+expect_pua_period = true
+expect_pua_parens = false
+
+[[cases]]
+description = "parenthesized numbered list"
+input = "(1) First item (2) Second item"
+expected_unmasked = "(1) First item\r(2) Second item"
+expect_pua_period = false
+expect_pua_parens = true
+
+[[cases]]
+description = "bulleted numbered list"
+input = "• 9. The first item • 10. The second item"
+expected_unmasked = "• 9. The first item\r• 10. The second item"
+expect_pua_period = true
+expect_pua_parens = false
+
+[[cases]]
+description = "hyphen numbered list"
+input = "⁃9. The first item ⁃10. The second item"
+expected_unmasked = "⁃9. The first item\r⁃10. The second item"
+expect_pua_period = true
+expect_pua_parens = false
+
+[[cases]]
+description = "alphabetical list with periods"
+input = "a. The first item b. The second item c. The third list item"
+expected_unmasked = "a. The first item\rb. The second item\rc. The third list item"
+expect_pua_period = true
+expect_pua_parens = false
+
+[[cases]]
+description = "alphabetical list with parens"
+input = "a) The first item b) The second item c) The third list item"
+expected_unmasked = "a) The first item\rb) The second item\rc) The third list item"
+expect_pua_period = false
+expect_pua_parens = false
+
+[[cases]]
+description = "roman numeral list in parens"
+input = "(i) Hello world. (ii) Hello world. (iii) Hello world."
+expected_unmasked = "(i) Hello world.\r(ii) Hello world.\r(iii) Hello world."
+expect_pua_period = false
+expect_pua_parens = true
+
+[[cases]]
+description = "single roman numeral item"
+input = "(iii) List item number 3."
+expected_unmasked = "(iii) List item number 3."
+expect_pua_period = false
+expect_pua_parens = true
+
+[invariants]
+length_preserving_samples = [
+    "1. Item 1 2. Item 2 3. Item 3",
+    "1) Item 1 2) Item 2",
+    "(1) Item 1 (2) Item 2",
+    "a. First b. Second c. Third",
+    "(i) First (ii) Second (iii) Third",
+    "• 9. First • 10. Second",
+    "⁃9. First ⁃10. Second",
+    "This is normal text without lists.",
+    "She has $100.00 in her bag.",
+    "In section III, (9) will be used.",
+]

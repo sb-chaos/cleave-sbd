@@ -1,67 +1,62 @@
+"""Core Segmenter API, character offset tracking, PDF mode, and edge case tests."""
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Final, cast
+
 import pytest
+
 import fracture
-from fracture import TextSpan
+from fracture.segmenter import TextSpan
+from tests.loaders import load_pdf_cases
+from tests.models import PdfTestCase
+
+PDF_CASES: Final[list[PdfTestCase]] = load_pdf_cases()
 
 
-def test_no_input(default_en_no_clean_no_span_fixture, text=""):
-    segments = default_en_no_clean_no_span_fixture.segment(text)
-    assert segments == []
+@pytest.mark.parametrize("empty_input", ["", None, "\n"])
+def test_segmenter_empty_inputs(empty_input: str | None) -> None:
+    """Verify segmenter returns an empty list for empty/null inputs."""
+    seg = fracture.Segmenter(language="en", clean=False, char_span=False)
+    assert seg.segment(empty_input or "") == []
 
 
-def test_none_input(default_en_no_clean_no_span_fixture, text=None):
-    segments = default_en_no_clean_no_span_fixture.segment(text)
-    assert segments == []
-
-
-def test_newline_input(default_en_no_clean_no_span_fixture, text="\n"):
-    segments = default_en_no_clean_no_span_fixture.segment(text)
-    assert segments == []
-
-
-def test_segmenter_doesnt_mutate_input(
-    default_en_no_clean_no_span_fixture,
-    text="My name is Jonas E. Smith. Please turn to p. 55.",
-):
-    segments = default_en_no_clean_no_span_fixture.segment(text)
-    segments = [s.strip() for s in segments]
+def test_segmenter_immutability() -> None:
+    """Verify segmenter does not mutate input strings."""
+    text = "My name is Jonas E. Smith. Please turn to p. 55."
+    seg = fracture.Segmenter(language="en", clean=False, char_span=False)
+    _ = seg.segment(text)
     assert text == "My name is Jonas E. Smith. Please turn to p. 55."
 
 
-@pytest.mark.parametrize(
-    "text,expected",
-    [
-        (
-            "My name is Jonas E. Smith. Please turn to p. 55.",
-            [
-                ("My name is Jonas E. Smith. ", 0, 27),
-                ("Please turn to p. 55.", 27, 48),
-            ],
-        )
-    ],
-)
-def test_sbd_char_span(en_no_clean_with_span_fixture, text, expected):
-    """Test sentences with character offsets"""
-    segments = en_no_clean_with_span_fixture.segment(text)
-    expected_text_spans = [
-        TextSpan(sent_w_span[0], sent_w_span[1], sent_w_span[2])
-        for sent_w_span in expected
+def test_sbd_char_span_basic() -> None:
+    """Verify character offset span calculation."""
+    text = "My name is Jonas E. Smith. Please turn to p. 55."
+    seg = fracture.Segmenter(language="en", clean=False, char_span=True)
+    raw_segments = seg.segment(text)
+    segments = cast(list[TextSpan], raw_segments)
+    expected = [
+        TextSpan(sent="My name is Jonas E. Smith. ", start=0, end=27),
+        TextSpan(sent="Please turn to p. 55.", start=27, end=48),
     ]
-    assert segments == expected_text_spans
-    # clubbing sentences and matching with original text
-    assert text == "".join([seg.sent for seg in segments])
+    assert segments == expected
+    assert text == "".join(s.sent for s in segments)
 
 
-def test_same_sentence_different_char_span(en_no_clean_with_span_fixture):
-    """Test same sentences with different char offsets & check for non-destruction"""
-    text = """From the AP comes this story :
-President Bush on Tuesday nominated two individuals to replace retiring jurists on federal courts in the Washington area.
-***
-After you are elected in 2004, what will your memoirs say about you, what will the title be, and what will the main theme say?
-***
-"THE PRESIDENT: I appreciate that.
-(Laughter.)
-My life is too complicated right now trying to do my job.
-(Laughter.)"""
+def test_same_sentence_different_char_span() -> None:
+    """Verify correct character offset tracking for duplicate sentences."""
+    text = (
+        "From the AP comes this story :\n"
+        "President Bush on Tuesday nominated two individuals to replace retiring jurists on federal courts in the Washington area.\n"
+        "***\n"
+        "After you are elected in 2004, what will your memoirs say about you, what will the title be, and what will the main theme say?\n"
+        "***\n"
+        '"THE PRESIDENT: I appreciate that.\n'
+        "(Laughter.)\n"
+        "My life is too complicated right now trying to do my job.\n"
+        "(Laughter.)"
+    )
     expected_text_spans = [
         TextSpan(sent="From the AP comes this story :\n", start=0, end=31),
         TextSpan(
@@ -85,103 +80,75 @@ My life is too complicated right now trying to do my job.
         ),
         TextSpan(sent="(Laughter.)", start=393, end=404),
     ]
-    segments_w_spans = en_no_clean_with_span_fixture.segment(text)
-    assert segments_w_spans == expected_text_spans
-    # check for non-destruction
-    # clubbing sentences and matching with original text
-    assert text == "".join([seg.sent for seg in segments_w_spans])
+    seg = fracture.Segmenter(language="en", clean=False, char_span=True)
+    raw_segments = seg.segment(text)
+    segments = cast(list[TextSpan], raw_segments)
+    assert segments == expected_text_spans
+    assert text == "".join(s.sent for s in segments)
 
 
-def test_exception_with_both_clean_and_span_true():
-    """Test to not allow clean=True and char_span=True"""
-    with pytest.raises(ValueError) as e:
-        seg = fracture.Segmenter(language="en", clean=True, char_span=True)
-    assert (
-        str(e.value) == "char_span must be False if clean is True. "
-        "Since `clean=True` will modify original text."
-    )
+def test_exception_with_both_clean_and_span_true() -> None:
+    """Verify ValueError when both clean and char_span are True."""
+    with pytest.raises(ValueError) as excinfo:
+        _ = fracture.Segmenter(language="en", clean=True, char_span=True)
+    assert "char_span must be False if clean is True" in str(excinfo.value)
 
 
-def test_exception_with_doc_type_pdf_and_clean_false():
-    """
-    Test to force clean=True when doc_type="pdf"
-    """
-    with pytest.raises(ValueError) as e:
-        seg = fracture.Segmenter(language="en", clean=False, doc_type="pdf")
-    assert str(e.value) == (
-        "`doc_type='pdf'` should have `clean=True` & "
-        "`char_span` should be False since original"
-        "text will be modified."
-    )
+def test_exception_with_doc_type_pdf_and_clean_false() -> None:
+    """Verify ValueError when doc_type is pdf but clean is False."""
+    with pytest.raises(ValueError) as excinfo:
+        _ = fracture.Segmenter(language="en", clean=False, doc_type="pdf")
+    assert "`doc_type='pdf'` should have `clean=True`" in str(excinfo.value)
 
 
-def test_exception_with_doc_type_pdf_and_both_clean_char_span_true():
-    """
-    Test to raise ValueError exception when doc_type="pdf" and
-    both clean=True and char_span=True
-    """
-    with pytest.raises(ValueError) as e:
-        seg = fracture.Segmenter(
+def test_exception_with_doc_type_pdf_and_both_clean_char_span_true() -> None:
+    """Verify ValueError when doc_type is pdf with char_span True."""
+    with pytest.raises(ValueError) as excinfo:
+        _ = fracture.Segmenter(
             language="en", clean=True, doc_type="pdf", char_span=True
         )
-    assert (
-        str(e.value) == "char_span must be False if clean is True. "
-        "Since `clean=True` will modify original text."
-    )
+    assert "char_span must be False if clean is True" in str(excinfo.value)
 
 
-PDF_TEST_DATA = [
-    (
-        "This is a sentence\ncut off in the middle because pdf.",
-        ["This is a sentence cut off in the middle because pdf."],
-    ),
-    (
-        "Organising your care early \nmeans you'll have months to build a good relationship with your midwife or doctor, ready for \nthe birth.",
-        [
-            "Organising your care early means you'll have months to build a good relationship with your midwife or doctor, ready for the birth."
-        ],
-    ),
-    (
-        "10. Get some rest \n \nYou have the best chance of having a problem-free pregnancy and a healthy baby if you follow \na few simple guidelines:",
-        [
-            "10. Get some rest",
-            "You have the best chance of having a problem-free pregnancy and a healthy baby if you follow a few simple guidelines:",
-        ],
-    ),
-    (
-        "• 9. Stop smoking \n• 10. Get some rest \n \nYou have the best chance of having a problem-free pregnancy and a healthy baby if you follow \na few simple guidelines:  \n\n1. Organise your pregnancy care early",
-        [
-            "• 9. Stop smoking",
-            "• 10. Get some rest",
-            "You have the best chance of having a problem-free pregnancy and a healthy baby if you follow a few simple guidelines:",
-            "1. Organise your pregnancy care early",
-        ],
-    ),
-    (
-        "Either the well was very deep, or she fell very slowly, for she had plenty of time as she went down to look about her and to wonder what was going to happen next. First, she tried to look down and make out what she was coming to, but it was too dark to see anything; then she looked at the sides of the well, and noticed that they were filled with cupboards and book-shelves; here and there she saw maps and pictures hung upon pegs. She took down a jar from one of the shelves as she passed; it was labelled 'ORANGE MARMALADE', but to her great disappointment it was empty: she did not like to drop the jar for fear of killing somebody, so managed to put it into one of the cupboards as she fell past it.\n'Well!' thought Alice to herself, 'after such a fall as this, I shall think nothing of tumbling down stairs! How brave they'll all think me at home! Why, I wouldn't say anything about it, even if I fell off the top of the house!' (Which was very likely true.)",
-        [
-            "Either the well was very deep, or she fell very slowly, for she had plenty of time as she went down to look about her and to wonder what was going to happen next.",
-            "First, she tried to look down and make out what she was coming to, but it was too dark to see anything; then she looked at the sides of the well, and noticed that they were filled with cupboards and book-shelves; here and there she saw maps and pictures hung upon pegs.",
-            "She took down a jar from one of the shelves as she passed; it was labelled 'ORANGE MARMALADE', but to her great disappointment it was empty: she did not like to drop the jar for fear of killing somebody, so managed to put it into one of the cupboards as she fell past it.",
-            "'Well!' thought Alice to herself, 'after such a fall as this, I shall think nothing of tumbling down stairs! How brave they'll all think me at home! Why, I wouldn't say anything about it, even if I fell off the top of the house!' (Which was very likely true.)",
-        ],
-    ),
-    (
-        "Either the well was very deep, or she fell very slowly, for she had plenty of time as she went down to look about her and to wonder what was going to happen next. First, she tried to look down and make out what she was coming to, but it was too dark to see anything; then she looked at the sides of the well, and noticed that they were filled with cupboards and book-shelves; here and there she saw maps and pictures hung upon pegs. She took down a jar from one of the shelves as she passed; it was labelled 'ORANGE MARMALADE', but to her great disappointment it was empty: she did not like to drop the jar for fear of killing somebody, so managed to put it into one of the cupboards as she fell past it.\r'Well!' thought Alice to herself, 'after such a fall as this, I shall think nothing of tumbling down stairs! How brave they'll all think me at home! Why, I wouldn't say anything about it, even if I fell off the top of the house!' (Which was very likely true.)",
-        [
-            "Either the well was very deep, or she fell very slowly, for she had plenty of time as she went down to look about her and to wonder what was going to happen next.",
-            "First, she tried to look down and make out what she was coming to, but it was too dark to see anything; then she looked at the sides of the well, and noticed that they were filled with cupboards and book-shelves; here and there she saw maps and pictures hung upon pegs.",
-            "She took down a jar from one of the shelves as she passed; it was labelled 'ORANGE MARMALADE', but to her great disappointment it was empty: she did not like to drop the jar for fear of killing somebody, so managed to put it into one of the cupboards as she fell past it.",
-            "'Well!' thought Alice to herself, 'after such a fall as this, I shall think nothing of tumbling down stairs! How brave they'll all think me at home! Why, I wouldn't say anything about it, even if I fell off the top of the house!' (Which was very likely true.)",
-        ],
-    ),
-]
-
-
-@pytest.mark.parametrize("text,expected_sents", PDF_TEST_DATA)
-def test_en_pdf_type(text, expected_sents):
-    """SBD tests from Pragmatic Segmenter for doctype:pdf"""
+@pytest.mark.parametrize("case", PDF_CASES)
+def test_pdf_segmentation(case: PdfTestCase) -> None:
+    """Verify sentence boundary segmentation on PDF documents."""
     seg = fracture.Segmenter(language="en", clean=True, doc_type="pdf")
-    segments = seg.segment(text)
-    segments = [s.strip() for s in segments]
-    assert segments == expected_sents
+    raw_segments = seg.segment(case.text)
+    segments = cast(list[str], raw_segments)
+    stripped: list[str] = [s.strip() for s in segments]
+    assert stripped == list(case.expected)
+
+
+def test_file_segmenter(tmp_path: Path) -> None:
+    """Verify file-based text segmentation and numbered output formatting."""
+    input_file = tmp_path / "sample_input.txt"
+    output_file = tmp_path / "sample_output.txt"
+    sample_content = (
+        "Hello world! This is the first test sentence. My name is Dr. Jonas E. Smith "
+        "and I work in Washington, D.C. at 10.5% growth rate. Is this sentence number four?\n\n"
+        "Here begins a new paragraph. Please refer to Fig. 1.2 on p. 45 for further details. "
+        '"We will succeed!" said the director. The end.'
+    )
+    input_file.write_text(sample_content, encoding="utf-8")
+
+    text = input_file.read_text(encoding="utf-8")
+    segmenter = fracture.Segmenter(language="en", clean=True, char_span=False)
+    raw_segments = segmenter.segment(text)
+    sentences = cast(list[str], raw_segments)
+
+    output_lines: list[str] = [
+        f"=== fracture Segmentation Output ({len(sentences)} Sentences) ===",
+        f"Input File : {input_file.as_posix()}",
+        "=" * 60,
+    ]
+    for idx, sent in enumerate(sentences, start=1):
+        output_lines.append(f"[{idx}] {sent}")
+
+    output_file.write_text("\n".join(output_lines), encoding="utf-8")
+
+    assert len(sentences) > 0
+    assert output_file.exists()
+    content = output_file.read_text(encoding="utf-8")
+    assert "[1]" in content
+    assert "=== fracture Segmentation Output" in content

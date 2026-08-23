@@ -1,0 +1,4 @@
+[[golden_pl_rules]]
+text = "To słowo bałt. jestskrótem."
+expected = ["To słowo bałt. jestskrótem."]
+

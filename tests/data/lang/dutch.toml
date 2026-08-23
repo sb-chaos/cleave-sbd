@@ -1,0 +1,12 @@
+[[golden_nl_rules]]
+text = "Hij schoot op de JP8-brandstof toen de Surface-to-Air (sam)-missiles op hem af kwamen. 81 procent van de schoten was raak."
+expected = ["Hij schoot op de JP8-brandstof toen de Surface-to-Air (sam)-missiles op hem af kwamen.", "81 procent van de schoten was raak."]
+
+[[golden_nl_rules]]
+text = "81 procent van de schoten was raak. ...en toen barste de hel los."
+expected = ["81 procent van de schoten was raak.", "...en toen barste de hel los."]
+
+[[golden_nl_rules]]
+text = "Afkorting aanw. vnw."
+expected = ["Afkorting aanw. vnw."]
+

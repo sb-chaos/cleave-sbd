@@ -1,4 +1,4 @@
-# fracture: Pragmatic Sentence Boundary Disambiguation
+# fracture: Sentence Boundary Disambiguation
 
 [![CI](https://github.com/sblasing/fracture/actions/workflows/python-package.yml/badge.svg)](https://github.com/sblasing/fracture/actions/workflows/python-package.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)

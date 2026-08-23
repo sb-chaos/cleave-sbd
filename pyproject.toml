@@ -72,10 +72,9 @@ dev = [
 [tool.basedpyright]
 include = ["src"]
 extraPaths = ["src"]
-exclude = [".venv", "**/__pycache__", "tests", "benchmarking"]
+exclude = [".venv", "**/__pycache__"]
 pythonVersion = "3.11"
 typeCheckingMode = "strict"
-reportRedeclaration = false
 
 [tool.ruff.lint]
 allowed-confusables = [
@@ -107,15 +106,9 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = [
-    "E501",   # Test fixtures contain long string literals
     "RUF001", # Test fixtures contain intentional ambiguous unicode characters
     "RUF002",
     "RUF003",
-    "UP009",  # UTF-8 encoding declarations in test files
-    "I001",   # Import sorting in test files
-    "F811",   # Redefinition of test function names in legacy fixtures
-    "F841",   # Unused local variables in test assertions
-    "F401",   # Unused imports in test modules
 ]
 
 [tool.ruff.lint.isort]
@@ -124,7 +117,7 @@ known-first-party = ["fracture"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-adopts = "-ra --strict-markers"
+addopts = "-ra --strict-markers"
 
 
 [tool.coverage.run]

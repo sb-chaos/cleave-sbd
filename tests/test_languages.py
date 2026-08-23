@@ -1,28 +1,62 @@
+"""Language SBD execution and dynamic configuration validation tests."""
+
+from __future__ import annotations
+
+import re
+from typing import Final, cast
+
 import pytest
-from fracture.lang import LANGUAGE_CODES, Language
+
+import fracture
+from fracture.lang import SUPPORTED_LANGUAGES, Language, LanguageConfig
+from tests.loaders import load_all_language_sbd_cases
+from tests.models import SbdTestCase
+
+ALL_SBD_CASES: Final[list[SbdTestCase]] = load_all_language_sbd_cases()
 
 
-def test_lang_code2instance_mapping():
-    for code, language_module in LANGUAGE_CODES.items():
-        assert Language.get_language_code(code) == language_module
+@pytest.mark.parametrize(
+    "case",
+    [
+        pytest.param(
+            case,
+            id=f"{case.language}_{case.suite}_{idx}",
+            marks=pytest.mark.xfail if case.xfail else (),
+        )
+        for idx, case in enumerate(ALL_SBD_CASES)
+    ],
+)
+def test_language_sentence_boundary_disambiguation(case: SbdTestCase) -> None:
+    """Execute sentence boundary disambiguation for a typed language test case."""
+    segmenter = fracture.Segmenter(
+        language=case.language,
+        clean=case.clean,
+        doc_type=case.doc_type,
+    )
+    raw_segments = segmenter.segment(case.text)
+    segments = cast(list[str], raw_segments)
+    stripped_segments: list[str] = [s.strip() for s in segments]
+    assert stripped_segments == list(case.expected)
 
 
-def test_exception_on_no_lang_code_provided():
-    with pytest.raises(ValueError) as e:
-        Language.get_language_code("")
-    assert "Provide valid language ID i.e. ISO code." in str(e.value)
+def test_lang_code2instance_mapping() -> None:
+    """Verify all ISO language codes map to their corresponding LanguageConfig."""
+    for code in SUPPORTED_LANGUAGES:
+        config = Language.get_language_code(code)
+        assert isinstance(config, LanguageConfig)
+        assert config.iso_code == code
 
 
-def test_exception_on_unsupported_lang_code_provided():
-    with pytest.raises(ValueError) as e:
-        Language.get_language_code("elvish")
-    assert "Provide valid language ID i.e. ISO code." in str(e.value)
+@pytest.mark.parametrize("invalid_code", ["", "elvish", "123"])
+def test_exception_on_invalid_lang_code(invalid_code: str) -> None:
+    """Verify ValueError is raised when providing invalid language codes."""
+    with pytest.raises(ValueError) as excinfo:
+        Language.get_language_code(invalid_code)
+    assert "Provide valid language ID i.e. ISO code." in str(excinfo.value)
 
 
-def test_toml_configs_validity():
-    from fracture.lang import SUPPORTED_LANGUAGES, LanguageConfig
-    import re
-
+def test_toml_configs_validity() -> None:
+    """Verify structure and type integrity of all language configuration files."""
     for code in SUPPORTED_LANGUAGES:
         config = Language.get_language_code(code)
         assert isinstance(config, LanguageConfig)

@@ -1,0 +1,8 @@
+[[cases]]
+text = "It was a cold \nnight in the city."
+expected = "It was a cold night in the city."
+
+[[cases]]
+text = "This is the U.S. Senate my friends. <em>Yes.</em> <em>It is</em>!"
+expected = "This is the U.S. Senate my friends. Yes. It is!"
+
