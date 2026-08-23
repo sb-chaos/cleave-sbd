@@ -5,16 +5,52 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+import tomllib
 from pathlib import Path
+from typing import Any, Final, NamedTuple, cast
 
 # Add project root to python path to import packages
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import fracture
-from tests.lang.test_english import GOLDEN_EN_RULES_TEST_CASES
 
 # Known titles that we temporarily lowercase to prevent AM_PM_RULES from triggering sentence split
-TITLES_TO_RESTORE = {"mr", "mrs", "ms", "dr", "prof", "sr", "jr", "gen", "rep", "sen"}
+TITLES_TO_RESTORE: Final[frozenset[str]] = frozenset(
+    {"mr", "mrs", "ms", "dr", "prof", "sr", "jr", "gen", "rep", "sen"}
+)
+
+
+class EnglishBenchmarkCase(NamedTuple):
+    """Memory-efficient benchmark test case tuple."""
+
+    text: str
+    expected: list[str]
+    xfail: bool = False
+
+
+def load_english_benchmark_cases() -> list[EnglishBenchmarkCase]:
+    """Load English test cases directly from the externalized TOML test dataset."""
+    toml_path: Path = (
+        Path(__file__).resolve().parents[1] / "tests" / "data" / "lang" / "english.toml"
+    )
+    with open(toml_path, "rb") as toml_file:
+        toml_data: dict[str, Any] = tomllib.load(toml_file)
+
+    benchmark_cases: list[EnglishBenchmarkCase] = []
+    cases_list = cast(list[dict[str, Any]], toml_data.get("golden_en_rules", []))
+    for record in cases_list:
+        input_text: str = str(record["text"])
+        expected_list = cast(list[Any], record["expected"])
+        expected_sentences: list[str] = [str(sentence) for sentence in expected_list]
+        is_xfail: bool = bool(record.get("xfail", False))
+        benchmark_cases.append(
+            EnglishBenchmarkCase(
+                text=input_text,
+                expected=expected_sentences,
+                xfail=is_xfail,
+            )
+        )
+    return benchmark_cases
 
 
 def custom_segment(text: str) -> list[str]:
@@ -26,7 +62,7 @@ def custom_segment(text: str) -> list[str]:
         lead = m.group(1)
         title_start = m.group(2)
         title_rest = m.group(3)
-        if title_start.lower() + title_rest.lower().rstrip(".") in TITLES_TO_RESTORE:
+        if (title_start.lower() + title_rest.lower().rstrip(".")) in TITLES_TO_RESTORE:
             return f"{lead} {title_start.lower()}{title_rest}"
         return m.group(0)
 
@@ -38,15 +74,17 @@ def custom_segment(text: str) -> list[str]:
 
     # Segment using fracture
     segmenter = fracture.Segmenter(language="en", clean=False)
-    sents = segmenter.segment(preprocessed_text)
+    raw_sents = segmenter.segment(preprocessed_text)
+    sents = cast(list[str], raw_sents)
 
     # Postprocess: Restore title capitalization
     def restore_helper(m: re.Match[str]) -> str:
         return m.group(1).capitalize() + "."
 
+    pattern = r"\b(" + "|".join(sorted(TITLES_TO_RESTORE)) + r")\."
     restored_sents: list[str] = [
         re.sub(
-            r"\b(" + "|".join(TITLES_TO_RESTORE) + r")\.",
+            pattern,
             restore_helper,
             s,
             flags=re.IGNORECASE,
@@ -68,13 +106,14 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.file:
-        if not args.file.exists():
-            print(f"Error: File {args.file} does not exist.")
+        file_path = cast(Path, args.file)
+        if not file_path.exists():
+            print(f"Error: File {file_path} does not exist.")
             return 1
         print("=" * 80)
-        print(f"Segmenting file: {args.file.name}")
+        print(f"Segmenting file: {file_path.name}")
         print("=" * 80)
-        text = args.file.read_text(encoding="utf-8", errors="replace")
+        text = file_path.read_text(encoding="utf-8", errors="replace")
         sents = custom_segment(text)
         print(f"Total processed sentences: {len(sents):,}")
         print("=" * 80)
@@ -84,27 +123,17 @@ def main() -> int:
     print(" RUNNING ENGLISH ACCURACY BENCHMARK & XFAIL VERIFICATION")
     print("=" * 80)
 
-    test_cases = []
-    for item in GOLDEN_EN_RULES_TEST_CASES:
-        if hasattr(item, "values"):
-            test_cases.append((item.values[0], item.values[1]))
-        elif isinstance(item, tuple):
-            test_cases.append((item[0], item[1]))
-        else:
-            values = getattr(item, "values", None)
-            if values and len(values) >= 2:
-                test_cases.append((values[0], values[1]))
-
+    test_cases: list[EnglishBenchmarkCase] = load_english_benchmark_cases()
     passed_count = 0
-    failed_cases = []
+    failed_cases: list[tuple[str, list[str], list[str]]] = []
 
     # Run the custom segmenter on all cases
-    for text, expected in test_cases:
-        actual = custom_segment(text)
-        if actual == expected:
+    for case in test_cases:
+        actual = custom_segment(case.text)
+        if actual == case.expected:
             passed_count += 1
         else:
-            failed_cases.append((text, expected, actual))
+            failed_cases.append((case.text, case.expected, actual))
 
     print(f"Total Test Cases Verified: {len(test_cases)}")
     print(f"Passed: {passed_count}")
@@ -112,10 +141,10 @@ def main() -> int:
 
     if failed_cases:
         print("\n--- Failed Cases ---")
-        for text, expected, actual in failed_cases:
-            print(f"Input   : {text!r}")
-            print(f"Expected: {expected}")
-            print(f"Actual  : {actual}")
+        for text_input, expected_out, actual_out in failed_cases:
+            print(f"Input   : {text_input!r}")
+            print(f"Expected: {expected_out}")
+            print(f"Actual  : {actual_out}")
             print("-" * 50)
         return 1
 

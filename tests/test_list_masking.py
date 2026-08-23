@@ -12,23 +12,30 @@ from fracture.lang.common import (
     unmask_all,
 )
 from tests.loaders import load_list_item_cases
-from tests.models import ListItemMaskTestCase
 
 LIST_ITEM_CASES, LIST_ITEM_INVARIANTS = load_list_item_cases()
 
 
 @pytest.mark.parametrize(
-    "case", LIST_ITEM_CASES, ids=[c.description for c in LIST_ITEM_CASES]
+    "description, input_text, expected_unmasked, expect_pua_period, expect_pua_parens",
+    LIST_ITEM_CASES,
+    ids=[c.description for c in LIST_ITEM_CASES],
 )
-def test_list_item_masking_cases(case: ListItemMaskTestCase) -> None:
+def test_list_item_masking_cases(
+    description: str,
+    input_text: str,
+    expected_unmasked: str,
+    expect_pua_period: bool,
+    expect_pua_parens: bool,
+) -> None:
     """Verify list item masking engine behavior against TOML test cases."""
-    masked = mask_list_items(case.input)
-    assert len(masked) == len(case.input)
-    if case.expect_pua_period:
+    masked = mask_list_items(input_text)
+    assert len(masked) == len(input_text)
+    if expect_pua_period:
         assert PUA_PERIOD in masked
-    if case.expect_pua_parens:
+    if expect_pua_parens:
         assert (PUA_LEFT_PAREN in masked) or (PUA_RIGHT_PAREN in masked)
-    assert unmask_all(masked) == case.expected_unmasked
+    assert unmask_all(masked) == expected_unmasked
 
 
 @pytest.mark.parametrize("sample", LIST_ITEM_INVARIANTS)

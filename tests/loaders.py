@@ -1,19 +1,14 @@
-"""Data loader and deserialization helpers for externalized TOML test suites."""
+"""Data loader and deserialization helpers for externalized TOML test suites.
+
+Uses lightweight NamedTuples to ensure zero dict-allocation overhead, strict typing,
+and clean tuple-unpacking in pytest parametrizations.
+"""
 
 from __future__ import annotations
 
 import tomllib
 from pathlib import Path
-from typing import Any, Final
-
-from tests.models import (
-    IssueCharSpanTestCase,
-    IssueTestCase,
-    ListItemMaskTestCase,
-    NormalizerTestCase,
-    PdfTestCase,
-    SbdTestCase,
-)
+from typing import Any, Final, NamedTuple, cast
 
 DATA_DIR: Final[Path] = Path(__file__).parent / "data"
 
@@ -45,111 +40,239 @@ LANG_NAME_TO_CODE: Final[dict[str, str]] = {
 }
 
 
-def load_all_language_sbd_cases() -> list[SbdTestCase]:
-    """Ingest and validate all language-specific test cases from TOML files."""
-    cases: list[SbdTestCase] = []
-    lang_dir = DATA_DIR / "lang"
+# -----------------------------------------------------------------------------
+# Lightweight NamedTuples (Memory-Efficient C-Tuples)
+# -----------------------------------------------------------------------------
 
-    for toml_path in sorted(lang_dir.glob("*.toml")):
-        lang_name = toml_path.stem
-        iso_code = LANG_NAME_TO_CODE[lang_name]
 
-        with open(toml_path, "rb") as f:
-            data: dict[str, list[dict[str, Any]]] = tomllib.load(f)
+class SbdCase(NamedTuple):
+    """Sentence boundary disambiguation test case tuple."""
 
-        for section_name, items in data.items():
-            is_clean = ("clean" in section_name) and ("wo_clean" not in section_name)
-            is_pdf = "pdf" in section_name
-            doc_type: str = "pdf" if is_pdf else ""
-            if is_pdf:
-                is_clean = True
+    text: str
+    expected: tuple[str, ...]
+    language: str
+    clean: bool
+    doc_type: str = ""
 
-            for item in items:
-                text_val: str = item["text"]
-                expected_val: tuple[str, ...] = tuple(item["expected"])
-                xfail_val: bool = bool(item.get("xfail", False))
 
-                cases.append(
-                    SbdTestCase(
-                        text=text_val,
-                        expected=expected_val,
-                        language=iso_code,
-                        clean=is_clean,
-                        doc_type=doc_type,
-                        xfail=xfail_val,
-                        suite=f"{lang_name}:{section_name}",
-                    )
+class IssueCase(NamedTuple):
+    """GitHub issue regression test case tuple."""
+
+    issue: str
+    text: str
+    expected: tuple[str, ...]
+
+
+class IssueCharSpanCase(NamedTuple):
+    """Character offset span regression test case tuple."""
+
+    issue: str
+    text: str
+    expected: tuple[tuple[str, int, int], ...]
+
+
+class NormalizerCase(NamedTuple):
+    """Text normalization test case tuple."""
+
+    text: str
+    expected: str
+
+
+class ListItemMaskCase(NamedTuple):
+    """List item masking test case tuple."""
+
+    description: str
+    input: str
+    expected_unmasked: str
+    expect_pua_period: bool
+    expect_pua_parens: bool
+
+
+class PdfCase(NamedTuple):
+    """PDF document segmentation test case tuple."""
+
+    text: str
+    expected: tuple[str, ...]
+
+
+# -----------------------------------------------------------------------------
+# TOML Data Ingestion Helpers
+# -----------------------------------------------------------------------------
+
+
+def load_language_sbd_cases() -> list[SbdCase]:
+    """Ingest language test cases from TOML and return typed SbdCase namedtuples."""
+    sbd_cases: list[SbdCase] = []
+    language_directory: Path = DATA_DIR / "lang"
+
+    for toml_path in sorted(language_directory.glob("*.toml")):
+        language_name: str = toml_path.stem
+        iso_language_code: str = LANG_NAME_TO_CODE[language_name]
+
+        with open(toml_path, "rb") as toml_file:
+            toml_data: dict[str, Any] = tomllib.load(toml_file)
+
+        for section_name, test_records in toml_data.items():
+            is_clean_enabled: bool = ("clean" in section_name) and (
+                "wo_clean" not in section_name
+            )
+            is_pdf_document: bool = "pdf" in section_name
+            document_type: str = "pdf" if is_pdf_document else ""
+            if is_pdf_document:
+                is_clean_enabled = True
+
+            records_list = cast(list[dict[str, Any]], test_records)
+            for record in records_list:
+                input_text: str = str(record["text"])
+                expected_list = cast(list[Any], record["expected"])
+                expected_sentences: tuple[str, ...] = tuple(
+                    str(sentence) for sentence in expected_list
                 )
+                case = SbdCase(
+                    text=input_text,
+                    expected=expected_sentences,
+                    language=iso_language_code,
+                    clean=is_clean_enabled,
+                    doc_type=document_type,
+                )
+                sbd_cases.append(case)
 
-    return cases
+    return sbd_cases
 
 
-def load_issues_cases() -> tuple[list[IssueTestCase], list[IssueCharSpanTestCase]]:
-    """Ingest and validate issue regression test cases from TOML."""
-    with open(DATA_DIR / "issues.toml", "rb") as f:
-        data: dict[str, list[dict[str, Any]]] = tomllib.load(f)
+def load_language_sbd_cases_with_metadata() -> list[tuple[SbdCase, str, bool]]:
+    """Ingest language test cases from TOML returning (case, case_identifier, is_xfail)."""
+    cases_with_metadata: list[tuple[SbdCase, str, bool]] = []
+    language_directory: Path = DATA_DIR / "lang"
 
-    issue_cases: list[IssueTestCase] = [
-        IssueTestCase(
-            issue=item["issue"],
-            text=item["text"],
-            expected=tuple(item["expected"]),
+    for toml_path in sorted(language_directory.glob("*.toml")):
+        language_name: str = toml_path.stem
+        iso_language_code: str = LANG_NAME_TO_CODE[language_name]
+
+        with open(toml_path, "rb") as toml_file:
+            toml_data: dict[str, Any] = tomllib.load(toml_file)
+
+        for section_name, test_records in toml_data.items():
+            is_clean_enabled: bool = ("clean" in section_name) and (
+                "wo_clean" not in section_name
+            )
+            is_pdf_document: bool = "pdf" in section_name
+            document_type: str = "pdf" if is_pdf_document else ""
+            if is_pdf_document:
+                is_clean_enabled = True
+
+            records_list = cast(list[dict[str, Any]], test_records)
+            for record_index, record in enumerate(records_list):
+                input_text: str = str(record["text"])
+                expected_list = cast(list[Any], record["expected"])
+                expected_sentences: tuple[str, ...] = tuple(
+                    str(sentence) for sentence in expected_list
+                )
+                case = SbdCase(
+                    text=input_text,
+                    expected=expected_sentences,
+                    language=iso_language_code,
+                    clean=is_clean_enabled,
+                    doc_type=document_type,
+                )
+                case_identifier: str = (
+                    f"{iso_language_code}_{language_name}:{section_name}_{record_index}"
+                )
+                is_xfail: bool = bool(record.get("xfail", False))
+                cases_with_metadata.append((case, case_identifier, is_xfail))
+
+    return cases_with_metadata
+
+
+def load_issues_cases() -> tuple[list[IssueCase], list[IssueCharSpanCase]]:
+    """Ingest issue regression test cases from TOML."""
+    with open(DATA_DIR / "issues.toml", "rb") as toml_file:
+        toml_data: dict[str, Any] = tomllib.load(toml_file)
+
+    issue_cases: list[IssueCase] = []
+    cases_list = cast(list[dict[str, Any]], toml_data.get("cases", []))
+    for record in cases_list:
+        input_text: str = str(record["text"])
+        expected_list = cast(list[Any], record["expected"])
+        expected_sentences: tuple[str, ...] = tuple(
+            str(sentence) for sentence in expected_list
         )
-        for item in data.get("cases", [])
-    ]
-
-    char_span_cases: list[IssueCharSpanTestCase] = [
-        IssueCharSpanTestCase(
-            issue=item["issue"],
-            text=item["text"],
-            expected=tuple(
-                (span[0], int(span[1]), int(span[2])) for span in item["expected"]
-            ),
+        issue_cases.append(
+            IssueCase(
+                issue=str(record["issue"]),
+                text=input_text,
+                expected=expected_sentences,
+            )
         )
-        for item in data.get("char_span_cases", [])
-    ]
+
+    char_span_cases: list[IssueCharSpanCase] = []
+    char_spans_list = cast(list[dict[str, Any]], toml_data.get("char_span_cases", []))
+    for record in char_spans_list:
+        raw_spans = cast(list[list[Any]], record["expected"])
+        parsed_spans: list[tuple[str, int, int]] = [
+            (str(span[0]), int(span[1]), int(span[2])) for span in raw_spans
+        ]
+        char_span_cases.append(
+            IssueCharSpanCase(
+                issue=str(record["issue"]),
+                text=str(record["text"]),
+                expected=tuple(parsed_spans),
+            )
+        )
 
     return issue_cases, char_span_cases
 
 
-def load_normalizer_cases() -> list[NormalizerTestCase]:
+def load_normalizer_cases() -> list[NormalizerCase]:
     """Ingest normalizer test cases from TOML."""
-    with open(DATA_DIR / "normalizer.toml", "rb") as f:
-        data: dict[str, list[dict[str, Any]]] = tomllib.load(f)
+    with open(DATA_DIR / "normalizer.toml", "rb") as toml_file:
+        toml_data: dict[str, Any] = tomllib.load(toml_file)
 
-    return [
-        NormalizerTestCase(text=item["text"], expected=item["expected"])
-        for item in data.get("cases", [])
-    ]
+    normalizer_cases: list[NormalizerCase] = []
+    cases_list = cast(list[dict[str, Any]], toml_data.get("cases", []))
+    for record in cases_list:
+        input_text: str = str(record["text"])
+        expected_text: str = str(record["expected"])
+        normalizer_cases.append(NormalizerCase(text=input_text, expected=expected_text))
+    return normalizer_cases
 
 
-def load_list_item_cases() -> tuple[list[ListItemMaskTestCase], list[str]]:
-    """Ingest list item mask test cases and invariants from TOML."""
-    with open(DATA_DIR / "list_items.toml", "rb") as f:
-        data: dict[str, Any] = tomllib.load(f)
+def load_list_item_cases() -> tuple[list[ListItemMaskCase], list[str]]:
+    """Ingest list item mask test cases and length-invariants from TOML."""
+    with open(DATA_DIR / "list_items.toml", "rb") as toml_file:
+        toml_data: dict[str, Any] = tomllib.load(toml_file)
 
-    cases = [
-        ListItemMaskTestCase(
-            description=item["description"],
-            input=item["input"],
-            expected_unmasked=item["expected_unmasked"],
-            expect_pua_period=bool(item["expect_pua_period"]),
-            expect_pua_parens=bool(item["expect_pua_parens"]),
+    cases_list = cast(list[dict[str, Any]], toml_data.get("cases", []))
+    mask_cases: list[ListItemMaskCase] = [
+        ListItemMaskCase(
+            description=str(record["description"]),
+            input=str(record["input"]),
+            expected_unmasked=str(record["expected_unmasked"]),
+            expect_pua_period=bool(record["expect_pua_period"]),
+            expect_pua_parens=bool(record["expect_pua_parens"]),
         )
-        for item in data.get("cases", [])
+        for record in cases_list
     ]
-    invariants: list[str] = list(
-        data.get("invariants", {}).get("length_preserving_samples", [])
-    )
-    return cases, invariants
+
+    invariants_dict = cast(dict[str, Any], toml_data.get("invariants", {}))
+    raw_samples = cast(list[Any], invariants_dict.get("length_preserving_samples", []))
+    length_invariants: list[str] = [str(sample) for sample in raw_samples]
+
+    return mask_cases, length_invariants
 
 
-def load_pdf_cases() -> list[PdfTestCase]:
+def load_pdf_cases() -> list[PdfCase]:
     """Ingest PDF segmentation test cases from TOML."""
-    with open(DATA_DIR / "pdf.toml", "rb") as f:
-        data: dict[str, list[dict[str, Any]]] = tomllib.load(f)
+    with open(DATA_DIR / "pdf.toml", "rb") as toml_file:
+        toml_data: dict[str, Any] = tomllib.load(toml_file)
 
-    return [
-        PdfTestCase(text=item["text"], expected=tuple(item["expected"]))
-        for item in data.get("cases", [])
-    ]
+    pdf_cases: list[PdfCase] = []
+    cases_list = cast(list[dict[str, Any]], toml_data.get("cases", []))
+    for record in cases_list:
+        input_text: str = str(record["text"])
+        expected_list = cast(list[Any], record["expected"])
+        expected_sentences: tuple[str, ...] = tuple(
+            str(sentence) for sentence in expected_list
+        )
+        pdf_cases.append(PdfCase(text=input_text, expected=expected_sentences))
+    return pdf_cases

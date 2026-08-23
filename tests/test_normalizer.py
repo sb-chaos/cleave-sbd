@@ -8,17 +8,16 @@ import pytest
 
 from fracture.lang import Language
 from fracture.normalizer import Normalizer
-from tests.loaders import load_normalizer_cases
-from tests.models import NormalizerTestCase
+from tests.loaders import NormalizerCase, load_normalizer_cases
 
-NORMALIZER_CASES: Final[list[NormalizerTestCase]] = load_normalizer_cases()
+NORMALIZER_CASES: Final[list[NormalizerCase]] = load_normalizer_cases()
 
 
-@pytest.mark.parametrize("case", NORMALIZER_CASES)
-def test_normalizer_cases(case: NormalizerTestCase) -> None:
+@pytest.mark.parametrize("text, expected", NORMALIZER_CASES)
+def test_normalizer_cases(text: str, expected: str) -> None:
     """Verify text normalization from TOML test cases."""
-    norm_text = Normalizer(case.text, Language.get_language_code("en")).normalize()
-    assert norm_text == case.expected
+    norm_text = Normalizer(text, Language.get_language_code("en")).normalize()
+    assert norm_text == expected
 
 
 def test_normalizer_immutability() -> None:

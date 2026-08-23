@@ -9,38 +9,41 @@ import pytest
 import fracture
 from fracture.segmenter import TextSpan
 from tests.loaders import load_issues_cases
-from tests.models import IssueCharSpanTestCase, IssueTestCase
 
 ISSUE_CASES, ISSUE_CHAR_SPAN_CASES = load_issues_cases()
 
 
 @pytest.mark.parametrize(
-    "case",
+    "issue, text, expected",
     ISSUE_CASES,
-    ids=[f"{case.issue}_{idx}" for idx, case in enumerate(ISSUE_CASES)],
+    ids=[f"{c.issue}_{idx}" for idx, c in enumerate(ISSUE_CASES)],
 )
-def test_issue_regression(case: IssueTestCase) -> None:
+def test_issue_regression(issue: str, text: str, expected: tuple[str, ...]) -> None:
     """Verify bugfix regressions reported in GitHub issues."""
     seg = fracture.Segmenter(language="en", clean=False)
-    raw_segments = seg.segment(case.text)
+    raw_segments = seg.segment(text)
     segments = cast(list[str], raw_segments)
     stripped: list[str] = [s.strip() for s in segments]
-    assert stripped == list(case.expected)
-    assert case.text == " ".join(stripped)
+    assert stripped == list(expected)
+    assert text == " ".join(stripped)
 
 
 @pytest.mark.parametrize(
-    "case",
+    "issue, text, expected",
     ISSUE_CHAR_SPAN_CASES,
-    ids=[f"{case.issue}_span_{idx}" for idx, case in enumerate(ISSUE_CHAR_SPAN_CASES)],
+    ids=[f"{c.issue}_span_{idx}" for idx, c in enumerate(ISSUE_CHAR_SPAN_CASES)],
 )
-def test_issue_char_spans(case: IssueCharSpanTestCase) -> None:
+def test_issue_char_spans(
+    issue: str,
+    text: str,
+    expected: tuple[tuple[str, int, int], ...],
+) -> None:
     """Verify character offset span tracking across issue regression cases."""
     seg = fracture.Segmenter(language="en", clean=False, char_span=True)
-    raw_segments = seg.segment(case.text)
+    raw_segments = seg.segment(text)
     segments = cast(list[TextSpan], raw_segments)
     expected_text_spans = [
-        TextSpan(sent=span[0], start=span[1], end=span[2]) for span in case.expected
+        TextSpan(sent=span[0], start=span[1], end=span[2]) for span in expected
     ]
     assert segments == expected_text_spans
-    assert case.text == "".join(s.sent for s in segments)
+    assert text == "".join(s.sent for s in segments)

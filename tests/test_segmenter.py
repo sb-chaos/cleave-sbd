@@ -9,10 +9,9 @@ import pytest
 
 import fracture
 from fracture.segmenter import TextSpan
-from tests.loaders import load_pdf_cases
-from tests.models import PdfTestCase
+from tests.loaders import PdfCase, load_pdf_cases
 
-PDF_CASES: Final[list[PdfTestCase]] = load_pdf_cases()
+PDF_CASES: Final[list[PdfCase]] = load_pdf_cases()
 
 
 @pytest.mark.parametrize("empty_input", ["", None, "\n"])
@@ -110,14 +109,14 @@ def test_exception_with_doc_type_pdf_and_both_clean_char_span_true() -> None:
     assert "char_span must be False if clean is True" in str(excinfo.value)
 
 
-@pytest.mark.parametrize("case", PDF_CASES)
-def test_pdf_segmentation(case: PdfTestCase) -> None:
+@pytest.mark.parametrize("text, expected", PDF_CASES)
+def test_pdf_segmentation(text: str, expected: tuple[str, ...]) -> None:
     """Verify sentence boundary segmentation on PDF documents."""
     seg = fracture.Segmenter(language="en", clean=True, doc_type="pdf")
-    raw_segments = seg.segment(case.text)
+    raw_segments = seg.segment(text)
     segments = cast(list[str], raw_segments)
     stripped: list[str] = [s.strip() for s in segments]
-    assert stripped == list(case.expected)
+    assert stripped == list(expected)
 
 
 def test_file_segmenter(tmp_path: Path) -> None:

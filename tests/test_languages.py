@@ -1,5 +1,3 @@
-"""Language SBD execution and dynamic configuration validation tests."""
-
 from __future__ import annotations
 
 import re
@@ -9,10 +7,11 @@ import pytest
 
 import fracture
 from fracture.lang import SUPPORTED_LANGUAGES, Language, LanguageConfig
-from tests.loaders import load_all_language_sbd_cases
-from tests.models import SbdTestCase
+from tests.loaders import SbdCase, load_language_sbd_cases_with_metadata
 
-ALL_SBD_CASES: Final[list[SbdTestCase]] = load_all_language_sbd_cases()
+RAW_CASES_WITH_META: Final[list[tuple[SbdCase, str, bool]]] = (
+    load_language_sbd_cases_with_metadata()
+)
 
 
 @pytest.mark.parametrize(
@@ -20,14 +19,14 @@ ALL_SBD_CASES: Final[list[SbdTestCase]] = load_all_language_sbd_cases()
     [
         pytest.param(
             case,
-            id=f"{case.language}_{case.suite}_{idx}",
-            marks=pytest.mark.xfail if case.xfail else (),
+            id=case_id,
+            marks=(pytest.mark.xfail,) if xfail else (),
         )
-        for idx, case in enumerate(ALL_SBD_CASES)
+        for case, case_id, xfail in RAW_CASES_WITH_META
     ],
 )
-def test_language_sentence_boundary_disambiguation(case: SbdTestCase) -> None:
-    """Execute sentence boundary disambiguation for a typed language test case."""
+def test_language_sentence_boundary_disambiguation(case: SbdCase) -> None:
+    """Execute sentence boundary disambiguation for a strictly typed SbdCase namedtuple."""
     segmenter = fracture.Segmenter(
         language=case.language,
         clean=case.clean,
