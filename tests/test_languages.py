@@ -1,5 +1,5 @@
 import pytest
-from pragmatic_sbd.lang import LANGUAGE_CODES, Language
+from fracture.lang import LANGUAGE_CODES, Language
 
 
 def test_lang_code2instance_mapping():
@@ -20,7 +20,7 @@ def test_exception_on_unsupported_lang_code_provided():
 
 
 def test_toml_configs_validity():
-    from pragmatic_sbd.lang import SUPPORTED_LANGUAGES, LanguageConfig
+    from fracture.lang import SUPPORTED_LANGUAGES, LanguageConfig
     import re
 
     for code in SUPPORTED_LANGUAGES:

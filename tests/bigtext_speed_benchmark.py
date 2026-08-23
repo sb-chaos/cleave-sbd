@@ -5,9 +5,9 @@ import stanza
 import syntok.segmenter as syntok_segmenter
 from syntok.tokenizer import Tokenizer
 
-import pragmatic_sbd
+import fracture
 
-pysbd_segmenter = pragmatic_sbd.Segmenter(language="en", clean=False, char_span=False)
+pysbd_segmenter = fracture.Segmenter(language="en", clean=False, char_span=False)
 
 nlp = spacy.blank("en")
 nlp.add_pipe(nlp.create_pipe("sentencizer"))

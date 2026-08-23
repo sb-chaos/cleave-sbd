@@ -1,6 +1,6 @@
 import pytest
-import pragmatic_sbd
-from pragmatic_sbd import TextSpan
+import fracture
+from fracture import TextSpan
 
 
 def test_no_input(default_en_no_clean_no_span_fixture, text=""):
@@ -89,7 +89,7 @@ My life is too complicated right now trying to do my job.
 def test_exception_with_both_clean_and_span_true():
     """Test to not allow clean=True and char_span=True"""
     with pytest.raises(ValueError) as e:
-        seg = pragmatic_sbd.Segmenter(language="en", clean=True, char_span=True)
+        seg = fracture.Segmenter(language="en", clean=True, char_span=True)
     assert (
         str(e.value) == "char_span must be False if clean is True. "
         "Since `clean=True` will modify original text."
@@ -101,7 +101,7 @@ def test_exception_with_doc_type_pdf_and_clean_false():
     Test to force clean=True when doc_type="pdf"
     """
     with pytest.raises(ValueError) as e:
-        seg = pragmatic_sbd.Segmenter(language="en", clean=False, doc_type="pdf")
+        seg = fracture.Segmenter(language="en", clean=False, doc_type="pdf")
     assert str(e.value) == (
         "`doc_type='pdf'` should have `clean=True` & "
         "`char_span` should be False since original"
@@ -115,7 +115,7 @@ def test_exception_with_doc_type_pdf_and_both_clean_char_span_true():
     both clean=True and char_span=True
     """
     with pytest.raises(ValueError) as e:
-        seg = pragmatic_sbd.Segmenter(language="en", clean=True, doc_type="pdf", char_span=True)
+        seg = fracture.Segmenter(language="en", clean=True, doc_type="pdf", char_span=True)
     assert (
         str(e.value) == "char_span must be False if clean is True. "
         "Since `clean=True` will modify original text."
@@ -173,7 +173,7 @@ PDF_TEST_DATA = [
 @pytest.mark.parametrize("text,expected_sents", PDF_TEST_DATA)
 def test_en_pdf_type(text, expected_sents):
     """SBD tests from Pragmatic Segmenter for doctype:pdf"""
-    seg = pragmatic_sbd.Segmenter(language="en", clean=True, doc_type="pdf")
+    seg = fracture.Segmenter(language="en", clean=True, doc_type="pdf")
     segments = seg.segment(text)
     segments = [s.strip() for s in segments]
     assert segments == expected_sents

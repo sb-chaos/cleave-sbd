@@ -6,8 +6,8 @@ and outputs numbered sentence sections to a target text file.
 
 from pathlib import Path
 
-import pragmatic_sbd
-from pragmatic_sbd import TextSpan
+import fracture
+from fracture import TextSpan
 
 # Configurable file path strings
 INPUT_FILE: str = "tests/sample_input.txt"
@@ -61,7 +61,7 @@ def segment_text_file(
 
     text = input_path.read_text(encoding="utf-8")
 
-    segmenter = pragmatic_sbd.Segmenter(
+    segmenter = fracture.Segmenter(
         language=language,
         clean=clean,
         char_span=char_span,
@@ -69,7 +69,7 @@ def segment_text_file(
     raw_segments = segmenter.segment(text)
 
     output_lines: list[str] = [
-        f"=== pragmatic_sbd Segmentation Output ({len(raw_segments)} Sentences) ===",
+        f"=== fracture Segmentation Output ({len(raw_segments)} Sentences) ===",
         f"Input File : {input_path.as_posix()}",
         f"Language   : {language}",
         f"Clean      : {clean}",
@@ -107,7 +107,7 @@ def test_file_segmenter() -> None:
 
     content = out_path.read_text(encoding="utf-8")
     assert "[1]" in content
-    assert "=== pragmatic_sbd Segmentation Output" in content
+    assert "=== fracture Segmentation Output" in content
 
 
 if __name__ == "__main__":

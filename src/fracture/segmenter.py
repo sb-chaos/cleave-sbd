@@ -2,10 +2,10 @@
 
 from dataclasses import dataclass
 
-from pragmatic_sbd.disambiguator import Disambiguator
-from pragmatic_sbd.lang import get_language_module
-from pragmatic_sbd.lang.common import unmask_all
-from pragmatic_sbd.normalizer import Normalizer
+from fracture.disambiguator import Disambiguator
+from fracture.lang import get_language_module
+from fracture.lang.common import unmask_all
+from fracture.normalizer import Normalizer
 
 
 @dataclass(slots=True, frozen=True)

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import pytest
-import pragmatic_sbd
+import fracture
 
 
 TESTS_WITH_CLEAN = [
@@ -1751,7 +1751,7 @@ def test_en_sbd_with_clean(en_with_clean_no_span_fixture, text, expected_sents):
 @pytest.mark.parametrize("text,expected_sents", TESTS_WO_CLEAN)
 def test_en_sbd_wo_clean(text, expected_sents):
     """SBD tests from Pragmatic Segmenter without clean:true"""
-    seg = pragmatic_sbd.Segmenter(language="en", clean=False)
+    seg = fracture.Segmenter(language="en", clean=False)
     segments = seg.segment(text)
     segments = [s.strip() for s in segments]
     assert segments == expected_sents

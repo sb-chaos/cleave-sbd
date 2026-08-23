@@ -10,7 +10,7 @@ from pathlib import Path
 # Add project root to python path to import packages
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-import pragmatic_sbd
+import fracture
 from tests.lang.test_english import GOLDEN_EN_RULES_TEST_CASES
 
 # Known titles that we temporarily lowercase to prevent AM_PM_RULES from triggering sentence split
@@ -36,8 +36,8 @@ def custom_segment(text: str) -> list[str]:
         text,
     )
 
-    # Segment using pragmatic-sbd
-    segmenter = pragmatic_sbd.Segmenter(language="en", clean=False)
+    # Segment using fracture
+    segmenter = fracture.Segmenter(language="en", clean=False)
     sents = segmenter.segment(preprocessed_text)
 
     # Postprocess: Restore title capitalization

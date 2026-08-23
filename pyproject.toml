@@ -2,8 +2,11 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.build.targets.wheel]
+packages = ["src/fracture"]
+
 [project]
-name = "pragmatic-sbd"
+name = "fracture"
 version = "0.1.0"
 description = "High-performance, strictly-typed sentence boundary disambiguation (Pragmatic SBD)"
 readme = "README.md"
@@ -38,10 +41,10 @@ classifiers = [
 dependencies = []
 
 [project.urls]
-Homepage = "https://github.com/sblasing/pragmatic-sbd"
-Repository = "https://github.com/sblasing/pragmatic-sbd"
-Issues = "https://github.com/sblasing/pragmatic-sbd/issues"
-Changelog = "https://github.com/sblasing/pragmatic-sbd/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/sblasing/fracture"
+Repository = "https://github.com/sblasing/fracture"
+Issues = "https://github.com/sblasing/fracture/issues"
+Changelog = "https://github.com/sblasing/fracture/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = [
@@ -62,15 +65,12 @@ dev = [
     "twine>=7.0.0",
 ]
 
-[tool.hatch.build.targets.wheel]
-packages = ["pragmatic_sbd"]
-
 # -----------------------------------------------------------------------------
 # Tool Configurations
 # -----------------------------------------------------------------------------
 
 [tool.basedpyright]
-include = ["pragmatic_sbd", "tests"]
+include = ["fracture", "tests"]
 exclude = [".venv", "**/__pycache__"]
 pythonVersion = "3.11"
 typeCheckingMode = "strict"
@@ -134,7 +134,7 @@ filterwarnings = [
 ]
 
 [tool.coverage.run]
-source = ["pragmatic_sbd"]
+source = ["fracture"]
 branch = true
 omit = [
     "tests/*",

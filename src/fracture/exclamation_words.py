@@ -1,7 +1,7 @@
 # pysbd/lang/common.py
 import re
 
-from pragmatic_sbd.lang.common.standard import PUA_EXCLAMATION
+from fracture.lang.common.standard import PUA_EXCLAMATION
 
 EXCLAMATION_WORDS = (
     "ǃʼOǃKung",

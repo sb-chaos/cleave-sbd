@@ -5,19 +5,19 @@ from __future__ import annotations
 import re
 from typing import TYPE_CHECKING
 
-from pragmatic_sbd.abbreviation_replacer import replace_abbreviations
-from pragmatic_sbd.between_punctuation import mask_between_punctuation
-from pragmatic_sbd.exclamation_words import mask_exclamation_words
-from pragmatic_sbd.lang.common import common, standard
-from pragmatic_sbd.lang.common.standard import (
+from fracture.abbreviation_replacer import replace_abbreviations
+from fracture.between_punctuation import mask_between_punctuation
+from fracture.exclamation_words import mask_exclamation_words
+from fracture.lang.common import common, standard
+from fracture.lang.common.standard import (
     COMMON_RULES,
     DOUBLE_PUNCTUATION_RULES,
     ELLIPSIS_RULES,
     PUA_NEWLINE,
     unmask_all,
 )
-from pragmatic_sbd.languages import get_language_module
-from pragmatic_sbd.lists_item_replacer import mask_list_items
+from fracture.languages import get_language_module
+from fracture.lists_item_replacer import mask_list_items
 
 if TYPE_CHECKING:
     from types import ModuleType

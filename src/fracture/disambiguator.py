@@ -7,8 +7,8 @@ from dataclasses import dataclass, field
 from functools import lru_cache
 from types import ModuleType
 
-from pragmatic_sbd.lang import LanguageConfig, get_language_module
-from pragmatic_sbd.lang.common import (
+from fracture.lang import LanguageConfig, get_language_module
+from fracture.lang.common import (
     ALPHA_LIST_REGEX,
     AM_PM_RULES,
     BETWEEN_SINGLE_QUOTES_REGEX,

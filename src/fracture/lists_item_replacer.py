@@ -10,7 +10,7 @@ import re
 import string
 from typing import ClassVar, Final
 
-from pragmatic_sbd.lang.common.standard import (
+from fracture.lang.common.standard import (
     PUA_LEFT_PAREN,
     PUA_PERIOD,
     PUA_RIGHT_PAREN,

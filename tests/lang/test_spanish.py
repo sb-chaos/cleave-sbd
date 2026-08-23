@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import pytest
-import pragmatic_sbd
+import fracture
 
 GOLDEN_ES_RULES_TEST_CASES = [
     ("¿Cómo está hoy? Espero que muy bien.", ["¿Cómo está hoy?", "Espero que muy bien."]),
@@ -247,7 +247,7 @@ ES_PDF_CASE = [
 @pytest.mark.parametrize("text,expected_sents", ES_PDF_CASE)
 def test_es_pdf_type(text, expected_sents):
     """Spanish SBD tests from Pragmatic Segmenter for doctype:pdf"""
-    seg = pragmatic_sbd.Segmenter(language="es", clean=True, doc_type="pdf")
+    seg = fracture.Segmenter(language="es", clean=True, doc_type="pdf")
     segments = seg.segment(text)
     segments = [s.strip() for s in segments]
     assert segments == expected_sents

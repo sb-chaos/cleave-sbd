@@ -5,8 +5,8 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from types import ModuleType
 
-from pragmatic_sbd.lang import LanguageConfig, get_language_module
-from pragmatic_sbd.lang.common import Rule
+from fracture.lang import LanguageConfig, get_language_module
+from fracture.lang.common import Rule
 
 URL_EMAIL_KEYWORDS: tuple[str, ...] = (
     ".com",

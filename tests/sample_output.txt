@@ -1,4 +1,4 @@
-=== pragmatic_sbd Segmentation Output (8 Sentences) ===
+=== fracture Segmentation Output (8 Sentences) ===
 Input File : tests/sample_input.txt
 Language   : en
 Clean      : True

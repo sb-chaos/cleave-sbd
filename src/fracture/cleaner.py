@@ -2,8 +2,8 @@
 
 from collections.abc import Sequence
 
-from pragmatic_sbd.clean.rules import HTML, PDF, CleanRules as cr
-from pragmatic_sbd.lang.common.standard import Rule
+from fracture.clean.rules import HTML, PDF, CleanRules as cr
+from fracture.lang.common.standard import Rule
 
 URL_EMAIL_KEYWORDS: tuple[str, ...] = (
     ".com",

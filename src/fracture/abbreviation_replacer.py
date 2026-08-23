@@ -7,7 +7,7 @@ sentence splits.
 
 import re
 
-from pragmatic_sbd.languages import get_language_module
+from fracture.languages import get_language_module
 
 from .lang.common.standard import (
     PUA_PERIOD,

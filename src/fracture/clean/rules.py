@@ -1,7 +1,7 @@
 import re
 from dataclasses import dataclass
 
-from pragmatic_sbd.lang.common.standard import Rule
+from fracture.lang.common.standard import Rule
 
 
 class CleanRules:

@@ -1,7 +1,7 @@
 from functools import lru_cache
 from types import ModuleType
 
-from pragmatic_sbd.lang import (
+from fracture.lang import (
     amharic,
     arabic,
     armenian,

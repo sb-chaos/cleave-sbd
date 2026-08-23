@@ -98,7 +98,7 @@ def mask_between_punctuation(text: str, lang: str = "") -> str:
         text = pattern.sub(handler, text)
 
     # 3. Language-specific paired patterns (e.g., Japanese 「」/（）, Slovak „“, German „“/,,“)
-    from pragmatic_sbd.languages import get_language_module
+    from fracture.languages import get_language_module
 
     lang_module = get_language_module(lang) if lang else None
     lang_paired_patterns: tuple[re.Pattern[str], ...] = (

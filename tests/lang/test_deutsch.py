@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import pytest
-import pragmatic_sbd
+import fracture
 
 GOLDEN_DE_RULES_TEST_CASES = [
     (
@@ -204,7 +204,7 @@ def test_de_sbd_clean(de_with_clean_no_span_fixture, text, expected_sents):
 @pytest.mark.parametrize("text,expected_sents", DE_PDF_CLEAN_RULES_TEST_CASES)
 def test_de_pdf_type(text, expected_sents):
     """SBD tests from Pragmatic Segmenter for deutsch & doctype:pdf"""
-    seg = pragmatic_sbd.Segmenter(language="de", clean=True, doc_type="pdf")
+    seg = fracture.Segmenter(language="de", clean=True, doc_type="pdf")
     segments = seg.segment(text)
     segments = [s.strip() for s in segments]
     assert segments == expected_sents

@@ -1,6 +1,6 @@
 import pytest
-from pragmatic_sbd.lang import Language
-from pragmatic_sbd.normalizer import Normalizer
+from fracture.lang import Language
+from fracture.normalizer import Normalizer
 
 TEST_TOBE_CLEANED_DATA = [
     ("It was a cold \nnight in the city.", "It was a cold night in the city."),

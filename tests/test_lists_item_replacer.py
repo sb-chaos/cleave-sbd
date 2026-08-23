@@ -1,13 +1,13 @@
 """Unit tests for the refactored list item masking engine."""
 
 import pytest
-from pragmatic_sbd.lang.common import (
+from fracture.lang.common import (
     PUA_LEFT_PAREN,
     PUA_PERIOD,
     PUA_RIGHT_PAREN,
     unmask_all,
 )
-from pragmatic_sbd.disambiguator import mask_list_items
+from fracture.disambiguator import mask_list_items
 
 
 class TestListItemMasking:

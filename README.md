@@ -1,12 +1,12 @@
-# pragmatic-sbd: Pragmatic Sentence Boundary Disambiguation
+# fracture: Pragmatic Sentence Boundary Disambiguation
 
-[![CI](https://github.com/sblasing/pragmatic-sbd/actions/workflows/python-package.yml/badge.svg)](https://github.com/sblasing/pragmatic-sbd/actions/workflows/python-package.yml)
+[![CI](https://github.com/sblasing/fracture/actions/workflows/python-package.yml/badge.svg)](https://github.com/sblasing/fracture/actions/workflows/python-package.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![Typing: Strict](https://img.shields.io/badge/typing-strict-green.svg)](https://peps.python.org/pep-0561/)
 [![Code Style: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
-**pragmatic-sbd** is a high-performance, strictly-typed sentence boundary disambiguation (SBD) engine. It isolates sentence boundaries across complex edge cases—including abbreviations, honorifics, numbers, lists, ellipses, and quotations—with zero machine learning dependencies.
+**fracture** is a high-performance, strictly-typed sentence boundary disambiguation (SBD) engine. It isolates sentence boundaries across complex edge cases—including abbreviations, honorifics, numbers, lists, ellipses, and quotations—with zero machine learning dependencies.
 
 ---
 
@@ -23,13 +23,13 @@
 ## Installation
 
 ```bash
-pip install pragmatic-sbd
+pip install fracture
 ```
 
 Or with `uv`:
 
 ```bash
-uv add pragmatic-sbd
+uv add fracture
 ```
 
 ---
@@ -37,10 +37,10 @@ uv add pragmatic-sbd
 ## Quickstart
 
 ```python
-import pragmatic_sbd
+import fracture
 
 text = "My name is Jonas E. Smith. Please turn to p. 55."
-seg = pragmatic_sbd.Segmenter(language="en", clean=False)
+seg = fracture.Segmenter(language="en", clean=False)
 
 sentences = seg.segment(text)
 print(sentences)
@@ -53,10 +53,10 @@ print(sentences)
 Extract start and end character offsets alongside segmented sentences:
 
 ```python
-import pragmatic_sbd
+import fracture
 
 text = "Hello world! This is a test."
-seg = pragmatic_sbd.Segmenter(language="en", char_span=True)
+seg = fracture.Segmenter(language="en", char_span=True)
 
 spans = seg.segment(text)
 for span in spans:
@@ -94,7 +94,7 @@ for span in spans:
 
 ## Acknowledgments & Attribution
 
-`pragmatic-sbd` is an independent, complete rewrite designed from the ground up as a modern, declarative, strictly-typed sentence boundary disambiguation engine.
+`fracture` is an independent, complete rewrite designed from the ground up as a modern, declarative, strictly-typed sentence boundary disambiguation engine.
 
 Sincere attribution and gratitude are given to the projects whose compiled linguistic heuristics and rule sets inspired this library:
 * **[Pragmatic Segmenter](https://github.com/diasks2/pragmatic_segmenter)** by Kevin S. Dias (Ruby)
@@ -111,9 +111,9 @@ Benchmarks evaluated on the **Complete Works of William Shakespeare** (`pg100.tx
 
 | Engine | Sentences Found | Mean Latency | Min Latency | Throughput | Status / Speedup |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **`pragmatic-sbd` (`clean=False`)** | 176,430 | 4,489.86 ms | 4,470.52 ms | 1.16 MB/s | 1.00x (Baseline) |
-| **`pragmatic-sbd` (`clean=True`)** | 176,442 | 4,510.56 ms | 4,501.86 ms | 1.15 MB/s | 1.00x |
-| **`pragmatic-sbd` (`char_span=True`)** | 176,430 | 4,589.46 ms | 4,563.51 ms | 1.13 MB/s | 0.98x |
+| **`fracture` (`clean=False`)** | 176,430 | 4,489.86 ms | 4,470.52 ms | 1.16 MB/s | 1.00x (Baseline) |
+| **`fracture` (`clean=True`)** | 176,442 | 4,510.56 ms | 4,501.86 ms | 1.15 MB/s | 1.00x |
+| **`fracture` (`char_span=True`)** | 176,430 | 4,589.46 ms | 4,563.51 ms | 1.13 MB/s | 0.98x |
 | **spaCy `sentencizer`** | 109,084 | 4,862.67 ms | 4,758.62 ms | 1.07 MB/s | 0.97x |
 | **BlingFire** | 107,489 | 164.11 ms | 161.32 ms | 31.62 MB/s | 27.77x |
 | **NLTK `sent_tokenize`** | 105,488 | 726.35 ms | 724.30 ms | 7.15 MB/s | 6.27x |
@@ -126,11 +126,11 @@ Benchmarks evaluated on the **Complete Works of William Shakespeare** (`pg100.tx
 ### Key Takeaways & Failure Analysis
 
 * **pySBD Asymptotic Hang (>15 Minutes):**  
-  `pySBD` hits an $O(N^2)$ algorithmic wall on multi-megabyte corpora. Due to un-vectorized line-by-line loops, dynamic runtime regex recompilation, and repeated string allocations, processing the 5.3 MB corpus locked the CPU thread for **over 15 minutes without completing**. In contrast, `pragmatic-sbd` finished the exact same segmentation in **4.55 seconds**.
+  `pySBD` hits an $O(N^2)$ algorithmic wall on multi-megabyte corpora. Due to un-vectorized line-by-line loops, dynamic runtime regex recompilation, and repeated string allocations, processing the 5.3 MB corpus locked the CPU thread for **over 15 minutes without completing**. In contrast, `fracture` finished the exact same segmentation in **4.55 seconds**.
 * **spaCy Pipeline Lockout:**  
   spaCy failed to run out-of-the-box due to rigid external model weight requirements and initialization overhead, refusing processing without dedicated secondary environment bootstrapping.
 * **Granular Boundary Precision:**  
-  `pragmatic-sbd` detected **176,430** valid sentence boundaries (~49,000–70,000 more than Stanza, NLTK, or BlingFire) by accurately segmenting dramatic verse, dialogue cues, character tags, and archaic typography rather than collapsing them into single run-on blocks.
+  `fracture` detected **176,430** valid sentence boundaries (~49,000–70,000 more than Stanza, NLTK, or BlingFire) by accurately segmenting dramatic verse, dialogue cues, character tags, and archaic typography rather than collapsing them into single run-on blocks.
 * **10.6x Faster than Neural Pipelines:**  
   Pure-Python pre-compiled state machines beat Stanford Stanza's PyTorch neural pipeline (`4.56 s` vs `48.15 s`) on a single CPU core with zero external C++ or CUDA dependencies.
 * **Zero-Cost Character Spans:**  

@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Create a report and test case to help us improve pragmatic-sbd
+about: Create a report and test case to help us improve fracture
 title: "[BUG] "
 labels: ["bug"]
 assignees: ""
@@ -13,9 +13,9 @@ A clear and concise description of what the bug is.
 ### Reproduction Code
 
 ```python
-import pragmatic_sbd
+import fracture
 
-seg = pragmatic_sbd.Segmenter(language="en", clean=False, char_span=False)
+seg = fracture.Segmenter(language="en", clean=False, char_span=False)
 text = "Your sample text here."
 sentences = seg.segment(text)
 print(sentences)
@@ -29,7 +29,7 @@ A clear and concise description of what sentences should have been segmented.
 ```
 
 ### Actual Behavior
-The actual output returned by `pragmatic-sbd`.
+The actual output returned by `fracture`.
 
 ```python
 ["Actual sentence 1."]
@@ -37,7 +37,7 @@ The actual output returned by `pragmatic-sbd`.
 
 ### Environment Information
 - Python version (e.g., `3.11.8`, `3.12.2`):
-- `pragmatic-sbd` version (e.g., `0.1.0`):
+- `fracture` version (e.g., `0.1.0`):
 - Operating System (e.g., Linux, macOS, Windows):
 
 ### Additional Context

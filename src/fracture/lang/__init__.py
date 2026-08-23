@@ -8,7 +8,7 @@ import tomllib
 from dataclasses import dataclass
 from types import ModuleType
 
-from pragmatic_sbd.lang.common import Rule
+from fracture.lang.common import Rule
 
 SUPPORTED_LANGUAGES: frozenset[str] = frozenset(
     {
@@ -72,7 +72,7 @@ def load_language_config(code: str) -> LanguageConfig:
         )
 
     # Resolve, read, and load TOML config using stdlib resources
-    ref = importlib.resources.files("pragmatic_sbd.lang.configs").joinpath(f"{code}.toml")
+    ref = importlib.resources.files("fracture.lang.configs").joinpath(f"{code}.toml")
     data = tomllib.loads(ref.read_text(encoding="utf-8"))
 
     # Instantiate the configuration container
