@@ -1,0 +1,196 @@
+commit: 818927a0fb3f47546e7f4f82020e98edb2b55b29
+Author: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Committer: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Co-Authors: 
+Date:   Sun Aug 23 11:33:57 2026 -0400
+Subject: refactor: rename package to fracture and migrate to src layout
+
+commit: 2991cf3e3f863f4d18a4d1b611aaa2fdcc4f4375
+Author: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Committer: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Co-Authors: 
+Date:   Sun Aug 23 10:46:28 2026 -0400
+Subject: Chore: Cleaning up aider entries from repo
+
+commit: 4a3ebc26514ae119950e17007bc2b29a7ecdd265
+Author: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Committer: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Co-Authors: 
+Date:   Thu Aug 20 15:38:46 2026 -0400
+Subject: fix: resolve merge conflicts and restore clean state across repository
+
+commit: 426298ebc771dad4bc602381dc0c6967f5cd4dfe
+Author: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Committer: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Co-Authors: 
+Date:   Thu Aug 20 15:37:31 2026 -0400
+Subject: Removing merge artifacts
+
+commit: fb7b1790d834c45cd02397343fe6d9dda7fb8fe8
+Author: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Committer: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Co-Authors: 
+Date:   Thu Aug 20 15:35:35 2026 -0400
+Subject: cleanup tasks
+
+commit: 65202b5f5b73247b5745136e6ab9c4000e2723ea
+Author: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Committer: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Co-Authors: 
+Date:   Thu Aug 20 13:55:00 2026 -0400
+Subject: metadata cleanup
+
+commit: 315fbca55604fe921721bca35bd4278fd72a9ae1
+Author: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Committer: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Co-Authors: 
+Date:   Thu Aug 20 13:44:07 2026 -0400
+Subject: cleaned up git metadata
+
+commit: 71a94345914a5666c6bf1609d094c01104672b23
+Author: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Committer: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Co-Authors: 
+Date:   Thu Aug 20 13:38:44 2026 -0400
+Subject: cleaned up absolute paths in test files.
+
+commit: b89dc8c9c4133dea06a075f86f599b5bcc7f67b0
+Author: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Committer: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Co-Authors: 
+Date:   Thu Aug 20 13:33:55 2026 -0400
+Subject: forgot to run formatter again and profile_normalizer was not strictly typed.
+
+commit: 279762dabe43a8765caca6e8a4eee30ca48596aa
+Author: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Committer: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Co-Authors: 
+Date:   Thu Aug 20 13:25:10 2026 -0400
+Subject: refactor(core): enforce strict typing and rename ambiguous variables
+
+commit: e219d14ba95b3b8186045242235a3628f7ea2fc5
+Author: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Committer: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Co-Authors: 
+Date:   Thu Aug 20 11:33:48 2026 -0400
+Subject: fix: resolve undefined `self.lang_module` and remove unused import
+
+commit: e3eb51c4382beabcdfcba00131f9a6546d8e31af
+Author: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Committer: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Co-Authors: 
+Date:   Thu Aug 20 11:33:11 2026 -0400
+Subject: fix: language rules edge case handling
+
+commit: f67ef6bf2845d906fb4cc6b6b8a83827ad58f092
+Author: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Committer: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Co-Authors: 
+Date:   Thu Aug 20 10:57:03 2026 -0400
+Subject: ran ruff check . --fix because formatting issues.
+
+commit: 8f03fddd64b3bb7e283fd0aa3eac18b47eef662d
+Author: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Committer: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Co-Authors: 
+Date:   Thu Aug 20 10:55:02 2026 -0400
+Subject: removed AGENTS.md file from repo and added proper file name to .gitignore
+
+commit: 069d27bec6ae3216edfaa7d626ef6524b8716f0c
+Author: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Committer: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Co-Authors: 
+Date:   Thu Aug 20 10:53:50 2026 -0400
+Subject: docs: add google-style docstrings and annotations, optimize normalizer logic
+
+commit: 4e4cf94a6a0db5fed1570bf700f9cc7b19621b5e
+Author: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Committer: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Co-Authors: 
+Date:   Thu Aug 20 07:12:49 2026 -0400
+Subject: refactor: remove legacy wrappers and optimize lookup/string performance
+
+commit: 36af020504c9f869bcb5c34df25e191a2b64f267
+Author: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Committer: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Co-Authors: 
+Date:   Wed Aug 19 17:08:17 2026 -0400
+Subject: Adding bigtest benchmark results to readme.
+
+commit: b806ea3d80e909890cde22acfe46d119bdf91e08
+Author: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Committer: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Co-Authors: 
+Date:   Wed Aug 19 16:55:50 2026 -0400
+Subject: readding requires block for build-system.
+
+commit: 6fecf137ec546ac88d2a7135cba05b13b677d4a0
+Author: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Committer: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Co-Authors: 
+Date:   Wed Aug 19 16:43:39 2026 -0400
+Subject: Stop tracking agents.md and uv.lock
+
+commit: 575595896f23e7b6c9ac7fc4f358e6e11db26b72
+Author: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Committer: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Co-Authors: 
+Date:   Wed Aug 19 16:38:35 2026 -0400
+Subject: perf(core): optimize span tracking, regex passes, and modernize benchmarks
+
+commit: a22543fd96495b44010bfe26fe1945dc1f19c38b
+Author: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Committer: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Co-Authors: 
+Date:   Tue Aug 18 22:46:18 2026 -0400
+Subject: refactor: modularize language rules, pipeline architecture, and slotted dataclasses
+
+commit: c3b2b79d15efc08c3e1e56f6618c62a0cdced7bf
+Author: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Committer: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Co-Authors: 
+Date:   Tue Aug 18 22:23:13 2026 -0400
+Subject: refactor: consolidate paired punctuation rules into standard.py and processor.py
+
+commit: ccf8353387795fe0e8d5c7ea405157cc7e9867c2
+Author: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Committer: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Co-Authors: 
+Date:   Tue Aug 18 22:20:35 2026 -0400
+Subject: refactor: consolidate exclamation_words into lang/common/standard.py
+
+commit: 10125559fd6bec9220cdb60ea8d5a7d561cd5d88
+Author: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Committer: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Co-Authors: 
+Date:   Tue Aug 18 22:18:07 2026 -0400
+Subject: fix(i18n): support arabic bidi formatting and sequential char span offsets
+
+commit: 276a1304acbb108b9ffa933760655966ad14cd13
+Author: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Committer: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Co-Authors: 
+Date:   Tue Aug 18 21:55:00 2026 -0400
+Subject: refactor: use declarative group reference templates (r"\g<1>" + PUA_PERIOD)
+
+commit: 01c6df44f23da0e348febc7adbb63b73bf48412f
+Author: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Committer: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Co-Authors: 
+Date:   Tue Aug 18 21:47:09 2026 -0400
+Subject: ci: update actions to node24 native versions (checkout@v7, setup-uv@v7)
+
+commit: 89be461307c98ea9d36329c46a9bf466781d2d2a
+Author: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Committer: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Co-Authors: 
+Date:   Tue Aug 18 21:44:04 2026 -0400
+Subject: fix(engine): resolve language rules and edge cases across segmentation engine
+
+commit: 757de69ac13de15c6e2fb480d2c14a2f8b2f7820
+Author: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Committer: Scott Blasing <9419596+sblasing@users.noreply.github.com>
+Co-Authors: 
+Date:   Tue Aug 18 21:21:58 2026 -0400
+Subject: feat: initial release of pragmatic-sbd v0.1.0
+

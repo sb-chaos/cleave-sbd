@@ -10,8 +10,9 @@ from pathlib import Path
 # Add project root to python path to import packages
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-import fracture
 from tests.lang.test_english import GOLDEN_EN_RULES_TEST_CASES
+
+import fracture
 
 # Known titles that we temporarily lowercase to prevent AM_PM_RULES from triggering sentence split
 TITLES_TO_RESTORE = {"mr", "mrs", "ms", "dr", "prof", "sr", "jr", "gen", "rep", "sen"}

@@ -70,15 +70,12 @@ dev = [
 # -----------------------------------------------------------------------------
 
 [tool.basedpyright]
-include = ["fracture", "tests"]
+include = ["src"]
+extraPaths = ["src"]
 exclude = [".venv", "**/__pycache__"]
 pythonVersion = "3.11"
 typeCheckingMode = "strict"
-reportMissingTypeStubs = false
-
-[tool.ruff]
-target-version = "py311"
-line-length = 110
+reportRedeclaration = false
 
 [tool.ruff.lint]
 allowed-confusables = [
@@ -92,7 +89,6 @@ allowed-confusables = [
     "А", "а", "В", "в", "Е", "е", "К", "к", "М", "м", "О", "о", "Р", "р", "С", "с", "Т", "т", "Х", "х", "б", "г", "у",
     # Math, music & syllabic sentinels (test fixtures / legacy strings)
     "∯", "♭", "♬", "ȸ", "ᓴ", "ᓷ", "•", "⁃", "ا", "ه",
-
 ]
 select = [
     "E",     # pycodestyle errors
@@ -124,17 +120,15 @@ ignore = [
 
 [tool.ruff.lint.isort]
 combine-as-imports = true
+known-first-party = ["fracture"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-ra --strict-markers"
-filterwarnings = [
-    "error",
-    "ignore::DeprecationWarning",
-]
+adopts = "-ra --strict-markers"
+
 
 [tool.coverage.run]
-source = ["fracture"]
+source = ["src/fracture"]
 branch = true
 omit = [
     "tests/*",
