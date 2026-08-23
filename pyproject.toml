@@ -72,7 +72,7 @@ dev = [
 [tool.basedpyright]
 include = ["src"]
 extraPaths = ["src"]
-exclude = [".venv", "**/__pycache__"]
+exclude = [".venv", "**/__pycache__", "tests", "benchmarking"]
 pythonVersion = "3.11"
 typeCheckingMode = "strict"
 reportRedeclaration = false
