@@ -79,7 +79,9 @@ ABBREVIATIONS: frozenset[str] = frozenset({
 # fmt: on
 
 # Slovak Quotation Pair Pattern (Low-9 / High-66)
-SLOVAK_DOUBLE_QUOTES_REGEX = re.compile(r"\u201e(?=(?P<tmp>[^\u201c\\]+|\\{2}|\\.)*)(?P=tmp)\u201c")
+SLOVAK_DOUBLE_QUOTES_REGEX = re.compile(
+    r"\u201e(?=(?P<tmp>[^\u201c\\]+|\\{2}|\\.)*)(?P=tmp)\u201c"
+)
 
 PAIRED_PUNCTUATION_PATTERNS: tuple[re.Pattern[str], ...] = (SLOVAK_DOUBLE_QUOTES_REGEX,)
 
@@ -94,5 +96,8 @@ RULES: tuple[Rule, ...] = (
     # Ordinal numbers followed by lowercase text (e.g. "1. poschodie")
     Rule(re.compile(r"(?<=\d)\.(?=\s*[a-z]+)"), PUA_PERIOD),
     # Roman numeral list items/ordinals (e.g. " IV. ", " X. ")
-    Rule(re.compile(r"((?:(?<=^)|(?<=\s))[VXI]+)\.(?=\s+)", re.IGNORECASE), rf"\1{PUA_PERIOD}"),
+    Rule(
+        re.compile(r"((?:(?<=^)|(?<=\s))[VXI]+)\.(?=\s+)", re.IGNORECASE),
+        rf"\1{PUA_PERIOD}",
+    ),
 )

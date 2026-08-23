@@ -24,7 +24,9 @@ GOLDEN_SK_RULES_TEST_CASES = [
     ),
     (
         "Spoločnosť bola založená 7. Apríla 2020, na zmluve však figuruje dátum 20. marec 2020.",
-        ["Spoločnosť bola založená 7. Apríla 2020, na zmluve však figuruje dátum 20. marec 2020."],
+        [
+            "Spoločnosť bola založená 7. Apríla 2020, na zmluve však figuruje dátum 20. marec 2020."
+        ],
     ),
 ]
 

@@ -17,11 +17,17 @@ from .lang.common.standard import (
 # Common Pre-Compiled Patterns
 MULTI_PERIOD_DEFAULT_REGEX = re.compile(r"\b[a-z](?:\.[a-z])+[.]", re.IGNORECASE)
 POSSESSIVE_ABBR_REGEX = re.compile(r"\.(?='s\b|’s\b|'S\b|’S\b)")
-KOMMANDITGESELLSCHAFT_REGEX = re.compile(r"(?<=Co)\.(?=\s*(?:KG|GmbH|OHG|AG)\b)", re.IGNORECASE)
+KOMMANDITGESELLSCHAFT_REGEX = re.compile(
+    r"(?<=Co)\.(?=\s*(?:KG|GmbH|OHG|AG)\b)", re.IGNORECASE
+)
 
 # Single letter initials (e.g., "J. K. Rowling" -> "J\ue000 K\ue000 Rowling", "z. B." -> "z\ue000 B\ue000")
-SINGLE_UPPERCASE_LETTER_REGEX = re.compile(r"(?:(?<=^)|(?<=\s))([A-ZА-ЯЁ])\.(?=\s+[a-zA-Zа-яёА-ЯЁ]|\s*$)")
-SINGLE_LOWERCASE_LETTER_REGEX = re.compile(r"(?:(?<=^)|(?<=\s))([a-zа-яё])\.(?=\s+[a-zA-Zа-яёА-ЯЁ]|\s*$)")
+SINGLE_UPPERCASE_LETTER_REGEX = re.compile(
+    r"(?:(?<=^)|(?<=\s))([A-ZА-ЯЁ])\.(?=\s+[a-zA-Zа-яёА-ЯЁ]|\s*$)"
+)
+SINGLE_LOWERCASE_LETTER_REGEX = re.compile(
+    r"(?:(?<=^)|(?<=\s))([a-zа-яё])\.(?=\s+[a-zA-Zа-яёА-ЯЁ]|\s*$)"
+)
 
 # AM / PM Time Patterns
 AM_PM_REGEX = re.compile(r"(?<=\d)\s*(?:a\.m|p\.m|am|pm)\b", re.IGNORECASE)
@@ -55,7 +61,9 @@ def replace_multi_period_abbreviations(text: str, lang: str = "") -> str:
     """Mask all periods inside multi-period acronyms and abbreviations."""
     lang_module = get_language_module(lang) if lang else None
     mpa_pattern: re.Pattern[str] = (
-        getattr(lang_module, "MULTI_PERIOD_ABBREVIATION_REGEX", MULTI_PERIOD_DEFAULT_REGEX)
+        getattr(
+            lang_module, "MULTI_PERIOD_ABBREVIATION_REGEX", MULTI_PERIOD_DEFAULT_REGEX
+        )
         if lang_module
         else MULTI_PERIOD_DEFAULT_REGEX
     )
@@ -70,12 +78,16 @@ def replace_abbreviation_as_sentence_boundary(text: str, lang: str = "") -> str:
     """Restore terminal periods when an acronym is followed by a known sentence starter."""
     lang_module = get_language_module(lang) if lang else None
     sentence_starters: frozenset[str] = (
-        getattr(lang_module, "SENTENCE_STARTERS", frozenset()) if lang_module else frozenset()
+        getattr(lang_module, "SENTENCE_STARTERS", frozenset())
+        if lang_module
+        else frozenset()
     )
     if not sentence_starters:
         return text
 
-    starters_pattern = "|".join(re.escape(word) for word in sorted(sentence_starters, key=len, reverse=True))
+    starters_pattern = "|".join(
+        re.escape(word) for word in sorted(sentence_starters, key=len, reverse=True)
+    )
     boundary_regex = re.compile(
         rf"((?:U{PUA_PERIOD}S|U\.S|U{PUA_PERIOD}K|E{PUA_PERIOD}U|E\.U|"
         rf"U{PUA_PERIOD}S{PUA_PERIOD}A|U\.S\.A|I|i\.v|I\.V))"
@@ -88,13 +100,19 @@ def search_for_abbreviations_in_string(text: str, lang: str = "") -> str:
     """Scan string against all abbreviation sets defined in language configuration."""
     lang_module = get_language_module(lang) if lang else None
     abbreviations: frozenset[str] = (
-        getattr(lang_module, "ABBREVIATIONS", frozenset()) if lang_module else frozenset()
+        getattr(lang_module, "ABBREVIATIONS", frozenset())
+        if lang_module
+        else frozenset()
     )
     prepositive: frozenset[str] = (
-        getattr(lang_module, "PREPOSITIVE_ABBREVIATIONS", frozenset()) if lang_module else frozenset()
+        getattr(lang_module, "PREPOSITIVE_ABBREVIATIONS", frozenset())
+        if lang_module
+        else frozenset()
     )
     number_abbr: frozenset[str] = (
-        getattr(lang_module, "NUMBER_ABBREVIATIONS", frozenset()) if lang_module else frozenset()
+        getattr(lang_module, "NUMBER_ABBREVIATIONS", frozenset())
+        if lang_module
+        else frozenset()
     )
 
     if not abbreviations and not prepositive and not number_abbr:
@@ -117,7 +135,9 @@ def search_for_abbreviations_in_string(text: str, lang: str = "") -> str:
             continue
 
         # Context check: character following the abbreviation
-        next_char_pattern = re.compile(rf"(?<={re.escape(stripped)}\.\s)(\S)", re.IGNORECASE)
+        next_char_pattern = re.compile(
+            rf"(?<={re.escape(stripped)}\.\s)(\S)", re.IGNORECASE
+        )
         next_chars = next_char_pattern.findall(text)
         char = next_chars[0] if next_chars else ""
         is_upper = char.isupper() if char else False
@@ -147,7 +167,9 @@ def replace_abbreviations(text: str, lang: str = "") -> str:
 
     # 2. Language-specific custom preprocessing rules
     lang_module = get_language_module(lang) if lang else None
-    lang_rules: tuple[Rule, ...] = getattr(lang_module, "RULES", ()) if lang_module else ()
+    lang_rules: tuple[Rule, ...] = (
+        getattr(lang_module, "RULES", ()) if lang_module else ()
+    )
     for rule in lang_rules:
         text = rule.pattern.sub(rule.replacement, text)
 

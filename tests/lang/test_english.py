@@ -3,7 +3,10 @@ import pytest
 
 GOLDEN_EN_RULES_TEST_CASES = [
     ("Hello World. My name is Jonas.", ["Hello World.", "My name is Jonas."]),
-    ("What is your name? My name is Jonas.", ["What is your name?", "My name is Jonas."]),
+    (
+        "What is your name? My name is Jonas.",
+        ["What is your name?", "My name is Jonas."],
+    ),
     ("There it is! I found it.", ["There it is!", "I found it."]),
     ("My name is Jonas E. Smith.", ["My name is Jonas E. Smith."]),
     ("Please turn to p. 55.", ["Please turn to p. 55."]),
@@ -12,7 +15,10 @@ GOLDEN_EN_RULES_TEST_CASES = [
         "They closed the deal with Pitt, Briggs & Co. at noon.",
         ["They closed the deal with Pitt, Briggs & Co. at noon."],
     ),
-    ("Let's ask Jane and co. They should know.", ["Let's ask Jane and co.", "They should know."]),
+    (
+        "Let's ask Jane and co. They should know.",
+        ["Let's ask Jane and co.", "They should know."],
+    ),
     (
         "They closed the deal with Pitt, Briggs & Co. It closed yesterday.",
         ["They closed the deal with Pitt, Briggs & Co.", "It closed yesterday."],
@@ -32,8 +38,14 @@ GOLDEN_EN_RULES_TEST_CASES = [
         "I live in the U.S. How about you?",
         ["I live in the U.S.", "How about you?"],
     ),
-    ("I work for the U.S. Government in Virginia.", ["I work for the U.S. Government in Virginia."]),
-    ("I have lived in the U.S. for 20 years.", ["I have lived in the U.S. for 20 years."]),
+    (
+        "I work for the U.S. Government in Virginia.",
+        ["I work for the U.S. Government in Virginia."],
+    ),
+    (
+        "I have lived in the U.S. for 20 years.",
+        ["I have lived in the U.S. for 20 years."],
+    ),
     # Most difficult sentence to crack
     pytest.param(
         "At 5 a.m. Mr. Smith went to the bank. He left the bank at 6 P.M. Mr. Smith then went to the store.",
@@ -48,7 +60,9 @@ GOLDEN_EN_RULES_TEST_CASES = [
     ("She has $100.00. It is in her bag.", ["She has $100.00.", "It is in her bag."]),
     (
         "He teaches science (He previously worked for 5 years as an engineer.) at the local University.",
-        ["He teaches science (He previously worked for 5 years as an engineer.) at the local University."],
+        [
+            "He teaches science (He previously worked for 5 years as an engineer.) at the local University."
+        ],
     ),
     (
         "Her email is Jane.Doe@example.com. I sent her an email.",
@@ -56,7 +70,10 @@ GOLDEN_EN_RULES_TEST_CASES = [
     ),
     (
         "The site is: https://www.example.50.com/new-site/awesome_content.html. Please check it out.",
-        ["The site is: https://www.example.50.com/new-site/awesome_content.html.", "Please check it out."],
+        [
+            "The site is: https://www.example.50.com/new-site/awesome_content.html.",
+            "Please check it out.",
+        ],
     ),
     (
         "She turned to him, 'This is great.' she said.",
@@ -86,7 +103,10 @@ GOLDEN_EN_RULES_TEST_CASES = [
         "1) The first item 2) The second item",
         ["1) The first item", "2) The second item"],
     ),
-    ("1) The first item. 2) The second item.", ["1) The first item.", "2) The second item."]),
+    (
+        "1) The first item. 2) The second item.",
+        ["1) The first item.", "2) The second item."],
+    ),
     (
         "1. The first item 2. The second item",
         ["1. The first item", "2. The second item"],

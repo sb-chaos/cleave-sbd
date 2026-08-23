@@ -17,8 +17,12 @@ PREPOSITIVE_ABBREVIATIONS: frozenset[str] = frozenset()
 NUMBER_ABBREVIATIONS: frozenset[str] = frozenset()
 
 # Paired quotation/bracket patterns for punctuation masking
-DOUBLE_ANGLE_QUOTES_REGEX = re.compile(r"\u300a(?=(?P<tmp>[^\u300b\\]+|\\{2}|\\.)*)(?P=tmp)\u300b")
-CORNER_BRACKETS_REGEX = re.compile(r"\u300c(?=(?P<tmp>[^\u300d\\]+|\\{2}|\\.)*)(?P=tmp)\u300d")
+DOUBLE_ANGLE_QUOTES_REGEX = re.compile(
+    r"\u300a(?=(?P<tmp>[^\u300b\\]+|\\{2}|\\.)*)(?P=tmp)\u300b"
+)
+CORNER_BRACKETS_REGEX = re.compile(
+    r"\u300c(?=(?P<tmp>[^\u300d\\]+|\\{2}|\\.)*)(?P=tmp)\u300d"
+)
 
 PAIRED_PUNCTUATION_PATTERNS: tuple[re.Pattern[str], ...] = (
     DOUBLE_ANGLE_QUOTES_REGEX,

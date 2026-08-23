@@ -73,7 +73,9 @@ WORD_WITH_LEADING_APOSTROPHE = re.compile(
 )
 # fmt: on
 
-STANDARD_PAIRED_PATTERNS: tuple[tuple[re.Pattern[str], Callable[[re.Match[str]], str]], ...] = (
+STANDARD_PAIRED_PATTERNS: tuple[
+    tuple[re.Pattern[str], Callable[[re.Match[str]], str]], ...
+] = (
     (BETWEEN_DOUBLE_QUOTES_REGEX, mask_punctuation),
     (BETWEEN_QUOTE_ARROW_REGEX, mask_punctuation),
     (BETWEEN_QUOTE_SLANTED_REGEX, mask_punctuation),

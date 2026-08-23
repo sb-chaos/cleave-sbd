@@ -57,7 +57,9 @@ ABBREVIATIONS: frozenset[str] = frozenset(
 )
 
 # Sentence boundary matching terminating punctuation, colon, comma, or end-of-string
-SENTENCE_BOUNDARY_REGEX = re.compile(rf".*?[:.!?{ARABIC_QUESTION_MARK}{ARABIC_COMMA}]|.*?$")
+SENTENCE_BOUNDARY_REGEX = re.compile(
+    rf".*?[:.!?{ARABIC_QUESTION_MARK}{ARABIC_COMMA}]|.*?$"
+)
 
 # Language-specific protection rules
 RULES: tuple[Rule, ...] = (

@@ -85,7 +85,9 @@ def load_language_config(code: str) -> LanguageConfig:
     replace_all_abbr_periods = data.get("replace_all_abbr_periods", False)
 
     sentence_boundary_regex = (
-        re.compile(data["sentence_boundary_regex"]) if "sentence_boundary_regex" in data else None
+        re.compile(data["sentence_boundary_regex"])
+        if "sentence_boundary_regex" in data
+        else None
     )
 
     multi_period_abbreviation_regex = (
@@ -94,11 +96,18 @@ def load_language_config(code: str) -> LanguageConfig:
         else None
     )
 
-    rules = tuple(Rule(re.compile(r["pattern"]), r["replacement"]) for r in data.get("rules", []))
+    rules = tuple(
+        Rule(re.compile(r["pattern"]), r["replacement"]) for r in data.get("rules", [])
+    )
 
-    clean_rules = tuple(Rule(re.compile(r["pattern"]), r["replacement"]) for r in data.get("clean_rules", []))
+    clean_rules = tuple(
+        Rule(re.compile(r["pattern"]), r["replacement"])
+        for r in data.get("clean_rules", [])
+    )
 
-    paired_punctuation_patterns = tuple(re.compile(p) for p in data.get("paired_punctuation_patterns", []))
+    paired_punctuation_patterns = tuple(
+        re.compile(p) for p in data.get("paired_punctuation_patterns", [])
+    )
 
     config = LanguageConfig(
         iso_code=iso_code,
@@ -119,7 +128,9 @@ def load_language_config(code: str) -> LanguageConfig:
     return config
 
 
-def get_language_module(lang: str | ModuleType | LanguageConfig | None) -> LanguageConfig | None:
+def get_language_module(
+    lang: str | ModuleType | LanguageConfig | None,
+) -> LanguageConfig | None:
     """Return language configuration if lang is non-empty, else None.
 
     Args:

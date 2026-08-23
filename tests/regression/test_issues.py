@@ -163,7 +163,10 @@ TEST_ISSUE_DATA_CHAR_SPANS = [
     (
         "#55",
         'She turned to him, "This is great." She held the book out to show him.',
-        [('She turned to him, "This is great." ', 0, 36), ("She held the book out to show him.", 36, 70)],
+        [
+            ('She turned to him, "This is great." ', 0, 36),
+            ("She held the book out to show him.", 36, 70),
+        ],
     ),
     (
         "#56",
@@ -172,7 +175,11 @@ you may copy it, give it away or re-use it under the terms of the this license
 """,
         [
             ("This eBook is for the use of anyone anywhere at no cost\n", 0, 56),
-            ("you may copy it, give it away or re-use it under the terms of the this license\n", 56, 135),
+            (
+                "you may copy it, give it away or re-use it under the terms of the this license\n",
+                56,
+                135,
+            ),
         ],
     ),
     (
@@ -188,7 +195,11 @@ you may copy it, give it away or re-use it under the terms of the this license
     (
         "#83",
         "Maissen se chargea du reste .. Logiquement,",
-        [("Maissen se chargea du reste .", 0, 29), (". ", 29, 31), ("Logiquement,", 31, 43)],
+        [
+            ("Maissen se chargea du reste .", 0, 29),
+            (". ", 29, 31),
+            ("Logiquement,", 31, 43),
+        ],
     ),
     (
         "#83",
@@ -198,7 +209,11 @@ you may copy it, give it away or re-use it under the terms of the this license
     (
         "#83",
         "Maissen se chargea du reste .... Logiquement,",
-        [("Maissen se chargea du reste .", 0, 29), ("... ", 29, 33), ("Logiquement,", 33, 45)],
+        [
+            ("Maissen se chargea du reste .", 0, 29),
+            ("... ", 29, 33),
+            ("Logiquement,", 33, 45),
+        ],
     ),
 ]
 
@@ -214,13 +229,16 @@ def test_issue(issue_no, text, expected_sents):
     assert text == " ".join(segments)
 
 
-@pytest.mark.parametrize("issue_no,text,expected_sents_w_spans", TEST_ISSUE_DATA_CHAR_SPANS)
+@pytest.mark.parametrize(
+    "issue_no,text,expected_sents_w_spans", TEST_ISSUE_DATA_CHAR_SPANS
+)
 def test_issues_with_char_spans(issue_no, text, expected_sents_w_spans):
     """fracture issues tests from https://github.com/nipunsadvilkar/fracture/issues/"""
     seg = fracture.Segmenter(language="en", clean=False, char_span=True)
     segments = seg.segment(text)
     expected_text_spans = [
-        TextSpan(sent_w_span[0], sent_w_span[1], sent_w_span[2]) for sent_w_span in expected_sents_w_spans
+        TextSpan(sent_w_span[0], sent_w_span[1], sent_w_span[2])
+        for sent_w_span in expected_sents_w_spans
     ]
     assert segments == expected_text_spans
     # clubbing sentences and matching with original text

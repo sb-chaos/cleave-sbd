@@ -2,7 +2,10 @@
 import pytest
 
 GOLDEN_IT_RULES_TEST_CASES = [
-    ("Salve Sig.ra Mengoni! Come sta oggi?", ["Salve Sig.ra Mengoni!", "Come sta oggi?"]),
+    (
+        "Salve Sig.ra Mengoni! Come sta oggi?",
+        ["Salve Sig.ra Mengoni!", "Come sta oggi?"],
+    ),
     (
         "Una lettera si può iniziare in questo modo «Il/la sottoscritto/a.».",
         ["Una lettera si può iniziare in questo modo «Il/la sottoscritto/a.»."],
@@ -11,7 +14,10 @@ GOLDEN_IT_RULES_TEST_CASES = [
 ]
 
 IT_MORE_TEST_CASES = [
-    ("Salve Sig.ra Mengoni! Come sta oggi?", ["Salve Sig.ra Mengoni!", "Come sta oggi?"]),
+    (
+        "Salve Sig.ra Mengoni! Come sta oggi?",
+        ["Salve Sig.ra Mengoni!", "Come sta oggi?"],
+    ),
     (
         "Buongiorno! Sono l'Ing. Mengozzi. È presente l'Avv. Cassioni?",
         ["Buongiorno!", "Sono l'Ing. Mengozzi.", "È presente l'Avv. Cassioni?"],
@@ -26,14 +32,26 @@ IT_MORE_TEST_CASES = [
     ),
     (
         "La centrale meteor. si è guastata. Gli idraul. son dovuti andare a sistemarla.",
-        ["La centrale meteor. si è guastata.", "Gli idraul. son dovuti andare a sistemarla."],
+        [
+            "La centrale meteor. si è guastata.",
+            "Gli idraul. son dovuti andare a sistemarla.",
+        ],
     ),
     (
         "Hanno creato un algoritmo allo st. d. arte. Si ringrazia lo psicol. Serenti.",
-        ["Hanno creato un algoritmo allo st. d. arte.", "Si ringrazia lo psicol. Serenti."],
+        [
+            "Hanno creato un algoritmo allo st. d. arte.",
+            "Si ringrazia lo psicol. Serenti.",
+        ],
     ),
-    ("Chiamate il V.Cte. delle F.P., adesso!", ["Chiamate il V.Cte. delle F.P., adesso!"]),
-    ("Giancarlo ha sostenuto l'esame di econ. az..", ["Giancarlo ha sostenuto l'esame di econ. az.."]),
+    (
+        "Chiamate il V.Cte. delle F.P., adesso!",
+        ["Chiamate il V.Cte. delle F.P., adesso!"],
+    ),
+    (
+        "Giancarlo ha sostenuto l'esame di econ. az..",
+        ["Giancarlo ha sostenuto l'esame di econ. az.."],
+    ),
     (
         "Stava viaggiando a 90 km/h verso la provincia di TR quando il Dott. Mesini ha sentito un rumore e si fermò!",
         [
@@ -47,21 +65,32 @@ IT_MORE_TEST_CASES = [
     ("Stava mangiando e/o dormendo.", ["Stava mangiando e/o dormendo."]),
     (
         "Ricordatevi che dom 25 Set. sarà il compleanno di Maria; dovremo darle un regalo.",
-        ["Ricordatevi che dom 25 Set. sarà il compleanno di Maria; dovremo darle un regalo."],
+        [
+            "Ricordatevi che dom 25 Set. sarà il compleanno di Maria; dovremo darle un regalo."
+        ],
     ),
     (
         "La politica è quella della austerità; quindi verranno fatti tagli agli sprechi.",
-        ["La politica è quella della austerità; quindi verranno fatti tagli agli sprechi."],
+        [
+            "La politica è quella della austerità; quindi verranno fatti tagli agli sprechi."
+        ],
     ),
     (
         "Nel tribunale, l'Avv. Fabrizi ha urlato \"Io, l'illustrissimo Fabrizi, vi si oppone!\".",
-        ["Nel tribunale, l'Avv. Fabrizi ha urlato \"Io, l'illustrissimo Fabrizi, vi si oppone!\"."],
+        [
+            "Nel tribunale, l'Avv. Fabrizi ha urlato \"Io, l'illustrissimo Fabrizi, vi si oppone!\"."
+        ],
     ),
     (
         "Le parti fisiche di un computer (ad es. RAM, CPU, tastiera, mouse, etc.) sono definiti HW.",
-        ["Le parti fisiche di un computer (ad es. RAM, CPU, tastiera, mouse, etc.) sono definiti HW."],
+        [
+            "Le parti fisiche di un computer (ad es. RAM, CPU, tastiera, mouse, etc.) sono definiti HW."
+        ],
     ),
-    ("La parola 'casa' è sinonimo di abitazione.", ["La parola 'casa' è sinonimo di abitazione."]),
+    (
+        "La parola 'casa' è sinonimo di abitazione.",
+        ["La parola 'casa' è sinonimo di abitazione."],
+    ),
     (
         'La "Mulino Bianco" fa alimentari pre-confezionati.',
         ['La "Mulino Bianco" fa alimentari pre-confezionati.'],
@@ -74,13 +103,18 @@ IT_MORE_TEST_CASES = [
     ),
     (
         "Una lettera si può iniziare in questo modo «Il/la sottoscritto/a ... nato/a a ...».",
-        ["Una lettera si può iniziare in questo modo «Il/la sottoscritto/a ... nato/a a ...»."],
+        [
+            "Una lettera si può iniziare in questo modo «Il/la sottoscritto/a ... nato/a a ...»."
+        ],
     ),
     (
         'Per casa, in uno degli esercizi per i bambini c\'era "3 + (14/7) = 5"',
         ['Per casa, in uno degli esercizi per i bambini c\'era "3 + (14/7) = 5"'],
     ),
-    ('Ai bambini è stato chiesto di fare "4:2*2"', ['Ai bambini è stato chiesto di fare "4:2*2"']),
+    (
+        'Ai bambini è stato chiesto di fare "4:2*2"',
+        ['Ai bambini è stato chiesto di fare "4:2*2"'],
+    ),
     (
         "La maestra esclamò: \"Bambini, quanto fa '2/3 + 4/3?'\".",
         ["La maestra esclamò: \"Bambini, quanto fa '2/3 + 4/3?'\"."],
@@ -93,7 +127,10 @@ IT_MORE_TEST_CASES = [
     ("La casa costa 170.500.000,00€!", ["La casa costa 170.500.000,00€!"]),
     ("Il corridore 103 è arrivato 4°.", ["Il corridore 103 è arrivato 4°."]),
     ("Oggi è il 27/10/2014.", ["Oggi è il 27/10/2014."]),
-    ("Ecco l'elenco: 1.gelato, 2.carne, 3.riso.", ["Ecco l'elenco: 1.gelato, 2.carne, 3.riso."]),
+    (
+        "Ecco l'elenco: 1.gelato, 2.carne, 3.riso.",
+        ["Ecco l'elenco: 1.gelato, 2.carne, 3.riso."],
+    ),
     ("Devi comprare : 1)pesce 2)sale.", ["Devi comprare : 1)pesce 2)sale."]),
     ("La macchina viaggiava a 100 km/h.", ["La macchina viaggiava a 100 km/h."]),
 ]

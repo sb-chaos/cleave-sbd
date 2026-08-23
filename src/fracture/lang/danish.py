@@ -35,7 +35,9 @@ SENTENCE_STARTERS: frozenset[str] = frozenset({
 
 NUMBER_ABBREVIATIONS: frozenset[str] = frozenset({"nr", "s"})
 
-PREPOSITIVE_ABBREVIATIONS: frozenset[str] = frozenset({"adm", "skt", "dr", "hr", "fru", "st"})
+PREPOSITIVE_ABBREVIATIONS: frozenset[str] = frozenset(
+    {"adm", "skt", "dr", "hr", "fru", "st"}
+)
 
 # fmt: off
 # Deduplicated Danish Abbreviations

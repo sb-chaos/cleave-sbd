@@ -18,8 +18,12 @@ PREPOSITIVE_ABBREVIATIONS: frozenset[str] = frozenset()
 NUMBER_ABBREVIATIONS: frozenset[str] = frozenset()
 
 # Paired quotation/bracket patterns for punctuation masking
-JAPANESE_PARENS_REGEX = re.compile(r"\uff08(?=(?P<tmp>[^\uff08\uff09]+|\\{2}|\\.)*)(?P=tmp)\uff09")
-JAPANESE_QUOTES_REGEX = re.compile(r"\u300c(?=(?P<tmp>[^\u300c\u300d]+|\\{2}|\\.)*)(?P=tmp)\u300d")
+JAPANESE_PARENS_REGEX = re.compile(
+    r"\uff08(?=(?P<tmp>[^\uff08\uff09]+|\\{2}|\\.)*)(?P=tmp)\uff09"
+)
+JAPANESE_QUOTES_REGEX = re.compile(
+    r"\u300c(?=(?P<tmp>[^\u300c\u300d]+|\\{2}|\\.)*)(?P=tmp)\u300d"
+)
 
 PAIRED_PUNCTUATION_PATTERNS: tuple[re.Pattern[str], ...] = (
     JAPANESE_PARENS_REGEX,

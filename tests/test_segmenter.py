@@ -19,7 +19,8 @@ def test_newline_input(default_en_no_clean_no_span_fixture, text="\n"):
 
 
 def test_segmenter_doesnt_mutate_input(
-    default_en_no_clean_no_span_fixture, text="My name is Jonas E. Smith. Please turn to p. 55."
+    default_en_no_clean_no_span_fixture,
+    text="My name is Jonas E. Smith. Please turn to p. 55.",
 ):
     segments = default_en_no_clean_no_span_fixture.segment(text)
     segments = [s.strip() for s in segments]
@@ -42,7 +43,8 @@ def test_sbd_char_span(en_no_clean_with_span_fixture, text, expected):
     """Test sentences with character offsets"""
     segments = en_no_clean_with_span_fixture.segment(text)
     expected_text_spans = [
-        TextSpan(sent_w_span[0], sent_w_span[1], sent_w_span[2]) for sent_w_span in expected
+        TextSpan(sent_w_span[0], sent_w_span[1], sent_w_span[2])
+        for sent_w_span in expected
     ]
     assert segments == expected_text_spans
     # clubbing sentences and matching with original text
@@ -76,7 +78,11 @@ My life is too complicated right now trying to do my job.
         TextSpan(sent="***\n", start=284, end=288),
         TextSpan(sent='"THE PRESIDENT: I appreciate that.\n', start=288, end=323),
         TextSpan(sent="(Laughter.)\n", start=323, end=335),
-        TextSpan(sent="My life is too complicated right now trying to do my job.\n", start=335, end=393),
+        TextSpan(
+            sent="My life is too complicated right now trying to do my job.\n",
+            start=335,
+            end=393,
+        ),
         TextSpan(sent="(Laughter.)", start=393, end=404),
     ]
     segments_w_spans = en_no_clean_with_span_fixture.segment(text)
@@ -115,7 +121,9 @@ def test_exception_with_doc_type_pdf_and_both_clean_char_span_true():
     both clean=True and char_span=True
     """
     with pytest.raises(ValueError) as e:
-        seg = fracture.Segmenter(language="en", clean=True, doc_type="pdf", char_span=True)
+        seg = fracture.Segmenter(
+            language="en", clean=True, doc_type="pdf", char_span=True
+        )
     assert (
         str(e.value) == "char_span must be False if clean is True. "
         "Since `clean=True` will modify original text."

@@ -33,7 +33,9 @@ PREPOSITIVE_ABBREVIATIONS: frozenset[str] = frozenset()
 NUMBER_ABBREVIATIONS: frozenset[str] = frozenset()
 
 # Sentence boundary regex matching Ethiopic punctuation or end-of-string
-SENTENCE_BOUNDARY_REGEX = re.compile(rf".*?[{ETHIOPIC_QUESTION_MARK}{ETHIOPIC_FULL_STOP}!?]|.*?$")
+SENTENCE_BOUNDARY_REGEX = re.compile(
+    rf".*?[{ETHIOPIC_QUESTION_MARK}{ETHIOPIC_FULL_STOP}!?]|.*?$"
+)
 
 # Language-specific replacement rules (none required beyond standard masking)
 RULES: tuple[Rule, ...] = ()

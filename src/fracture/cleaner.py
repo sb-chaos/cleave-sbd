@@ -94,8 +94,12 @@ class Cleaner:
     @staticmethod
     def clean_consecutive_characters(text: str) -> str:
         """Normalize consecutive periods and slashes."""
-        text = cr.CONSECUTIVE_PERIODS.pattern.sub(cr.CONSECUTIVE_PERIODS.replacement, text)
-        return cr.CONSECUTIVE_SLASHES.pattern.sub(cr.CONSECUTIVE_SLASHES.replacement, text)
+        text = cr.CONSECUTIVE_PERIODS.pattern.sub(
+            cr.CONSECUTIVE_PERIODS.replacement, text
+        )
+        return cr.CONSECUTIVE_SLASHES.pattern.sub(
+            cr.CONSECUTIVE_SLASHES.replacement, text
+        )
 
     @staticmethod
     def check_for_no_space_in_between_sentences(text: str) -> str:
@@ -106,8 +110,12 @@ class Cleaner:
             if any(k in word.lower() for k in URL_EMAIL_KEYWORDS):
                 cleaned_words.append(word)
                 continue
-            w = cr.NO_SPACE_SENTENCE_ALPHA.pattern.sub(cr.NO_SPACE_SENTENCE_ALPHA.replacement, word)
-            w = cr.NO_SPACE_SENTENCE_DIGIT.pattern.sub(cr.NO_SPACE_SENTENCE_DIGIT.replacement, w)
+            w = cr.NO_SPACE_SENTENCE_ALPHA.pattern.sub(
+                cr.NO_SPACE_SENTENCE_ALPHA.replacement, word
+            )
+            w = cr.NO_SPACE_SENTENCE_DIGIT.pattern.sub(
+                cr.NO_SPACE_SENTENCE_DIGIT.replacement, w
+            )
             cleaned_words.append(w)
         return " ".join(cleaned_words)
 
@@ -121,7 +129,9 @@ class Cleaner:
     def remove_pdf_line_breaks(text: str) -> str:
         """Handle PDF-specific line-wrap breaks and bullet points."""
         text = cr.NL_BEFORE_BULLET.pattern.sub(cr.NL_BEFORE_BULLET.replacement, text)
-        text = PDF.new_line_mid_sentence.pattern.sub(PDF.new_line_mid_sentence.replacement, text)
+        text = PDF.new_line_mid_sentence.pattern.sub(
+            PDF.new_line_mid_sentence.replacement, text
+        )
         return PDF.new_line_mid_sentence_nospace.pattern.sub(
             PDF.new_line_mid_sentence_nospace.replacement, text
         )

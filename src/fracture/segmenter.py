@@ -21,7 +21,11 @@ class TextSpan:
 
     def __eq__(self, other: object) -> bool:
         if isinstance(other, TextSpan):
-            return self.sent == other.sent and self.start == other.start and self.end == other.end
+            return (
+                self.sent == other.sent
+                and self.start == other.start
+                and self.end == other.end
+            )
         return False
 
 
@@ -98,7 +102,9 @@ class Segmenter:
 
         return [unmask_all(sentence) for sentence in sentences]
 
-    def sentences_with_char_spans(self, original_text: str, sentences: list[str]) -> list[TextSpan]:
+    def sentences_with_char_spans(
+        self, original_text: str, sentences: list[str]
+    ) -> list[TextSpan]:
         """Calculate start and end character offsets sequentially against the original source text.
 
         Args:

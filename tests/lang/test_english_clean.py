@@ -76,15 +76,27 @@ TESTS_WITH_CLEAN = [
             "How To Calculate the Score",
         ],
     ),
-    ("I think Jun. is a great month, said Mr. Suzuki.", ["I think Jun. is a great month, said Mr. Suzuki."]),
-    ("Jun. is a great month, said Mr. Suzuki.", ["Jun. is a great month, said Mr. Suzuki."]),
+    (
+        "I think Jun. is a great month, said Mr. Suzuki.",
+        ["I think Jun. is a great month, said Mr. Suzuki."],
+    ),
+    (
+        "Jun. is a great month, said Mr. Suzuki.",
+        ["Jun. is a great month, said Mr. Suzuki."],
+    ),
     (
         "I have 1.000.00. Yay $.50 and .50! That's 600.",
         ["I have 1.000.00.", "Yay $.50 and .50!", "That's 600."],
     ),
-    ("1.) This is a list item with a parens.", ["1.) This is a list item with a parens."]),
+    (
+        "1.) This is a list item with a parens.",
+        ["1.) This is a list item with a parens."],
+    ),
     ("1. This is a list item.", ["1. This is a list item."]),
-    ("I live in the U.S.A. I went to J.C. Penney.", ["I live in the U.S.A.", "I went to J.C. Penney."]),
+    (
+        "I live in the U.S.A. I went to J.C. Penney.",
+        ["I live in the U.S.A.", "I went to J.C. Penney."],
+    ),
     ("His name is Alfred E. Sloan.", ["His name is Alfred E. Sloan."]),
     (
         "Q. What is his name? A. His name is Alfred E. Sloan.",
@@ -100,20 +112,31 @@ TESTS_WITH_CLEAN = [
         ["The game is the Giants vs. the Tigers at 10 p.m.", "I'm going are you?"],
     ),
     ("He is no. 5, the shortstop.", ["He is no. 5, the shortstop."]),
-    ("Remove long strings of dots........please.", ["Remove long strings of dots please."]),
+    (
+        "Remove long strings of dots........please.",
+        ["Remove long strings of dots please."],
+    ),
     (
         "See our additional services section or contact us for pricing\n.\n\n\nPricing Additionl Info\n",
-        ["See our additional services section or contact us for pricing.", "Pricing Additionl Info"],
+        [
+            "See our additional services section or contact us for pricing.",
+            "Pricing Additionl Info",
+        ],
     ),
     (
         "As payment for 1. above, pay us a commission fee of 0 yen and for 2. above, no fee will be paid.",
-        ["As payment for 1. above, pay us a commission fee of 0 yen and for 2. above, no fee will be paid."],
+        [
+            "As payment for 1. above, pay us a commission fee of 0 yen and for 2. above, no fee will be paid."
+        ],
     ),
     # retaining whitespaces for span purpose
     # ("Git rid of   unnecessary white space.", ["Git rid of unnecessary white space."]),
     (
         "See our additional services section or contact us for pricing\n. Pricing Additionl Info",
-        ["See our additional services section or contact us for pricing.", "Pricing Additionl Info"],
+        [
+            "See our additional services section or contact us for pricing.",
+            "Pricing Additionl Info",
+        ],
     ),
     ("I have 600. How many do you have?", ["I have 600.", "How many do you have?"]),
     # modified
@@ -124,7 +147,10 @@ TESTS_WITH_CLEAN = [
     # modified
     # original sents in pragmatic_segmenter are:
     # ["WARNING", "AVERTISEMENT"]
-    ("\n\n\nW\nA\nRN\nI\nNG\n \n/\n \nA\nV\nE\nR\nT\nI\nS\nE\nM\nE\nNT\n", ["WARNING", "/", "AVERTISEMENT"]),
+    (
+        "\n\n\nW\nA\nRN\nI\nNG\n \n/\n \nA\nV\nE\nR\nT\nI\nS\nE\nM\nE\nNT\n",
+        ["WARNING", "/", "AVERTISEMENT"],
+    ),
     (
         '"Help yourself, sweetie," shouted Candy and gave her the cookie.',
         ['"Help yourself, sweetie," shouted Candy and gave her the cookie.'],
@@ -161,11 +187,18 @@ TESTS_WITH_CLEAN = [
     ("JFK Jr.'s book is on sale.", ["JFK Jr.'s book is on sale."]),
     (
         "This is e.g. Mr. Smith, who talks slowly... And this is another sentence.",
-        ["This is e.g. Mr. Smith, who talks slowly...", "And this is another sentence."],
+        [
+            "This is e.g. Mr. Smith, who talks slowly...",
+            "And this is another sentence.",
+        ],
     ),
     (
         "Leave me alone!, he yelled. I am in the U.S. Army. Charles (Ind.) said he.",
-        ["Leave me alone!, he yelled.", "I am in the U.S. Army.", "Charles (Ind.) said he."],
+        [
+            "Leave me alone!, he yelled.",
+            "I am in the U.S. Army.",
+            "Charles (Ind.) said he.",
+        ],
     ),
     (
         "This is the U.S. Senate my friends. <em>Yes.</em> <em>It is</em>!",
@@ -225,9 +258,15 @@ TESTS_WITH_CLEAN = [
         "St. Michael's Church is on 5th st. near the light.",
         ["St. Michael's Church is on 5th st. near the light."],
     ),
-    ("Let's ask Jane and co. They should know.", ["Let's ask Jane and co.", "They should know."]),
+    (
+        "Let's ask Jane and co. They should know.",
+        ["Let's ask Jane and co.", "They should know."],
+    ),
     ("He works at Yahoo! and Y!J.", ["He works at Yahoo! and Y!J."]),
-    ("The Scavenger Hunt ends on Dec. 31st, 2011.", ["The Scavenger Hunt ends on Dec. 31st, 2011."]),
+    (
+        "The Scavenger Hunt ends on Dec. 31st, 2011.",
+        ["The Scavenger Hunt ends on Dec. 31st, 2011."],
+    ),
     (
         'Putter King Scavenger Hunt Trophy\n(6 3/4" Engraved Crystal Trophy - Picture Coming Soon)\nThe Putter King team will judge the scavenger hunt and all decisions will be final.  The scavenger hunt is open to anyone and everyone.  The scavenger hunt ends on Dec. 31st, 2011.',
         [
@@ -291,7 +330,10 @@ TESTS_WITH_CLEAN = [
             "They work for ABC Corp. and BCD Corp.",
         ],
     ),
-    ('<bpt i="0" type="bold">&lt;b&gt;</bpt>J1.txt<ept i="1">&lt;/b&gt;</ept>', ["J1.txt"]),
+    (
+        '<bpt i="0" type="bold">&lt;b&gt;</bpt>J1.txt<ept i="1">&lt;/b&gt;</ept>',
+        ["J1.txt"],
+    ),
     (
         "On Jan. 20, former Sen. Barack Obama became the 44th President of the U.S. Millions attended the Inauguration.",
         [
@@ -309,15 +351,24 @@ TESTS_WITH_CLEAN = [
     ),
     (
         "He left at 6 P.M. Travelers who didn't get the warning at 5 P.M. left later.",
-        ["He left at 6 P.M.", "Travelers who didn't get the warning at 5 P.M. left later."],
+        [
+            "He left at 6 P.M.",
+            "Travelers who didn't get the warning at 5 P.M. left later.",
+        ],
     ),
     (
         "He left at 6 a.m. Travelers who didn't get the warning at 5 a.m. left later.",
-        ["He left at 6 a.m.", "Travelers who didn't get the warning at 5 a.m. left later."],
+        [
+            "He left at 6 a.m.",
+            "Travelers who didn't get the warning at 5 a.m. left later.",
+        ],
     ),
     (
         "He left at 6 A.M. Travelers who didn't get the warning at 5 A.M. left later.",
-        ["He left at 6 A.M.", "Travelers who didn't get the warning at 5 A.M. left later."],
+        [
+            "He left at 6 A.M.",
+            "Travelers who didn't get the warning at 5 A.M. left later.",
+        ],
     ),
     (
         "Hello World. My name is Jonas. What is your name? My name is Jonas. There it is! I found it. My name is Jonas E. Smith. Please turn to p. 55. Were Jane and co. at the party? They closed the deal with Pitt, Briggs & Co. at noon. Let's ask Jane and co. They should know. They closed the deal with Pitt, Briggs & Co. It closed yesterday. I can see Mt. Fuji from here. St. Michael's Church is on 5th st. near the light. That is JFK Jr.'s book. I visited the U.S.A. last year. I live in the E.U. How about you? I live in the U.S. How about you? I work for the U.S. Government in Virginia. I have lived in the U.S. for 20 years. She has $100.00 in her bag. She has $100.00. It is in her bag. He teaches science (He previously worked for 5 years as an engineer.) at the local University. Her email is Jane.Doe@example.com. I sent her an email. The site is: https://www.example.50.com/new-site/awesome_content.html. Please check it out. She turned to him, 'This is great.' she said. She turned to him, \"This is great.\" she said. She turned to him, \"This is great.\" She held the book out to show him. Hello!! Long time no see. Hello?? Who is there? Hello!? Is that you? Hello?! Is that you? 1.) The first item 2.) The second item 1.) The first item. 2.) The second item. 1) The first item 2) The second item 1) The first item. 2) The second item. 1. The first item 2. The second item 1. The first item. 2. The second item. • 9. The first item • 10. The second item ⁃9. The first item ⁃10. The second item a. The first item b. The second item c. The third list item \rIt was a cold \nnight in the city. features\ncontact manager\nevents, activities\n You can find it at N°. 1026.253.553. That is where the treasure is. She works at Yahoo! in the accounting department. We make a good team, you and I. Did you see Albert I. Jones yesterday? Thoreau argues that by simplifying one’s life, “the laws of the universe will appear less complex. . . .”. \"Bohr [...] used the analogy of parallel stairways [...]\" (Smith 55). If words are left off at the end of a sentence, and that is all that is omitted, indicate the omission with ellipsis marks (preceded and followed by a space) and then indicate the end of the sentence with a period . . . . Next sentence. I never meant that.... She left the store. I wasn’t really ... well, what I mean...see . . . what I'm saying, the thing is . . . I didn’t mean it. One further habit which was somewhat weakened . . . was that of combining words into self-interpreting compounds. . . . The practice was not abandoned. . . .",
@@ -426,7 +477,11 @@ TESTS_WITH_CLEAN = [
     ),
     (
         "Leave me alone! he yelled. I am in the U.S. Army. Charles (Ind.) said he.",
-        ["Leave me alone! he yelled.", "I am in the U.S. Army.", "Charles (Ind.) said he."],
+        [
+            "Leave me alone! he yelled.",
+            "I am in the U.S. Army.",
+            "Charles (Ind.) said he.",
+        ],
     ),
     (
         "She turned to him, “This is great.” She held the book out to show him.",
@@ -521,7 +576,10 @@ TESTS_WITH_CLEAN = [
             "The GmbH & Co. KG is a limited partnership with, typically, the sole general partner being a limited liability company."
         ],
     ),
-    ("[?][footnoteRef:6] This is a footnote.", ["[?][footnoteRef:6] This is a footnote."]),
+    (
+        "[?][footnoteRef:6] This is a footnote.",
+        ["[?][footnoteRef:6] This is a footnote."],
+    ),
     ("[15:  12:32]  [16:  firma? 13:28]", ["[15:  12:32]  [16:  firma? 13:28]"]),
     (
         '"It\'s a good thing that the water is really calm," I answered ironically.',
@@ -560,10 +618,19 @@ TESTS_WITH_CLEAN = [
     ("(iii) List item number 3.", ["(iii) List item number 3."]),
     ("(iii) List item number 3.", ["(iii) List item number 3."]),
     ("Unbelievable??!?!", ["Unbelievable??!?!"]),
-    ("This abbreviation f.e. means for example.", ["This abbreviation f.e. means for example."]),
+    (
+        "This abbreviation f.e. means for example.",
+        ["This abbreviation f.e. means for example."],
+    ),
     ("The med. staff here is very kind.", ["The med. staff here is very kind."]),
-    ("What did you order btw., she wondered.", ["What did you order btw., she wondered."]),
-    ("SEC. 1262 AUTHORIZATION OF APPROPRIATIONS.", ["SEC. 1262 AUTHORIZATION OF APPROPRIATIONS."]),
+    (
+        "What did you order btw., she wondered.",
+        ["What did you order btw., she wondered."],
+    ),
+    (
+        "SEC. 1262 AUTHORIZATION OF APPROPRIATIONS.",
+        ["SEC. 1262 AUTHORIZATION OF APPROPRIATIONS."],
+    ),
     ("a", ["a"]),
     (
         "I wrote this in the 'nineties.  It has four sentences.  This is the third, isn't it?  And this is the last",

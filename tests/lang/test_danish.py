@@ -13,7 +13,10 @@ GOLDEN_DA_RULES_TEST_CASES = [
         "They closed the deal with Pitt, Briggs & Co. at noon.",
         ["They closed the deal with Pitt, Briggs & Co. at noon."],
     ),
-    ("Lad os spørge Jane og co. De burde vide det.", ["Lad os spørge Jane og co.", "De burde vide det."]),
+    (
+        "Lad os spørge Jane og co. De burde vide det.",
+        ["Lad os spørge Jane og co.", "De burde vide det."],
+    ),
     (
         "De lukkede aftalen med Pitt, Briggs & Co. Det lukkede i går.",
         ["De lukkede aftalen med Pitt, Briggs & Co.", "Det lukkede i går."],
@@ -27,13 +30,21 @@ GOLDEN_DA_RULES_TEST_CASES = [
     ("I visited the U.S.A. last year.", ["I visited the U.S.A. last year."]),
     ("Jeg bor i E.U. Hvad med dig?", ["Jeg bor i E.U.", "Hvad med dig?"]),
     ("I live in the U.S. Hvad med dig?", ["I live in the U.S.", "Hvad med dig?"]),
-    ("I work for the U.S. Government in Virginia.", ["I work for the U.S. Government in Virginia."]),
-    ("I have lived in the U.S. for 20 years.", ["I have lived in the U.S. for 20 years."]),
+    (
+        "I work for the U.S. Government in Virginia.",
+        ["I work for the U.S. Government in Virginia."],
+    ),
+    (
+        "I have lived in the U.S. for 20 years.",
+        ["I have lived in the U.S. for 20 years."],
+    ),
     ("She has $100.00 in her bag.", ["She has $100.00 in her bag."]),
     ("She has $100.00. It is in her bag.", ["She has $100.00.", "It is in her bag."]),
     (
         "He teaches science (He previously worked for 5 years as an engineer.) at the local University.",
-        ["He teaches science (He previously worked for 5 years as an engineer.) at the local University."],
+        [
+            "He teaches science (He previously worked for 5 years as an engineer.) at the local University."
+        ],
     ),
     (
         "Her email is Jane.Doe@example.com. I sent her an email.",
@@ -41,10 +52,19 @@ GOLDEN_DA_RULES_TEST_CASES = [
     ),
     (
         "The site is: https://www.example.50.com/new-site/awesome_content.html. Please check it out.",
-        ["The site is: https://www.example.50.com/new-site/awesome_content.html.", "Please check it out."],
+        [
+            "The site is: https://www.example.50.com/new-site/awesome_content.html.",
+            "Please check it out.",
+        ],
     ),
-    ("She turned to him, 'This is great.' she said.", ["She turned to him, 'This is great.' she said."]),
-    ('She turned to him, "This is great." she said.', ['She turned to him, "This is great." she said.']),
+    (
+        "She turned to him, 'This is great.' she said.",
+        ["She turned to him, 'This is great.' she said."],
+    ),
+    (
+        'She turned to him, "This is great." she said.',
+        ['She turned to him, "This is great." she said.'],
+    ),
     (
         'She turned to him, "This is great." Hun held the book out to show him.',
         ['She turned to him, "This is great."', "Hun held the book out to show him."],
@@ -53,14 +73,38 @@ GOLDEN_DA_RULES_TEST_CASES = [
     ("Hello?? Who is there?", ["Hello??", "Who is there?"]),
     ("Hello!? Is that you?", ["Hello!?", "Is that you?"]),
     ("Hello?! Is that you?", ["Hello?!", "Is that you?"]),
-    ("1.) The first item 2.) The second item", ["1.) The first item", "2.) The second item"]),
-    ("1.) The first item. 2.) The second item.", ["1.) The first item.", "2.) The second item."]),
-    ("1) The first item 2) The second item", ["1) The first item", "2) The second item"]),
-    ("1) The first item. 2) The second item.", ["1) The first item.", "2) The second item."]),
-    ("1. The first item 2. The second item", ["1. The first item", "2. The second item"]),
-    ("1. The first item. 2. The second item.", ["1. The first item.", "2. The second item."]),
-    ("• 9. The first item • 10. The second item", ["• 9. The first item", "• 10. The second item"]),
-    ("⁃9. The first item ⁃10. The second item", ["⁃9. The first item", "⁃10. The second item"]),
+    (
+        "1.) The first item 2.) The second item",
+        ["1.) The first item", "2.) The second item"],
+    ),
+    (
+        "1.) The first item. 2.) The second item.",
+        ["1.) The first item.", "2.) The second item."],
+    ),
+    (
+        "1) The first item 2) The second item",
+        ["1) The first item", "2) The second item"],
+    ),
+    (
+        "1) The first item. 2) The second item.",
+        ["1) The first item.", "2) The second item."],
+    ),
+    (
+        "1. The first item 2. The second item",
+        ["1. The first item", "2. The second item"],
+    ),
+    (
+        "1. The first item. 2. The second item.",
+        ["1. The first item.", "2. The second item."],
+    ),
+    (
+        "• 9. The first item • 10. The second item",
+        ["• 9. The first item", "• 10. The second item"],
+    ),
+    (
+        "⁃9. The first item ⁃10. The second item",
+        ["⁃9. The first item", "⁃10. The second item"],
+    ),
     (
         "a. The first item b. The second item c. The third list item",
         ["a. The first item", "b. The second item", "c. The third list item"],
@@ -90,7 +134,10 @@ GOLDEN_DA_RULES_TEST_CASES = [
             "Next sentence.",
         ],
     ),
-    ("I never meant that.... She left the store.", ["I never meant that....", "She left the store."]),
+    (
+        "I never meant that.... She left the store.",
+        ["I never meant that....", "She left the store."],
+    ),
     (
         "I wasn’t really ... well, what I mean...see . . . what I'm saying, the thing is . . . I didn’t mean it.",
         [

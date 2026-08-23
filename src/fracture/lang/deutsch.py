@@ -61,8 +61,12 @@ ABBREVIATIONS: frozenset[str] = frozenset({
 # fmt: on
 
 # German Quotation Pair Patterns (Low-9 / High-66 & Informal Double Commas)
-GERMAN_DOUBLE_QUOTES_REGEX = re.compile(r"\u201e(?=(?P<tmp>[^\u201c\\]+|\\{2}|\\.)*)(?P=tmp)\u201c")
-GERMAN_UNCONVENTIONAL_QUOTES_REGEX = re.compile(r",,(?=(?P<tmp>[^\u201c\\]+|\\{2}|\\.)*)(?P=tmp)\u201c")
+GERMAN_DOUBLE_QUOTES_REGEX = re.compile(
+    r"\u201e(?=(?P<tmp>[^\u201c\\]+|\\{2}|\\.)*)(?P=tmp)\u201c"
+)
+GERMAN_UNCONVENTIONAL_QUOTES_REGEX = re.compile(
+    r",,(?=(?P<tmp>[^\u201c\\]+|\\{2}|\\.)*)(?P=tmp)\u201c"
+)
 
 PAIRED_PUNCTUATION_PATTERNS: tuple[re.Pattern[str], ...] = (
     GERMAN_DOUBLE_QUOTES_REGEX,

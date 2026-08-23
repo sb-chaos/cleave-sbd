@@ -30,7 +30,9 @@ PREPOSITIVE_ABBREVIATIONS: frozenset[str] = frozenset()
 NUMBER_ABBREVIATIONS: frozenset[str] = frozenset()
 
 # Sentence boundary matching Myanmar punctuation or end-of-string
-SENTENCE_BOUNDARY_REGEX = re.compile(rf".*?[{MYANMAR_SECTION}{MYANMAR_GENITIVE_END}!?]|.*?$")
+SENTENCE_BOUNDARY_REGEX = re.compile(
+    rf".*?[{MYANMAR_SECTION}{MYANMAR_GENITIVE_END}!?]|.*?$"
+)
 
 # Language-specific replacement rules
 RULES: tuple[Rule, ...] = ()

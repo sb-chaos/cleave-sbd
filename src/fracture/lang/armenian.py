@@ -30,7 +30,9 @@ PREPOSITIVE_ABBREVIATIONS: frozenset[str] = frozenset()
 NUMBER_ABBREVIATIONS: frozenset[str] = frozenset()
 
 # Sentence boundary matching Armenian punctuation, colon, or end-of-string
-SENTENCE_BOUNDARY_REGEX = re.compile(rf".*?[{ARMENIAN_FULL_STOP}{ARMENIAN_EXCLAMATION_MARK}:]|.*?$")
+SENTENCE_BOUNDARY_REGEX = re.compile(
+    rf".*?[{ARMENIAN_FULL_STOP}{ARMENIAN_EXCLAMATION_MARK}:]|.*?$"
+)
 
 # Language-specific replacement rules
 RULES: tuple[Rule, ...] = ()

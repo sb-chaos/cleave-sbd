@@ -88,7 +88,9 @@ def unmask_all(text: str) -> str:
 # Standard Vocabulary & Abbreviations
 # =============================================================================
 
-PUNCTUATIONS: frozenset[str] = frozenset({".", "!", "?", "\u3002", "\uff0e", "\uff01", "\uff1f"})
+PUNCTUATIONS: frozenset[str] = frozenset(
+    {".", "!", "?", "\u3002", "\uff0e", "\uff01", "\uff1f"}
+)
 
 # fmt: off
 SENTENCE_STARTERS: frozenset[str] = frozenset({

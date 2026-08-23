@@ -92,13 +92,37 @@ def _mask_numbered_lists(text: str) -> str:
             lparen_idx = m.start("lparen")
             rparen_idx = m_end - 1
             items.append(
-                (val, True, m_start, m_end, "", -1, lparen_idx, rparen_idx, lead_space_idx, has_bullet)
+                (
+                    val,
+                    True,
+                    m_start,
+                    m_end,
+                    "",
+                    -1,
+                    lparen_idx,
+                    rparen_idx,
+                    lead_space_idx,
+                    has_bullet,
+                )
             )
         else:
             val = int(m.group("num"))
             delim = m.group("delim") or ""
             delim_start = m.start("delim")
-            items.append((val, False, m_start, m_end, delim, delim_start, -1, -1, lead_space_idx, has_bullet))
+            items.append(
+                (
+                    val,
+                    False,
+                    m_start,
+                    m_end,
+                    delim,
+                    delim_start,
+                    -1,
+                    -1,
+                    lead_space_idx,
+                    has_bullet,
+                )
+            )
 
     is_list_item: list[bool] = [False] * len(items)
     for i, (val, _, m_start, _, _, _, _, _, _, has_bullet) in enumerate(items):
@@ -121,7 +145,18 @@ def _mask_numbered_lists(text: str) -> str:
     for i, is_valid in enumerate(is_list_item):
         if not is_valid:
             continue
-        _, is_parens, _, _, delim, delim_start, lparen_idx, rparen_idx, lead_space_idx, _ = items[i]
+        (
+            _,
+            is_parens,
+            _,
+            _,
+            delim,
+            delim_start,
+            lparen_idx,
+            rparen_idx,
+            lead_space_idx,
+            _,
+        ) = items[i]
 
         if is_parens:
             if lparen_idx >= 0 and chars[lparen_idx] == "(":
@@ -161,14 +196,36 @@ def _mask_alphabetical_lists(text: str) -> str:
             lparen_idx = m.start("lparen")
             rparen_idx = m_end - 1
             items.append(
-                (letter, True, m_start, m_end, "", -1, lparen_idx, rparen_idx, lead_space_idx, has_bullet)
+                (
+                    letter,
+                    True,
+                    m_start,
+                    m_end,
+                    "",
+                    -1,
+                    lparen_idx,
+                    rparen_idx,
+                    lead_space_idx,
+                    has_bullet,
+                )
             )
         else:
             letter = m.group("letter").lower()
             delim = m.group("delim") or ""
             delim_start = m.start("delim")
             items.append(
-                (letter, False, m_start, m_end, delim, delim_start, -1, -1, lead_space_idx, has_bullet)
+                (
+                    letter,
+                    False,
+                    m_start,
+                    m_end,
+                    delim,
+                    delim_start,
+                    -1,
+                    -1,
+                    lead_space_idx,
+                    has_bullet,
+                )
             )
 
     is_list_item: list[bool] = [False] * len(items)
@@ -181,13 +238,21 @@ def _mask_alphabetical_lists(text: str) -> str:
             is_list_item[i] = True
         if i + 1 < len(items):
             next_letter = items[i + 1][0]
-            next_idx = LATIN_NUMERALS.index(next_letter) if next_letter in LATIN_NUMERALS else -1
+            next_idx = (
+                LATIN_NUMERALS.index(next_letter)
+                if next_letter in LATIN_NUMERALS
+                else -1
+            )
             if next_idx == curr_idx + 1:
                 is_list_item[i] = True
                 is_list_item[i + 1] = True
         if i > 0:
             prev_letter = items[i - 1][0]
-            prev_idx = LATIN_NUMERALS.index(prev_letter) if prev_letter in LATIN_NUMERALS else -1
+            prev_idx = (
+                LATIN_NUMERALS.index(prev_letter)
+                if prev_letter in LATIN_NUMERALS
+                else -1
+            )
             if prev_idx == curr_idx - 1:
                 is_list_item[i] = True
 
@@ -195,7 +260,18 @@ def _mask_alphabetical_lists(text: str) -> str:
     for i, is_valid in enumerate(is_list_item):
         if not is_valid:
             continue
-        _, is_parens, _, _, delim, delim_start, lparen_idx, rparen_idx, lead_space_idx, _ = items[i]
+        (
+            _,
+            is_parens,
+            _,
+            _,
+            delim,
+            delim_start,
+            lparen_idx,
+            rparen_idx,
+            lead_space_idx,
+            _,
+        ) = items[i]
 
         if is_parens:
             if lparen_idx >= 0 and chars[lparen_idx] == "(":
@@ -232,7 +308,9 @@ def _mask_parenthesized_and_roman_lists(text: str) -> str:
                     lead_space_idx = m_start
                 lparen_idx = roman_start - 1
                 rparen_idx = m_end - 1
-                r_items.append((roman, m_start, m_end, lparen_idx, rparen_idx, lead_space_idx))
+                r_items.append(
+                    (roman, m_start, m_end, lparen_idx, rparen_idx, lead_space_idx)
+                )
 
         is_valid_r: list[bool] = [False] * len(r_items)
         for i, (roman, m_start, m_end, _, _, _) in enumerate(r_items):
@@ -281,7 +359,9 @@ def _mask_parenthesized_and_roman_lists(text: str) -> str:
                 lead_space_idx = -1
                 if lead and lead[0] in (" ", "\t") and m_start > 0:
                     lead_space_idx = m_start
-                roman_items.append((roman, m_start, m_end, delim, delim_start, lead_space_idx))
+                roman_items.append(
+                    (roman, m_start, m_end, delim, delim_start, lead_space_idx)
+                )
 
         is_roman_item: list[bool] = [False] * len(roman_items)
         for i, (roman, m_start, _, _, _, _) in enumerate(roman_items):
@@ -350,15 +430,23 @@ class ListItemReplacer:
     LATIN_NUMERALS: ClassVar[list[str]] = LATIN_NUMERALS
 
     # Legacy regex constants for backward compatibility
-    ALPHABETICAL_LIST_WITH_PERIODS: ClassVar[str] = r"(?<=^)[a-z](?=\.)|(?<=\A)[a-z](?=\.)|(?<=\s)[a-z](?=\.)"
+    ALPHABETICAL_LIST_WITH_PERIODS: ClassVar[str] = (
+        r"(?<=^)[a-z](?=\.)|(?<=\A)[a-z](?=\.)|(?<=\s)[a-z](?=\.)"
+    )
     ALPHABETICAL_LIST_WITH_PARENS: ClassVar[str] = (
         r"(?<=\()[a-z]+(?=\))|(?<=^)[a-z]+(?=\))|(?<=\A)[a-z]+(?=\))|(?<=\s)[a-z]+(?=\))"
     )
     SubstituteListPeriodRule: ClassVar[Rule] = Rule(re.compile("♨"), PUA_PERIOD)
     ListMarkerRule: ClassVar[Rule] = Rule(re.compile("☝"), "")
-    SpaceBetweenListItemsFirstRule: ClassVar[Rule] = Rule(re.compile(r"(?<=\S\S)\s(?=\S\s*\d+♨)"), "\r")
-    SpaceBetweenListItemsSecondRule: ClassVar[Rule] = Rule(re.compile(r"(?<=\S\S)\s(?=\d{1,2}♨)"), "\r")
-    SpaceBetweenListItemsThirdRule: ClassVar[Rule] = Rule(re.compile(r"(?<=\S\S)\s(?=\d{1,2}☝)"), "\r")
+    SpaceBetweenListItemsFirstRule: ClassVar[Rule] = Rule(
+        re.compile(r"(?<=\S\S)\s(?=\S\s*\d+♨)"), "\r"
+    )
+    SpaceBetweenListItemsSecondRule: ClassVar[Rule] = Rule(
+        re.compile(r"(?<=\S\S)\s(?=\d{1,2}♨)"), "\r"
+    )
+    SpaceBetweenListItemsThirdRule: ClassVar[Rule] = Rule(
+        re.compile(r"(?<=\S\S)\s(?=\d{1,2}☝)"), "\r"
+    )
 
     NUMBERED_LIST_REGEX_1: ClassVar[str] = (
         r"\s\d{1,2}(?=\.\s)|^\d{1,2}(?=\.\s)|\s\d{1,2}(?=\.\))|^\d{1,2}(?=\.\))|"

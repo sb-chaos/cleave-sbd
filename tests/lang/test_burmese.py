@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import pytest
 
-GOLDEN_MY_RULES_TEST_CASES = [("ခင္ဗ်ားနာမည္ဘယ္လိုေခၚလဲ။၇ွင္ေနေကာင္းလား။", ["ခင္ဗ်ားနာမည္ဘယ္လိုေခၚလဲ။", "၇ွင္ေနေကာင္းလား။"])]
+GOLDEN_MY_RULES_TEST_CASES = [
+    ("ခင္ဗ်ားနာမည္ဘယ္လိုေခၚလဲ။၇ွင္ေနေကာင္းလား။", ["ခင္ဗ်ားနာမည္ဘယ္လိုေခၚလဲ။", "၇ွင္ေနေကာင္းလား။"])
+]
 
 
 @pytest.mark.parametrize("text,expected_sents", GOLDEN_MY_RULES_TEST_CASES)

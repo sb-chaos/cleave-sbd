@@ -256,7 +256,9 @@ def setup_pysbd() -> tuple[TokenizerFn | None, str | None]:
         return None, f"pysbd error: {exc}"
 
 
-AVAILABLE_ENGINES: list[tuple[str, Callable[[], tuple[TokenizerFn | None, str | None]]]] = [
+AVAILABLE_ENGINES: list[
+    tuple[str, Callable[[], tuple[TokenizerFn | None, str | None]]]
+] = [
     ("fracture (clean=False)", setup_fracture_fast),
     ("fracture (clean=True)", setup_fracture_clean),
     ("fracture (char_span=True)", setup_fracture_char_span),
@@ -284,15 +286,26 @@ def load_benchmark_text(
 
     if auto_download:
         target_path.parent.mkdir(parents=True, exist_ok=True)
-        print(f"Downloading benchmark text from {url} to {target_path} ...", file=sys.stderr)
+        print(
+            f"Downloading benchmark text from {url} to {target_path} ...",
+            file=sys.stderr,
+        )
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (fracture-benchmark)"})
+            req = urllib.request.Request(
+                url, headers={"User-Agent": "Mozilla/5.0 (fracture-benchmark)"}
+            )
             with urllib.request.urlopen(req, timeout=15) as resp:
                 content = resp.read().decode("utf-8", errors="replace")
                 target_path.write_text(content, encoding="utf-8")
-                return content, f"Downloaded from {url} and saved to {target_path.as_posix()}"
+                return (
+                    content,
+                    f"Downloaded from {url} and saved to {target_path.as_posix()}",
+                )
         except Exception as exc:
-            print(f"Warning: Failed to download from {url}: {exc}. Using fallback text.", file=sys.stderr)
+            print(
+                f"Warning: Failed to download from {url}: {exc}. Using fallback text.",
+                file=sys.stderr,
+            )
 
     return FALLBACK_SAMPLE_TEXT, "Using built-in multi-paragraph benchmark sample text"
 
@@ -317,7 +330,9 @@ def run_benchmark(
     )
 
     for name, setup_fn in AVAILABLE_ENGINES:
-        if selected_engines and not any(sel.lower() in name.lower() for sel in selected_engines):
+        if selected_engines and not any(
+            sel.lower() in name.lower() for sel in selected_engines
+        ):
             continue
 
         fn, err_msg = setup_fn()
@@ -335,25 +350,41 @@ def run_benchmark(
         # Warmup passes
         for w in range(max(0, warmup)):
             pass_label = f"warmup {w + 1}"
-            print(f"{name}: pass {pass_label} started...", end="", flush=True, file=sys.stderr)
+            print(
+                f"{name}: pass {pass_label} started...",
+                end="",
+                flush=True,
+                file=sys.stderr,
+            )
             t0 = time.perf_counter()
             _ = fn(text)
             elapsed = time.perf_counter() - t0
-            print(f"\r{name}: pass {pass_label} took {elapsed:.4f} seconds - complete", file=sys.stderr)
+            print(
+                f"\r{name}: pass {pass_label} took {elapsed:.4f} seconds - complete",
+                file=sys.stderr,
+            )
 
         # Timed iterations
         times: list[float] = []
         sentence_count: int = 0
         for i in range(max(1, iterations)):
             pass_label = f"#{i + 1}"
-            print(f"{name}: pass {pass_label} started...", end="", flush=True, file=sys.stderr)
+            print(
+                f"{name}: pass {pass_label} started...",
+                end="",
+                flush=True,
+                file=sys.stderr,
+            )
             t0 = time.perf_counter()
             segments = fn(text)
             t1 = time.perf_counter()
             elapsed = t1 - t0
             times.append(elapsed)
             sentence_count = len(segments)
-            print(f"\r{name}: pass {pass_label} took {elapsed:.4f} seconds - complete", file=sys.stderr)
+            print(
+                f"\r{name}: pass {pass_label} took {elapsed:.4f} seconds - complete",
+                file=sys.stderr,
+            )
 
         min_s = min(times)
         mean_s = statistics.mean(times)
@@ -367,7 +398,9 @@ def run_benchmark(
         if baseline_mean_s is None and "fracture (clean=False)" in name:
             baseline_mean_s = mean_s
 
-        speedup = (baseline_mean_s / mean_s) if (baseline_mean_s and mean_s > 0) else 1.0
+        speedup = (
+            (baseline_mean_s / mean_s) if (baseline_mean_s and mean_s > 0) else 1.0
+        )
 
         results.append(
             EngineResult(
@@ -392,7 +425,9 @@ def run_benchmark(
     return results
 
 
-def print_results_table(text: str, source_msg: str, results: list[EngineResult]) -> None:
+def print_results_table(
+    text: str, source_msg: str, results: list[EngineResult]
+) -> None:
     """Format and print a rich console table with benchmark results."""
     text_chars = len(text)
     text_words = len(text.split())
@@ -490,13 +525,19 @@ def main() -> int:
     """Main entrypoint for benchmark execution."""
     args = parse_args()
 
-    file_path = args.file if args.file != DEFAULT_BENCHMARK_PATH or args.file.exists() else None
+    file_path = (
+        args.file if args.file != DEFAULT_BENCHMARK_PATH or args.file.exists() else None
+    )
     text, source_msg = load_benchmark_text(
         file_path=file_path,
         auto_download=not args.no_download,
     )
 
-    selected = [e.strip() for e in args.engines.split(",") if e.strip()] if args.engines else None
+    selected = (
+        [e.strip() for e in args.engines.split(",") if e.strip()]
+        if args.engines
+        else None
+    )
 
     results = run_benchmark(
         text=text,
@@ -521,7 +562,9 @@ def main() -> int:
             "results": [asdict(r) for r in results],
         }
         args.save_json.write_text(json.dumps(payload, indent=2), encoding="utf-8")
-        print(f"Benchmark results saved to: {args.save_json.resolve()}", file=sys.stderr)
+        print(
+            f"Benchmark results saved to: {args.save_json.resolve()}", file=sys.stderr
+        )
 
     return 0
 

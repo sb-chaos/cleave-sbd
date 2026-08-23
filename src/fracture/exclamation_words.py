@@ -31,6 +31,8 @@ EXCLAMATION_WORDS_REGEX = re.compile(
 def mask_exclamation_words(text: str) -> str:
     """Mask exclamation marks within known proper nouns and click consonants."""
     return EXCLAMATION_WORDS_REGEX.sub(
-        lambda m: m.group(0).replace("!", PUA_EXCLAMATION).replace("ǃ", PUA_EXCLAMATION),
+        lambda m: (
+            m.group(0).replace("!", PUA_EXCLAMATION).replace("ǃ", PUA_EXCLAMATION)
+        ),
         text,
     )

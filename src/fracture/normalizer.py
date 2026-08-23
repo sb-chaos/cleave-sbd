@@ -94,7 +94,9 @@ class Normalizer:
 
     def __post_init__(self) -> None:
         lang_module = get_language_module(self.lang) if self.lang else None
-        lang_clean_rules: tuple[Rule, ...] = lang_module.clean_rules if lang_module is not None else ()
+        lang_clean_rules: tuple[Rule, ...] = (
+            lang_module.clean_rules if lang_module is not None else ()
+        )
         if lang_clean_rules:
             self.rules = tuple(self.rules) + lang_clean_rules
         elif not isinstance(self.rules, tuple):
@@ -148,7 +150,9 @@ class Normalizer:
         if "<" in text:
             text = HTML_TAG_RULE.pattern.sub(HTML_TAG_RULE.replacement, text)
         if "&lt;" in text:
-            text = HTML_ESCAPED_TAG_RULE.pattern.sub(HTML_ESCAPED_TAG_RULE.replacement, text)
+            text = HTML_ESCAPED_TAG_RULE.pattern.sub(
+                HTML_ESCAPED_TAG_RULE.replacement, text
+            )
         return text
 
     @staticmethod
@@ -206,9 +210,13 @@ class Normalizer:
             The text with simplified sequences of periods and slashes.
         """
         if "....." in text:
-            text = CONSECUTIVE_PERIODS.pattern.sub(CONSECUTIVE_PERIODS.replacement, text)
+            text = CONSECUTIVE_PERIODS.pattern.sub(
+                CONSECUTIVE_PERIODS.replacement, text
+            )
         if "///" in text:
-            text = CONSECUTIVE_SLASHES.pattern.sub(CONSECUTIVE_SLASHES.replacement, text)
+            text = CONSECUTIVE_SLASHES.pattern.sub(
+                CONSECUTIVE_SLASHES.replacement, text
+            )
         return text
 
     @staticmethod
@@ -251,7 +259,9 @@ class Normalizer:
         if "\n" not in text:
             return text
         text = NL_BEFORE_BULLET.pattern.sub(NL_BEFORE_BULLET.replacement, text)
-        text = PDF_NEW_LINE_MID_SENTENCE.pattern.sub(PDF_NEW_LINE_MID_SENTENCE.replacement, text)
+        text = PDF_NEW_LINE_MID_SENTENCE.pattern.sub(
+            PDF_NEW_LINE_MID_SENTENCE.replacement, text
+        )
         return PDF_NEW_LINE_MID_SENTENCE_NOSPACE.pattern.sub(
             PDF_NEW_LINE_MID_SENTENCE_NOSPACE.replacement, text
         )

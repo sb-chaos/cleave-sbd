@@ -27,7 +27,11 @@ class CleanRules:
 
 @dataclass(slots=True, frozen=True)
 class HTML:
-    tag_rule = Rule(re.compile(r"<\/?\w+((\s+\w+(\s*=\s*(?:\".*?\"|'.*?'|[\^'\">\s]+))?)+\s*|\s*)\/?>"))
+    tag_rule = Rule(
+        re.compile(
+            r"<\/?\w+((\s+\w+(\s*=\s*(?:\".*?\"|'.*?'|[\^'\">\s]+))?)+\s*|\s*)\/?>"
+        )
+    )
     escaped_tag_rule = Rule(re.compile(r"&lt;\/?[^gt;]*gt;"))
     rules = (tag_rule, escaped_tag_rule)
 

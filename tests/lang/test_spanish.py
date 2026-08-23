@@ -3,11 +3,20 @@ import pytest
 import fracture
 
 GOLDEN_ES_RULES_TEST_CASES = [
-    ("¿Cómo está hoy? Espero que muy bien.", ["¿Cómo está hoy?", "Espero que muy bien."]),
-    ("¡Hola señorita! Espero que muy bien.", ["¡Hola señorita!", "Espero que muy bien."]),
+    (
+        "¿Cómo está hoy? Espero que muy bien.",
+        ["¿Cómo está hoy?", "Espero que muy bien."],
+    ),
+    (
+        "¡Hola señorita! Espero que muy bien.",
+        ["¡Hola señorita!", "Espero que muy bien."],
+    ),
     (
         "Hola Srta. Ledesma. Buenos días, soy el Lic. Naser Pastoriza, y él es mi padre, el Dr. Naser.",
-        ["Hola Srta. Ledesma.", "Buenos días, soy el Lic. Naser Pastoriza, y él es mi padre, el Dr. Naser."],
+        [
+            "Hola Srta. Ledesma.",
+            "Buenos días, soy el Lic. Naser Pastoriza, y él es mi padre, el Dr. Naser.",
+        ],
     ),
     (
         "¡La casa cuesta $170.500.000,00! ¡Muy costosa! Se prevé una disminución del 12.5% para el próximo año.",
@@ -19,7 +28,9 @@ GOLDEN_ES_RULES_TEST_CASES = [
     ),
     (
         "«Ninguna mente extraordinaria está exenta de un toque de demencia.», dijo Aristóteles.",
-        ["«Ninguna mente extraordinaria está exenta de un toque de demencia.», dijo Aristóteles."],
+        [
+            "«Ninguna mente extraordinaria está exenta de un toque de demencia.», dijo Aristóteles."
+        ],
     ),
 ]
 
@@ -32,7 +43,10 @@ ES_MORE_TEST_CASES = [
             "¡¿Qué viste?!",
         ],
     ),
-    ("Admón. es administración o me equivoco.", ["Admón. es administración o me equivoco."]),
+    (
+        "Admón. es administración o me equivoco.",
+        ["Admón. es administración o me equivoco."],
+    ),
     (
         "¡Hola Srta. Ledesma! ¿Cómo está hoy? Espero que muy bien.",
         ["¡Hola Srta. Ledesma!", "¿Cómo está hoy?", "Espero que muy bien."],
@@ -43,7 +57,10 @@ ES_MORE_TEST_CASES = [
     ),
     (
         "He apuntado una cita para la siguiente fecha: Mar. 23 de Nov. de 2014. Gracias.",
-        ["He apuntado una cita para la siguiente fecha: Mar. 23 de Nov. de 2014.", "Gracias."],
+        [
+            "He apuntado una cita para la siguiente fecha: Mar. 23 de Nov. de 2014.",
+            "Gracias.",
+        ],
     ),
     (
         "Núm. de tel: 351.123.465.4. Envíe mis saludos a la Sra. Rescia.",
@@ -103,7 +120,10 @@ ES_MORE_TEST_CASES = [
     ),
     (
         "El volumen del cuerpo es 3m³. ¿Cuál es la superficie de cada cara del prisma?",
-        ["El volumen del cuerpo es 3m³.", "¿Cuál es la superficie de cada cara del prisma?"],
+        [
+            "El volumen del cuerpo es 3m³.",
+            "¿Cuál es la superficie de cada cara del prisma?",
+        ],
     ),
     (
         "La habitación tiene 20.55m². El living tiene 50.0m².",
@@ -151,7 +171,9 @@ ES_MORE_TEST_CASES = [
     ),
     (
         "Explora oportunidades de carrera en el área de Salud en el Hospital de Northern en Mt. Kisco.",
-        ["Explora oportunidades de carrera en el área de Salud en el Hospital de Northern en Mt. Kisco."],
+        [
+            "Explora oportunidades de carrera en el área de Salud en el Hospital de Northern en Mt. Kisco."
+        ],
     ),
 ]
 

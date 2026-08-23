@@ -30,7 +30,9 @@ PREPOSITIVE_ABBREVIATIONS: frozenset[str] = frozenset()
 NUMBER_ABBREVIATIONS: frozenset[str] = frozenset()
 
 # Sentence boundary matching Urdu punctuation, standard punctuation, or end-of-string
-SENTENCE_BOUNDARY_REGEX = re.compile(rf".*?[{URDU_FULL_STOP}{URDU_QUESTION_MARK}!?]|.*?$")
+SENTENCE_BOUNDARY_REGEX = re.compile(
+    rf".*?[{URDU_FULL_STOP}{URDU_QUESTION_MARK}!?]|.*?$"
+)
 
 # Language-specific replacement rules
 RULES: tuple[Rule, ...] = ()

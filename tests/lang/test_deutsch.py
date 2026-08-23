@@ -39,32 +39,46 @@ DE_CLEAN_RULES_TEST_CASES = [
     ),
     (
         "„Lass uns jetzt essen gehen!“, sagte die Mutter zu ihrer Freundin, „am besten zum Italiener.“",
-        ["„Lass uns jetzt essen gehen!“, sagte die Mutter zu ihrer Freundin, „am besten zum Italiener.“"],
+        [
+            "„Lass uns jetzt essen gehen!“, sagte die Mutter zu ihrer Freundin, „am besten zum Italiener.“"
+        ],
     ),
     ("Wir haben 1.000.000 Euro.", ["Wir haben 1.000.000 Euro."]),
     ("Sie bekommen 3,50 Euro zurück.", ["Sie bekommen 3,50 Euro zurück."]),
     ("Dafür brauchen wir 5,5 Stunden.", ["Dafür brauchen wir 5,5 Stunden."]),
     ("Bitte überweisen Sie 5.300,25 Euro.", ["Bitte überweisen Sie 5.300,25 Euro."]),
     ("1. Dies ist eine Punkteliste.", ["1. Dies ist eine Punkteliste."]),
-    ("Wir trafen Dr. med. Meyer in der Stadt.", ["Wir trafen Dr. med. Meyer in der Stadt."]),
+    (
+        "Wir trafen Dr. med. Meyer in der Stadt.",
+        ["Wir trafen Dr. med. Meyer in der Stadt."],
+    ),
     (
         "Wir brauchen Getränke, z. B. Wasser, Saft, Bier usw.",
         ["Wir brauchen Getränke, z. B. Wasser, Saft, Bier usw."],
     ),
     ("Ich kann u.a. Spanisch sprechen.", ["Ich kann u.a. Spanisch sprechen."]),
-    ("Frau Prof. Schulze ist z. Z. nicht da.", ["Frau Prof. Schulze ist z. Z. nicht da."]),
+    (
+        "Frau Prof. Schulze ist z. Z. nicht da.",
+        ["Frau Prof. Schulze ist z. Z. nicht da."],
+    ),
     (
         "Sie erhalten ein neues Bank-Statement bzw. ein neues Schreiben.",
         ["Sie erhalten ein neues Bank-Statement bzw. ein neues Schreiben."],
     ),
-    ("Z. T. ist die Lieferung unvollständig.", ["Z. T. ist die Lieferung unvollständig."]),
+    (
+        "Z. T. ist die Lieferung unvollständig.",
+        ["Z. T. ist die Lieferung unvollständig."],
+    ),
     ("Das finden Sie auf S. 225.", ["Das finden Sie auf S. 225."]),
     ("Sie besucht eine kath. Schule.", ["Sie besucht eine kath. Schule."]),
     (
         "Wir benötigen Zeitungen, Zeitschriften u. Ä. für unser Projekt.",
         ["Wir benötigen Zeitungen, Zeitschriften u. Ä. für unser Projekt."],
     ),
-    ("Das steht auf S. 23, s. vorherige Anmerkung.", ["Das steht auf S. 23, s. vorherige Anmerkung."]),
+    (
+        "Das steht auf S. 23, s. vorherige Anmerkung.",
+        ["Das steht auf S. 23, s. vorherige Anmerkung."],
+    ),
     (
         "Dies ist meine Adresse: Dr. Meier, Berliner Str. 5, 21234 Bremen.",
         ["Dies ist meine Adresse: Dr. Meier, Berliner Str. 5, 21234 Bremen."],
@@ -128,7 +142,11 @@ DE_CLEAN_RULES_TEST_CASES = [
     ),
     (
         "Was pro Jahr10. Zudem pro Jahr um 0.3 %11. Der gängigen Theorie nach erfolgt der Anstieg.",
-        ["Was pro Jahr10.", "Zudem pro Jahr um 0.3 %11.", "Der gängigen Theorie nach erfolgt der Anstieg."],
+        [
+            "Was pro Jahr10.",
+            "Zudem pro Jahr um 0.3 %11.",
+            "Der gängigen Theorie nach erfolgt der Anstieg.",
+        ],
     ),
     ("s. vorherige Anmerkung.", ["s. vorherige Anmerkung."]),
     (

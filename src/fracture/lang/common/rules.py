@@ -136,7 +136,9 @@ def mask_single_quote_punctuation(match: re.Match[str]) -> str:
 # 4. Standard Punctuation & Sentence Starters
 # =============================================================================
 
-PUNCTUATIONS: frozenset[str] = frozenset({".", "!", "?", "\u3002", "\uff0e", "\uff01", "\uff1f"})
+PUNCTUATIONS: frozenset[str] = frozenset(
+    {".", "!", "?", "\u3002", "\uff0e", "\uff01", "\uff1f"}
+)
 
 # fmt: off
 SENTENCE_STARTERS: frozenset[str] = frozenset({

@@ -41,7 +41,9 @@ SENTENCE_BOUNDARY_REGEX = re.compile(
 )
 
 QUOTATION_AT_END_OF_SENTENCE_REGEX = re.compile(r"""[!?.\-]["'“”]\s[A-Z]""")
-SPLIT_SPACE_QUOTATION_AT_END_OF_SENTENCE_REGEX = re.compile(r"""(?<=[!?.\-]["'“”])\s(?=[A-Z])""")
+SPLIT_SPACE_QUOTATION_AT_END_OF_SENTENCE_REGEX = re.compile(
+    r"""(?<=[!?.\-]["'“”])\s(?=[A-Z])"""
+)
 PARENS_BETWEEN_DOUBLE_QUOTES_REGEX = re.compile(r'["\”]\s\(.*\)\s["\“]')
 CONTINUOUS_PUNCTUATION_REGEX = re.compile(r"(?<=\S)(!|\?){3,}(?=\s|$)")
 MULTI_PERIOD_ABBREVIATION_REGEX = re.compile(r"\b[a-z](?:\.[a-z])+\.")

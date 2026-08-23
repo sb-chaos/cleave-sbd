@@ -32,7 +32,9 @@ class Processor:
         self.text: str = text or ""
         self.lang: str = lang
         self.char_span: bool = char_span
-        self.lang_module: ModuleType | None = get_language_module(lang) if lang else None
+        self.lang_module: ModuleType | None = (
+            get_language_module(lang) if lang else None
+        )
 
     def process(self) -> list[str]:
         """Execute the full 1:1 length-preserving disambiguation and extraction pipeline."""
@@ -86,11 +88,15 @@ class Processor:
     def _split_into_segments(self, text: str) -> list[str]:
         """Split disambiguated text into sentence segments using boundary regex."""
         boundary_regex = (
-            getattr(self.lang_module, "SENTENCE_BOUNDARY_REGEX", None) if self.lang_module else None
+            getattr(self.lang_module, "SENTENCE_BOUNDARY_REGEX", None)
+            if self.lang_module
+            else None
         ) or common.SENTENCE_BOUNDARY_REGEX
 
         punctuations = (
-            getattr(self.lang_module, "PUNCTUATIONS", None) if self.lang_module else None
+            getattr(self.lang_module, "PUNCTUATIONS", None)
+            if self.lang_module
+            else None
         ) or standard.PUNCTUATIONS
 
         segments: list[str] = []

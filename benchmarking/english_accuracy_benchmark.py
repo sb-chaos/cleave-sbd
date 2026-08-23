@@ -119,7 +119,9 @@ def main() -> int:
             print("-" * 50)
         return 1
 
-    print("\nAll English SBD test cases (including the XFAIL case) passed successfully!")
+    print(
+        "\nAll English SBD test cases (including the XFAIL case) passed successfully!"
+    )
     print("=" * 80)
     return 0
 

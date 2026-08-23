@@ -2,7 +2,18 @@ import re
 import time
 from pathlib import Path
 
-URL_EMAIL_KEYWORDS = (".com", ".net", ".org", ".io", ".gov", ".edu", "http://", "https://", "@", "www.")
+URL_EMAIL_KEYWORDS = (
+    ".com",
+    ".net",
+    ".org",
+    ".io",
+    ".gov",
+    ".edu",
+    "http://",
+    "https://",
+    "@",
+    "www.",
+)
 
 NO_SPACE_SENTENCE_ALPHA = re.compile(r"(?<=[a-z])\.(?=[A-Z])")
 NO_SPACE_SENTENCE_DIGIT = re.compile(r"(?<=\d)\.(?=[A-Z])")

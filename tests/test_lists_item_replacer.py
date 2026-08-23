@@ -67,7 +67,10 @@ class TestListItemMasking:
         assert len(masked) == len(text)
         assert PUA_PERIOD in masked
         assert "\r" in masked
-        assert unmask_all(masked) == "a. The first item\rb. The second item\rc. The third list item"
+        assert (
+            unmask_all(masked)
+            == "a. The first item\rb. The second item\rc. The third list item"
+        )
 
     def test_alphabetical_list_with_parens(self) -> None:
         text = "a) The first item b) The second item c) The third list item"
@@ -81,7 +84,10 @@ class TestListItemMasking:
         assert len(masked) == len(text)
         assert PUA_LEFT_PAREN in masked
         assert PUA_RIGHT_PAREN in masked
-        assert unmask_all(masked) == "(i) Hello world.\r(ii) Hello world.\r(iii) Hello world."
+        assert (
+            unmask_all(masked)
+            == "(i) Hello world.\r(ii) Hello world.\r(iii) Hello world."
+        )
 
     def test_single_roman_numeral_item(self) -> None:
         text = "(iii) List item number 3."
@@ -106,4 +112,6 @@ class TestListItemMasking:
         ]
         for s in samples:
             masked = mask_list_items(s)
-            assert len(masked) == len(s), f"Length mismatch for {s!r}: {len(masked)} != {len(s)}"
+            assert len(masked) == len(s), (
+                f"Length mismatch for {s!r}: {len(masked)} != {len(s)}"
+            )

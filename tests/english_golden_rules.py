@@ -4,7 +4,10 @@ GOLDEN_EN_RULES = [
     # 1) Simple period to end sentence
     ("Hello World. My name is Jonas.", ["Hello World.", "My name is Jonas."]),
     # 2) Question mark to end sentence
-    ("What is your name? My name is Jonas.", ["What is your name?", "My name is Jonas."]),
+    (
+        "What is your name? My name is Jonas.",
+        ["What is your name?", "My name is Jonas."],
+    ),
     # 3) Exclamation point to end sentence
     ("There it is! I found it.", ["There it is!", "I found it."]),
     # 4) One letter upper case abbreviations
@@ -19,7 +22,10 @@ GOLDEN_EN_RULES = [
         ["They closed the deal with Pitt, Briggs & Co. at noon."],
     ),
     # 8) Two letter lower case abbreviations at the end of a sentence
-    ("Let's ask Jane and co. They should know.", ["Let's ask Jane and co.", "They should know."]),
+    (
+        "Let's ask Jane and co. They should know.",
+        ["Let's ask Jane and co.", "They should know."],
+    ),
     # 9) Two letter upper case abbreviations at the end of a sentence
     (
         "They closed the deal with Pitt, Briggs & Co. It closed yesterday.",
@@ -47,9 +53,15 @@ GOLDEN_EN_RULES = [
         ["I live in the U.S.", "How about you?"],
     ),
     # 16) U.S. as non sentence boundary with next word capitalized
-    ("I work for the U.S. Government in Virginia.", ["I work for the U.S. Government in Virginia."]),
+    (
+        "I work for the U.S. Government in Virginia.",
+        ["I work for the U.S. Government in Virginia."],
+    ),
     # 17) U.S. as non sentence boundary
-    ("I have lived in the U.S. for 20 years.", ["I have lived in the U.S. for 20 years."]),
+    (
+        "I have lived in the U.S. for 20 years.",
+        ["I have lived in the U.S. for 20 years."],
+    ),
     # Most difficult sentence to crack
     # 18) A.M. / P.M. as non sentence boundary and sentence boundary
     (
@@ -67,7 +79,9 @@ GOLDEN_EN_RULES = [
     # 21) Parenthetical inside sentence
     (
         "He teaches science (He previously worked for 5 years as an engineer.) at the local University.",
-        ["He teaches science (He previously worked for 5 years as an engineer.) at the local University."],
+        [
+            "He teaches science (He previously worked for 5 years as an engineer.) at the local University."
+        ],
     ),
     # 22) Email addresses
     (
@@ -77,7 +91,10 @@ GOLDEN_EN_RULES = [
     # 23) Web addresses
     (
         "The site is: https://www.example.50.com/new-site/awesome_content.html. Please check it out.",
-        ["The site is: https://www.example.50.com/new-site/awesome_content.html.", "Please check it out."],
+        [
+            "The site is: https://www.example.50.com/new-site/awesome_content.html.",
+            "Please check it out.",
+        ],
     ),
     # 24) Single quotations inside sentence
     (
@@ -118,7 +135,10 @@ GOLDEN_EN_RULES = [
         ["1) The first item", "2) The second item"],
     ),
     # 34) List (parens and period to end item)
-    ("1) The first item. 2) The second item.", ["1) The first item.", "2) The second item."]),
+    (
+        "1) The first item. 2) The second item.",
+        ["1) The first item.", "2) The second item."],
+    ),
     # 35) List (period to mark list and no period to end item)
     (
         "1. The first item 2. The second item",

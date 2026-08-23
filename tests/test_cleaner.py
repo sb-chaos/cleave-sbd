@@ -18,7 +18,9 @@ def test_normalizer(text: str, expected_cleaned_sents: str):
     assert norm_text == expected_cleaned_sents
 
 
-def test_normalizer_doesnt_mutate_input(text: str = "It was a cold \nnight in the city."):
+def test_normalizer_doesnt_mutate_input(
+    text: str = "It was a cold \nnight in the city.",
+):
     _ = Normalizer(text, Language.get_language_code("en")).normalize()
     assert text == "It was a cold \nnight in the city."
 
