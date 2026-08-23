@@ -75,5 +75,3 @@ site/
 Thumbs.db
 AGENTS.md
 uv.lock
-.aider*
-start_aider_server.sh
