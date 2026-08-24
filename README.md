@@ -122,9 +122,9 @@ Benchmarks evaluated on the **Complete Works of William Shakespeare** (`pg100.tx
 
 | Engine | Sentences Found | Mean Latency | Min Latency | Throughput | Status / Speedup |
 | --- | --- | --- | --- | --- | --- |
-| **`fracture` (`clean=False`)** | 176,430 | 4,489.86 ms | 4,470.52 ms | 1.16 MB/s | 1.00x (Baseline) |
-| **`fracture` (`clean=True`)** | 176,442 | 4,510.56 ms | 4,501.86 ms | 1.15 MB/s | 1.00x |
-| **`fracture` (`char_span=True`)** | 176,430 | 4,589.46 ms | 4,563.51 ms | 1.13 MB/s | 0.98x |
+| **`fracture` (`clean=False`)** | 175,998 | 3,407.85 ms | 3,378.60 ms | 1.52 MB/s | 1.00x (Baseline) |
+| **`fracture` (`clean=True`)** | 176,010 | 3,533.35 ms | 3,469.87 ms | 1.47 MB/s | 0.96x |
+| **`fracture` (`char_span=True`)** | 175,998 | 3,832.14 ms | 3,689.56 ms | 1.35 MB/s | 0.89x |
 | **`spaCy sentencizer`** | 109,084 | 4,862.67 ms | 4,758.62 ms | 1.07 MB/s | 0.97x |
 | **`BlingFire`** | 107,489 | 164.11 ms | 161.32 ms | 31.62 MB/s | 27.77x |
 | **`NLTK sent_tokenize`**| 105,488 | 726.35 ms | 724.30 ms | 7.15 MB/s | 6.27x |
@@ -137,7 +137,7 @@ Benchmarks evaluated on the **Complete Works of William Shakespeare** (`pg100.tx
 
 ### Key Takeaways & Failure Analysis
 
-* **pySBD Asymptotic Hang (>15 Minutes):** `pySBD` hits an $O(N^2)$ algorithmic wall on multi-megabyte corpora. Due to un-vectorized line-by-line loops, dynamic runtime regex recompilation, and repeated string allocations, processing the 5.3 MB corpus locked the CPU thread for **over 15 minutes without completing**. In contrast, `fracture` finished the exact same segmentation in **4.55 seconds**.
+* **pySBD Asymptotic Hang (>15 Minutes):** `pySBD` hits an $O(N^2)$ algorithmic wall on multi-megabyte corpora. Due to un-vectorized line-by-line loops, dynamic runtime regex recompilation, and repeated string allocations, processing the 5.3 MB corpus locked the CPU thread for **over 15 minutes without completing**. In contrast, `fracture` finished the exact same segmentation in **3.41 seconds**.
 * **spaCy Pipeline Lockout:** spaCy failed to run out-of-the-box due to rigid external model weight requirements and initialization overhead, refusing processing without dedicated secondary environment bootstrapping.
 * **Granular Boundary Precision:** `fracture` detected **176,430** valid sentence boundaries (~49,000–70,000 more than Stanza, NLTK, or BlingFire) by accurately segmenting dramatic verse, dialogue cues, character tags, and archaic typography rather than collapsing them into single run-on blocks.
 * **10.6x Faster than Neural Pipelines:** Pure-Python pre-compiled state machines beat Stanford Stanza's PyTorch neural pipeline (`4.56 s` vs `48.15 s`) on a single CPU core with zero external C++ or CUDA dependencies.
