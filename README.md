@@ -64,68 +64,19 @@ for span in spans:
 # Output:
 # 'Hello world!' -> [0:12]
 # 'This is a test.' -> [13:28]
-
----
-
-## Features
-
-* **Zero Heavy Dependencies:** Pure Python logic without bloated neural models, PyTorch, or GPU requirements.
-* **Declarative & Length-Preserving:** Length-preserving PUA sentinel substitutions ensure $1:1$ character offset invariance for precise span extraction.
-* **Strictly Typed:** Fully typed and verified in strict mode with Basedpyright/Pyright (PEP 561 compliant with `py.typed`).
-* **Multilingual Support:** Out-of-the-box rule sets for 22 languages.
-* **High Performance:** Pre-compiled regular expressions and immutable lookup tables.
-
----
-
-## Installation
-
-```bash
-pip install cleave-sbd
 ```
 
+### Streaming Mode
 
-Or with `uv`:
+Lazily process large texts or documents paragraph-by-paragraph with bounded memory:
 
-```bash
-uv add cleave-sbd
+```python
+import csbd
+
+seg = csbd.Segmenter(language="en")
+for sentence in seg.stream(large_text, chunk_paragraphs=1000):
+    print(sentence)
 ```
-
-
----
-
-## Quickstart
-
-python
-import csbd
-
-text = "My name is Jonas E. Smith. Please turn to p. 55."
-seg = csbd.Segmenter(language="en", clean=False)
-
-sentences = seg.segment(text)
-print(sentences)
-# Output:
-# ('My name is Jonas E. Smith.', 'Please turn to p. 55.')
-
-
-
-### Character Span Mode
-
-Extract start and end character offsets alongside segmented sentences:
-
-python
-import csbd
-
-text = "Hello world! This is a test."
-seg = csbd.Segmenter(language="en", char_span=True)
-
-spans = seg.segment(text)
-for span in spans:
-    print(f"{span.sent!r} -> [{span.start}:{span.end}]")
-# Output:
-# 'Hello world!' ->
-# 'This is a test.' ->
-
-
 
 ---
 
@@ -135,8 +86,8 @@ for span in spans:
 | --- | --- | --- | --- |
 | `language` | `str` | `"en"` | Two-letter ISO 639-1 language code (e.g., `"en"`, `"de"`, `"fr"`, `"es"`, `"ja"`). |
 | `clean` | `bool` | `False` | When `True`, normalizes noisy formatting (e.g., consecutive whitespace, unusual line breaks) before splitting. |
-| `doc_type` | `str` | `""` | Set to `"pdf"` for OCR/PDF extracted line break handling. Requires `clean=True`. |
-| `char_span` | `bool` | `False` | When `True`, returns character offset spans (`TextSpan`) instead of plain strings. |
+| `doc_type` | `str` | `""` | Set to `"pdf"` for OCR/PDF extracted line break handling (requires `clean=True`). |
+| `char_span` | `bool` | `False` | When `True`, returns character offset spans (`TextSpan`) instead of plain strings (requires `clean=False`). |
 
 ---
 
@@ -196,7 +147,7 @@ Benchmarks evaluated on the **Complete Works of William Shakespeare** (`pg100.tx
 
 * **pySBD Asymptotic Hang (>15 Minutes):** `pySBD` hits an $O(N^2)$ algorithmic wall on multi-megabyte corpora. Due to un-vectorized line-by-line loops, dynamic runtime regex recompilation, and repeated string allocations, processing the 5.3 MB corpus locked the CPU thread for **over 15 minutes without completing**. In contrast, `cleave-sbd` finished the exact same segmentation in **3.41 seconds**.
 * **spaCy Pipeline Lockout:** spaCy failed to run out-of-the-box due to rigid external model weight requirements and initialization overhead, refusing processing without dedicated secondary environment bootstrapping.
-* **Granular Boundary Precision:** `cleave-sbd` detected **176,430** valid sentence boundaries (~49,000–70,000 more than Stanza, NLTK, or BlingFire) by accurately segmenting dramatic verse, dialogue cues, character tags, and archaic typography rather than collapsing them into single run-on blocks.
+* **Granular Boundary Precision:** `cleave-sbd` detected **175,998** valid sentence boundaries (~48,000–70,000 more than Stanza, NLTK, or BlingFire) by accurately segmenting dramatic verse, dialogue cues, character tags, and archaic typography rather than collapsing them into single run-on blocks.
 * **10.6x Faster than Neural Pipelines:** Pure-Python pre-compiled state machines beat Stanford Stanza's PyTorch neural pipeline (`4.56 s` vs `48.15 s`) on a single CPU core with zero external C++ or CUDA dependencies.
 * **Zero-Cost Character Spans:** Full character offset tracking (`char_span=True`) adds only **~200 ms** of latency over 5.3 MB, sustaining **1.09 MB/s** throughput.
 
@@ -205,7 +156,7 @@ Benchmarks evaluated on the **Complete Works of William Shakespeare** (`pg100.tx
 ### Reproduce Benchmarks
 
 ```bash
-uv run --with nltk,stanza,blingfire,syntok python tests/bigtext_speed_benchmark.py
+uv run --with nltk,stanza,blingfire,syntok python benchmarking/bigtext_speed_benchmark.py
 ```
 
 ---

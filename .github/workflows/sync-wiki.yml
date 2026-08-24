@@ -1,0 +1,26 @@
+name: Sync Wiki
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'wiki/**'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-wiki:
+    name: Sync wiki directory to GitHub Wiki
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Sync wiki files to GitHub Wiki repository
+        uses: Andrew-Chen-De/sync-to-github-wiki@v1.0.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          wiki-folder: wiki
