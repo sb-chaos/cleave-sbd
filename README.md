@@ -3,18 +3,19 @@
 [![python-package](https://github.com/sb-chaos/cleave-sbd/actions/workflows/python-package.yml/badge.svg)](https://github.com/sb-chaos/cleave-sbd/actions/workflows/python-package.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
+[![Dependencies: None](https://img.shields.io/badge/dependencies-0%20(stdlib)-brightgreen.svg)](#features)
 [![Typing: Strict](https://img.shields.io/badge/typing-strict-green.svg)](https://peps.python.org/pep-0561/)
 [![Code Style: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
-**cleave-sbd** is a high-performance, strictly-typed sentence boundary disambiguation (SBD) engine. It isolates sentence boundaries across complex edge cases—including abbreviations, honorifics, numbers, lists, ellipses, and quotations—with zero machine learning dependencies.
+**cleave-sbd** is a high-performance, strictly-typed sentence boundary disambiguation (SBD) engine. It isolates sentence boundaries across abbreviations, honorifics, numbers, lists, ellipses, and quotations without machine learning dependencies.
 
 ---
 
 ## Features
 
-* **Zero Heavy Dependencies:** Pure Python logic without bloated neural models, PyTorch, or GPU requirements.
-* **Declarative & Length-Preserving:** Length-preserving PUA sentinel substitutions ensure 1:1 character offset invariance for precise span extraction.
-* **Strictly Typed:** Fully typed and verified in strict mode with Basedpyright/Pyright (PEP 561 compliant with `py.typed`).
+* **Zero Heavy Dependencies:** Pure Python logic without neural models, PyTorch, or GPU requirements.
+* **Length-Preserving Coordinate Mapping:** PUA sentinel substitutions and offset delta tracking ensure 1:1 character offset invariance for precise span extraction.
+* **Strict Typing:** Fully typed and verified in strict mode with Basedpyright/Pyright (PEP 561 compliant with `py.typed`).
 * **Multilingual Support:** Out-of-the-box rule sets for 22 languages.
 * **High Performance:** Pre-compiled regular expressions and immutable lookup tables.
 
@@ -78,6 +79,10 @@ for sentence in seg.stream(large_text, chunk_paragraphs=1000):
     print(sentence)
 ```
 
+### Parallel Processing (Multi-Worker Safe) *(Coming Soon)*
+
+Native multi-core batch processing leveraging pure immutable state machines across worker processes.
+
 ---
 
 ## Parameters
@@ -87,7 +92,7 @@ for sentence in seg.stream(large_text, chunk_paragraphs=1000):
 | `language` | `str` | `"en"` | Two-letter ISO 639-1 language code (e.g., `"en"`, `"de"`, `"fr"`, `"es"`, `"ja"`). |
 | `clean` | `bool` | `False` | When `True`, normalizes noisy formatting (e.g., consecutive whitespace, unusual line breaks) before splitting. |
 | `doc_type` | `str` | `""` | Set to `"pdf"` for OCR/PDF extracted line break handling (requires `clean=True`). |
-| `char_span` | `bool` | `False` | When `True`, returns character offset spans (`TextSpan`) instead of plain strings (requires `clean=False`). |
+| `char_span` | `bool` | `False` | When `True`, returns character offset spans (`TextSpan`) with exact coordinates projected back to the raw source document. |
 
 ---
 
@@ -104,60 +109,28 @@ for sentence in seg.stream(large_text, chunk_paragraphs=1000):
 | `it` | Italian | `ja` | Japanese | `zh` | Chinese |
 | `kk` | Kazakh |  |  |  |  |
 
----
+## Why cleave-sbd?
 
-## Architecture & Engineering Philosophy
-
-`cleave-sbd` is engineered under strict architectural constraints to guarantee high cohesion, loose coupling, and C-level execution speed:
-
-1. **Standard Library Only:** Built exclusively with Python standard library primitives (`tomllib`, `typing`, `dataclasses`, `itertools`). Zero external runtime dependencies, zero supply-chain vulnerabilities, and zero version drift.
-2. **Strict Typing & Boundary Sanitization:** End-to-end type safety verified under strict type checkers. Untyped dictionaries (`dict[str, Any]`) are restricted entirely to raw TOML ingestion and mapped immediately to concrete types.
-3. **Separation of Data and Logic:** Data models are immutable, memory-optimized, and logic-free via `@dataclass(frozen=True, slots=True)`. Computational logic is structured strictly as pure, deterministic functions (data-in, data-out) with zero internal state mutations.
-4. **Loose Coupling via Protocols & Dependency Injection:** Logic components depend on abstract `typing.Protocol` contracts rather than concrete implementations. Configurations and rule tables are injected directly into pure pipelines.
-5. **C-Speed Execution & Zero-Copy Primitives:** Minimal allocation overhead using CPython built-ins, pre-compiled regular expressions, generator streaming (`Sequence[T]`, `Iterable[T]`), and immutable `tuple` returns.
-6. **Unidirectional Dependency Flow:** Clean, single-direction import hierarchy: `Config Schemas → Parsers → Domain Logic → Public API`. Core transformation logic never imports from configuration or entrypoint layers.
+| Feature | `cleave-sbd` | `pySBD` | `spaCy` (sm) | `NLTK` (Punkt) |
+| :--- | :---: | :---: | :---: | :---: |
+| **Dependencies** | **0 (Stdlib)** | 0 | Heavy (ML/C) | 1+ (Data downloads) |
+| **Typing** | **Strict (PEP 561)** | Partial | Strict | Loose / Dynamic |
+| **Memory Footprint** | **Constant $O(\text{chunk})$** | Variable | Large (~50MB+) | Medium |
+| **1:1 Span Projection** | **Yes (`OffsetMap`)** | Basic | Token-based | Manual slice |
+| **Python Target** | **3.11+ Native** | Legacy 3.x | 3.9+ | Legacy 3.x |
 
 ---
 
-## Performance & Speed Benchmarks
+## Documentation & Deep Dives
 
-Benchmarks evaluated on the **Complete Works of William Shakespeare** (`pg100.txt`):
+For complete documentation, architectural specifications, and recipes, see the **[cleave-sbd Wiki](https://github.com/sb-chaos/cleave-sbd/wiki)**:
 
-* **File Size:** 5.31 MB (5,442,036 bytes)
-* **Text Volume:** 5,378,655 characters | 966,506 words
-
-### Benchmark Results
-
-| Engine | Sentences Found | Mean Latency | Min Latency | Throughput | Status / Speedup |
-| --- | --- | --- | --- | --- | --- |
-| **`cleave-sbd` (`clean=False`)** | 175,998 | 3,407.85 ms | 3,378.60 ms | 1.52 MB/s | 1.00x (Baseline) |
-| **`cleave-sbd` (`clean=True`)** | 176,010 | 3,533.35 ms | 3,469.87 ms | 1.47 MB/s | 0.96x |
-| **`cleave-sbd` (`char_span=True`)** | 175,998 | 3,832.14 ms | 3,689.56 ms | 1.35 MB/s | 0.89x |
-| **`spaCy sentencizer`** | 109,084 | 4,862.67 ms | 4,758.62 ms | 1.07 MB/s | 0.97x |
-| **`BlingFire`** | 107,489 | 164.11 ms | 161.32 ms | 31.62 MB/s | 27.77x |
-| **`NLTK sent_tokenize`**| 105,488 | 726.35 ms | 724.30 ms | 7.15 MB/s | 6.27x |
-| **`Syntok`** | 112,612 | 3,871.09 ms | 3,811.82 ms | 1.34 MB/s | 1.18x |
-| **`Stanza`** | 127,102 | 48,151.78 ms | 45,269.77 ms | 0.11 MB/s | 0.09x *(~10.6x slower)* |
-| **`spaCy en_core_web_sm`** | — | — | — | — | **Refused / Setup Failure** |
-| **`pySBD`** | — | >900,000 ms | — | <0.005 MB/s | **DNF (Timed out >15 min)** |
-
----
-
-### Key Takeaways & Failure Analysis
-
-* **pySBD Asymptotic Hang (>15 Minutes):** `pySBD` hits an $O(N^2)$ algorithmic wall on multi-megabyte corpora. Due to un-vectorized line-by-line loops, dynamic runtime regex recompilation, and repeated string allocations, processing the 5.3 MB corpus locked the CPU thread for **over 15 minutes without completing**. In contrast, `cleave-sbd` finished the exact same segmentation in **3.41 seconds**.
-* **spaCy Pipeline Lockout:** spaCy failed to run out-of-the-box due to rigid external model weight requirements and initialization overhead, refusing processing without dedicated secondary environment bootstrapping.
-* **Granular Boundary Precision:** `cleave-sbd` detected **175,998** valid sentence boundaries (~48,000–70,000 more than Stanza, NLTK, or BlingFire) by accurately segmenting dramatic verse, dialogue cues, character tags, and archaic typography rather than collapsing them into single run-on blocks.
-* **10.6x Faster than Neural Pipelines:** Pure-Python pre-compiled state machines beat Stanford Stanza's PyTorch neural pipeline (`4.56 s` vs `48.15 s`) on a single CPU core with zero external C++ or CUDA dependencies.
-* **Zero-Cost Character Spans:** Full character offset tracking (`char_span=True`) adds only **~200 ms** of latency over 5.3 MB, sustaining **1.09 MB/s** throughput.
-
----
-
-### Reproduce Benchmarks
-
-```bash
-uv run --with nltk,stanza,blingfire,syntok python benchmarking/bigtext_speed_benchmark.py
-```
+* **[1. Architecture & Engineering Philosophy](https://github.com/sb-chaos/cleave-sbd/wiki/Architecture-and-Engineering-Philosophy)**: The 10 core architectural invariants governing zero-dependency design, strict typing, layered decoupling, and immutable modeling.
+* **[2. Coordinate Invariance & OffsetMap](https://github.com/sb-chaos/cleave-sbd/wiki/Coordinate-Invariance-&-OffsetMap)**: Mechanism of length-preserving PUA sentinels and $O(\log K)$ cumulative delta tracking for exact span projection.
+* **[3. Common API Use Cases & Recipes](https://github.com/sb-chaos/cleave-sbd/wiki/Common-Use-Cases)**: Code recipes for sentence segmentation, exact character span extraction, bounded streaming, and PDF repair.
+* **[4. Language Support & Heuristics](https://github.com/sb-chaos/cleave-sbd/wiki/Language-Support-&-Heuristics)**: Linguistic heuristics across 22 supported languages (non-Latin scripts, legal outlines, continuous text, abbreviations).
+* **[5. Performance & Speed Benchmarks](https://github.com/sb-chaos/cleave-sbd/wiki/Performance-and-Benchmarks)**: Benchmark comparisons, latency tables, and failure analysis against Stanford Stanza, spaCy, NLTK, BlingFire, Syntok, and pySBD.
+* **[6. Contributing & Adding Languages](https://github.com/sb-chaos/cleave-sbd/wiki/Contributing-&-Adding-Languages)**: Developer guide for running automated quality gates (`validate.sh`) and adding language configurations.
 
 ---
 

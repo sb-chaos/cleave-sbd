@@ -57,8 +57,8 @@ from csbd.rules.boundary import (
     mask_common_rules,
 )
 from csbd.rules.disambiguation import (
+    EXCLAMATION_RULES,
     EXCLAMATION_WORDS,
-    EXCLAMATION_WORDS_REGEX,
     PUNCTUATIONS,
     SENTENCE_STARTERS,
     Rule,
@@ -141,8 +141,8 @@ __all__ = [
     "ELLIPSIS_RULES",
     "ESCAPED_CR",
     "ESCAPED_NL",
+    "EXCLAMATION_RULES",
     "EXCLAMATION_WORDS",
-    "EXCLAMATION_WORDS_REGEX",
     "HTML_ESCAPED_TAG_RULE",
     "HTML_RULES",
     "HTML_TAG_RULE",

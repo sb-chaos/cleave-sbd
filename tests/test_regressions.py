@@ -47,3 +47,19 @@ def test_issue_char_spans(
     ]
     assert tuple(segments) == tuple(expected_text_spans)
     assert text == "".join(s.sent for s in segments)
+
+
+def test_zero_runtime_dependencies_invariant() -> None:
+    """Enforce the strict architectural invariant: zero external runtime dependencies."""
+    import tomllib
+    from pathlib import Path
+
+    pyproject_path = Path(__file__).resolve().parent.parent / "pyproject.toml"
+    with open(pyproject_path, "rb") as f:
+        data = tomllib.load(f)
+
+    dependencies = data.get("project", {}).get("dependencies", None)
+    assert dependencies == [], (
+        f"CRITICAL INVARIANT VIOLATION: cleave-sbd must have ZERO runtime dependencies! "
+        f"Found unexpected dependencies: {dependencies}"
+    )

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
 
 from csbd.language.protocols import LanguageProtocol
 from csbd.processors import (
@@ -51,7 +50,6 @@ from csbd.rules import (
 
 __all__ = [
     "LanguageAbbreviationData",
-    "ParagraphChunk",
     "apply_replacements",
     "check_for_parens_between_quotes",
     "disambiguate",
@@ -121,19 +119,6 @@ def mask_between_punctuation(text: str, config: LanguageProtocol | None = None) 
 # =============================================================================
 # 2. Pipeline Orchestrator
 # =============================================================================
-
-
-@dataclass(slots=True, frozen=True)
-class ParagraphChunk:
-    """Zero-copy index slice representing a single paragraph boundary.
-
-    Attributes:
-        start: Starting character offset in the source document.
-        end: Ending character offset in the source document.
-    """
-
-    start: int
-    end: int
 
 
 def disambiguate(

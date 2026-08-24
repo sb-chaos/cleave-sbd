@@ -170,6 +170,6 @@ print(raw_offsets)
 | Configuration | Allowed? | Rationale / Behavior |
 | --- | :---: | --- |
 | `Segmenter(clean=False, char_span=True)` | ✅ | Retains $1:1$ character indexing with original source text. |
-| `Segmenter(clean=True, char_span=True)` | ❌ | Raises `ValueError` — cleaning mutates the string, invalidating offsets. |
+| `Segmenter(clean=True, char_span=True)` | ✅ | Normalized text is returned in `TextSpan.sent` while `start` and `end` are projected back to raw source coordinates via `OffsetMap`. |
 | `Segmenter(clean=True, doc_type="pdf")` | ✅ | Reconnects broken PDF line wraps and removes mid-word hyphens. |
 | `Segmenter(clean=False, doc_type="pdf")` | ❌ | Raises `ValueError` — PDF repair requires active cleaning. |

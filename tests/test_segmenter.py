@@ -8,7 +8,7 @@ from typing import Final, cast
 import pytest
 
 import csbd
-from csbd.segmenter import TextSpan
+from csbd.models import TextSpan
 from tests.loaders import PdfCase, load_pdf_cases
 
 PDF_CASES: Final[list[PdfCase]] = load_pdf_cases()
@@ -36,8 +36,22 @@ def test_sbd_char_span_basic() -> None:
     raw_segments = seg.segment(text)
     segments = cast(list[TextSpan], raw_segments)
     expected = [
-        TextSpan(sent="My name is Jonas E. Smith. ", start=0, end=27),
-        TextSpan(sent="Please turn to p. 55.", start=27, end=48),
+        TextSpan(
+            sent="My name is Jonas E. Smith. ",
+            start=0,
+            end=27,
+            clean_start=0,
+            clean_end=27,
+            raw_slice="My name is Jonas E. Smith. ",
+        ),
+        TextSpan(
+            sent="Please turn to p. 55.",
+            start=27,
+            end=48,
+            clean_start=27,
+            clean_end=48,
+            raw_slice="Please turn to p. 55.",
+        ),
     ]
     assert tuple(segments) == tuple(expected)
     assert text == "".join(s.sent for s in segments)
@@ -57,27 +71,78 @@ def test_same_sentence_different_char_span() -> None:
         "(Laughter.)"
     )
     expected_text_spans = [
-        TextSpan(sent="From the AP comes this story :\n", start=0, end=31),
+        TextSpan(
+            sent="From the AP comes this story :\n",
+            start=0,
+            end=31,
+            clean_start=0,
+            clean_end=31,
+            raw_slice="From the AP comes this story :\n",
+        ),
         TextSpan(
             sent="President Bush on Tuesday nominated two individuals to replace retiring jurists on federal courts in the Washington area.\n",
             start=31,
             end=153,
+            clean_start=31,
+            clean_end=153,
+            raw_slice="President Bush on Tuesday nominated two individuals to replace retiring jurists on federal courts in the Washington area.\n",
         ),
-        TextSpan(sent="***\n", start=153, end=157),
+        TextSpan(
+            sent="***\n",
+            start=153,
+            end=157,
+            clean_start=153,
+            clean_end=157,
+            raw_slice="***\n",
+        ),
         TextSpan(
             sent="After you are elected in 2004, what will your memoirs say about you, what will the title be, and what will the main theme say?\n",
             start=157,
             end=284,
+            clean_start=157,
+            clean_end=284,
+            raw_slice="After you are elected in 2004, what will your memoirs say about you, what will the title be, and what will the main theme say?\n",
         ),
-        TextSpan(sent="***\n", start=284, end=288),
-        TextSpan(sent='"THE PRESIDENT: I appreciate that.\n', start=288, end=323),
-        TextSpan(sent="(Laughter.)\n", start=323, end=335),
+        TextSpan(
+            sent="***\n",
+            start=284,
+            end=288,
+            clean_start=284,
+            clean_end=288,
+            raw_slice="***\n",
+        ),
+        TextSpan(
+            sent='"THE PRESIDENT: I appreciate that.\n',
+            start=288,
+            end=323,
+            clean_start=288,
+            clean_end=323,
+            raw_slice='"THE PRESIDENT: I appreciate that.\n',
+        ),
+        TextSpan(
+            sent="(Laughter.)\n",
+            start=323,
+            end=335,
+            clean_start=323,
+            clean_end=335,
+            raw_slice="(Laughter.)\n",
+        ),
         TextSpan(
             sent="My life is too complicated right now trying to do my job.\n",
             start=335,
             end=393,
+            clean_start=335,
+            clean_end=393,
+            raw_slice="My life is too complicated right now trying to do my job.\n",
         ),
-        TextSpan(sent="(Laughter.)", start=393, end=404),
+        TextSpan(
+            sent="(Laughter.)",
+            start=393,
+            end=404,
+            clean_start=393,
+            clean_end=404,
+            raw_slice="(Laughter.)",
+        ),
     ]
     seg = csbd.Segmenter(language="en", clean=False, char_span=True)
     raw_segments = seg.segment(text)
@@ -86,25 +151,28 @@ def test_same_sentence_different_char_span() -> None:
     assert text == "".join(s.sent for s in segments)
 
 
-def test_exception_with_both_clean_and_span_true() -> None:
-    """Verify ValueError when both clean and char_span are True."""
-    with pytest.raises(ValueError) as excinfo:
-        _ = csbd.Segmenter(language="en", clean=True, char_span=True)
-    assert "char_span must be False if clean is True" in str(excinfo.value)
+def test_clean_and_span_both_true_supported() -> None:
+    """Verify clean=True and char_span=True returns clean sentences with exact raw source coordinates."""
+    raw_text = "<p>First sentence. Second sentence.</p>"
+    seg = csbd.Segmenter(language="en", clean=True, char_span=True)
+    raw_spans = seg.segment(raw_text)
+    spans = cast(tuple[TextSpan, ...], raw_spans)
+
+    assert len(spans) == 2
+    # Clean sentence strings
+    assert spans[0].sent.strip() == "First sentence."
+    assert spans[1].sent.strip() == "Second sentence."
+    # Projected coordinates into raw source text
+    assert spans[0].start == 3  # After '<p>'
+    assert raw_text[spans[0].start : spans[0].end].startswith("First sentence.")
+    assert raw_text[spans[1].start : spans[1].end].startswith("Second sentence.")
 
 
 def test_exception_with_doc_type_pdf_and_clean_false() -> None:
     """Verify ValueError when doc_type is pdf but clean is False."""
     with pytest.raises(ValueError) as excinfo:
         _ = csbd.Segmenter(language="en", clean=False, doc_type="pdf")
-    assert "`doc_type='pdf'` should have `clean=True`" in str(excinfo.value)
-
-
-def test_exception_with_doc_type_pdf_and_both_clean_char_span_true() -> None:
-    """Verify ValueError when doc_type is pdf with char_span True."""
-    with pytest.raises(ValueError) as excinfo:
-        _ = csbd.Segmenter(language="en", clean=True, doc_type="pdf", char_span=True)
-    assert "char_span must be False if clean is True" in str(excinfo.value)
+    assert "`doc_type='pdf'` requires `clean=True`" in str(excinfo.value)
 
 
 @pytest.mark.parametrize("text, expected", PDF_CASES)

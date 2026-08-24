@@ -7,29 +7,13 @@ from typing import cast
 
 from csbd.disambiguator import disambiguate
 from csbd.language import get_language_module
-from csbd.normalizer import normalize
+from csbd.models import OffsetMap, TextSpan
+from csbd.normalizer import normalize_with_map
 from csbd.rules import unmask_all
 
-
-@dataclass(slots=True, frozen=True)
-class TextSpan:
-    """A data class representing a span of text with character offsets."""
-
-    sent: str
-    start: int
-    end: int
-
-    def __repr__(self) -> str:
-        return self.sent
-
-    def __eq__(self, other: object) -> bool:
-        if isinstance(other, TextSpan):
-            return (
-                self.sent == other.sent
-                and self.start == other.start
-                and self.end == other.end
-            )
-        return False
+__all__ = [
+    "Segmenter",
+]
 
 
 @dataclass(slots=True, frozen=True)
@@ -42,10 +26,9 @@ class Segmenter:
         clean (bool, optional): Whether to clean the text before segmentation. Defaults to False.
         doc_type (str, optional): Type of document. Use 'pdf' for OCR-extracted text. Defaults to "".
         char_span (bool, optional): If True, includes start and end character offsets for each
-            sentence in the original text. Defaults to False.
+            sentence mapped back to the original source text. Defaults to False.
 
     Raises:
-        ValueError: If `clean` is True and `char_span` is also True.
         ValueError: If `doc_type` is 'pdf' but `clean` is False.
     """
 
@@ -55,15 +38,9 @@ class Segmenter:
     char_span: bool = False
 
     def __post_init__(self) -> None:
-        if self.clean and self.char_span:
-            raise ValueError(
-                "char_span must be False if clean is True. Since `clean=True` will modify original text."
-            )
         if self.doc_type == "pdf" and not self.clean:
             raise ValueError(
-                "`doc_type='pdf'` should have `clean=True` & "
-                "`char_span` should be False since original"
-                "text will be modified."
+                "`doc_type='pdf'` requires `clean=True` to normalize PDF line breaks."
             )
         if self.language:
             get_language_module(self.language)
@@ -83,14 +60,16 @@ class Segmenter:
         config = get_language_module(self.language) if self.language else None
 
         target_text = text
+        offset_map: OffsetMap | None = None
+
         if self.clean:
-            cleaned = normalize(
+            norm_res = normalize_with_map(
                 text=text,
                 config=config,
                 doc_type=self.doc_type,
-                char_span=False,
             )
-            target_text = cleaned or ""
+            target_text = norm_res.text
+            offset_map = norm_res.offset_map
             if not target_text or target_text.isspace():
                 return ()
 
@@ -107,17 +86,41 @@ class Segmenter:
             spans = cast(tuple[tuple[int, int], ...], output)
             text_len = len(target_text)
             result_spans: list[TextSpan] = []
-            for i, (start, end) in enumerate(spans):
+            for i, (c_start, c_end) in enumerate(spans):
                 next_start = spans[i + 1][0] if i + 1 < len(spans) else text_len
-                span_end = end
+                span_end = c_end
                 while span_end < next_start and target_text[span_end].isspace():
                     span_end += 1
 
-                raw_slice = target_text[start:span_end]
-                clean_sent = unmask_all(raw_slice)
-                result_spans.append(
-                    TextSpan(sent=clean_sent, start=start, end=span_end)
-                )
+                raw_clean_slice = target_text[c_start:span_end]
+                clean_sent = unmask_all(raw_clean_slice)
+
+                if offset_map is not None:
+                    raw_start, raw_end = offset_map.clean_span_to_raw_span(
+                        c_start, span_end
+                    )
+                    raw_slice_str = text[raw_start:raw_end]
+                    result_spans.append(
+                        TextSpan(
+                            sent=clean_sent,
+                            start=raw_start,
+                            end=raw_end,
+                            clean_start=c_start,
+                            clean_end=span_end,
+                            raw_slice=raw_slice_str,
+                        )
+                    )
+                else:
+                    result_spans.append(
+                        TextSpan(
+                            sent=clean_sent,
+                            start=c_start,
+                            end=span_end,
+                            clean_start=c_start,
+                            clean_end=span_end,
+                            raw_slice=text[c_start:span_end],
+                        )
+                    )
             return tuple(result_spans)
 
         return cast(tuple[str, ...], output)
@@ -169,15 +172,23 @@ class Segmenter:
                                         + span_end
                                     ]
                                     yield TextSpan(
-                                        sent=unmask_all(raw_slice),
+                                        sent=unmask_all(raw_slice)
+                                        if not self.clean
+                                        else item.sent,
                                         start=chunk_start + item.start,
                                         end=chunk_start + span_end,
+                                        clean_start=item.clean_start,
+                                        clean_end=item.clean_end,
+                                        raw_slice=raw_slice,
                                     )
                                 else:
                                     yield TextSpan(
                                         sent=item.sent,
                                         start=chunk_start + item.start,
                                         end=chunk_start + item.end,
+                                        clean_start=item.clean_start,
+                                        clean_end=item.clean_end,
+                                        raw_slice=item.raw_slice,
                                     )
                     else:
                         yield from self.segment(chunk)
@@ -193,6 +204,9 @@ class Segmenter:
                             sent=item.sent,
                             start=chunk_start + item.start,
                             end=chunk_start + item.end,
+                            clean_start=item.clean_start,
+                            clean_end=item.clean_end,
+                            raw_slice=item.raw_slice,
                         )
             else:
                 yield from self.segment(chunk)

@@ -3,13 +3,12 @@
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from typing import NamedTuple
 
 from csbd.rules.pua import PUA_EXCLAMATION
 
 
-@dataclass(frozen=True, slots=True)
-class Rule:
+class Rule(NamedTuple):
     """Immutable rule specification containing a compiled regex and replacement template."""
 
     pattern: re.Pattern[str]
@@ -56,16 +55,17 @@ EXCLAMATION_WORDS: tuple[str, ...] = (
     "Y!J",
 )
 
-EXCLAMATION_WORDS_REGEX: re.Pattern[str] = re.compile(
-    "|".join(
-        re.escape(word) for word in sorted(EXCLAMATION_WORDS, key=len, reverse=True)
+EXCLAMATION_RULES: tuple[Rule, ...] = tuple(
+    Rule(
+        pattern=re.compile(re.escape(word)),
+        replacement=word.replace("!", PUA_EXCLAMATION),
     )
+    for word in sorted(EXCLAMATION_WORDS, key=len, reverse=True)
 )
 
 
 def mask_exclamation_words(text: str) -> str:
     """Mask exclamation marks within known proper nouns and click consonants."""
-    return EXCLAMATION_WORDS_REGEX.sub(
-        lambda match: match.group(0).replace("!", PUA_EXCLAMATION),
-        text,
-    )
+    for rule in EXCLAMATION_RULES:
+        text = rule.pattern.sub(rule.replacement, text)
+    return text
