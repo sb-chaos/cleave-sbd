@@ -45,7 +45,7 @@ spans = segmenter.segment(text)
 for span in spans:
     print(f"Span [{span.start}:{span.end}]: {span.sent}")
     # Verify exact slice match:
-    assert text[span.start:span.end] == span.sent
+    assert text[span.start : span.end] == span.sent
 ```
 
 **Output:**
@@ -156,7 +156,9 @@ config = get_language_module("en")
 cleaned = normalize("<p>Some text.</p>", config=config)
 
 # 2. Direct offset tuple extraction: returns ((start, end), ...)
-raw_offsets = disambiguate("Hello world! Here is Dr. Watson.", config=config, char_span=True)
+raw_offsets = disambiguate(
+    "Hello world! Here is Dr. Watson.", config=config, char_span=True
+)
 print(raw_offsets)
 # ((0, 12), (13, 32))
 ```
