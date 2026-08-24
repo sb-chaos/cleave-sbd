@@ -7,4 +7,3 @@ punctuations = [
     "\u0964",
 ]
 sentence_boundary_regex = ".*?[\u0964\\|.!?]|.*?$"
-

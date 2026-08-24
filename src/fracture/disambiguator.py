@@ -378,4 +378,3 @@ def split_into_segments(
             return (fallback,)
 
     return tuple(spans)
-

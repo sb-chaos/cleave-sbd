@@ -229,4 +229,3 @@ __all__ = [
     "replace_no_space_sentence",
     "unmask_all",
 ]
-

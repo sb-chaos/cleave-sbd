@@ -47,4 +47,3 @@ def test_issue_char_spans(
     ]
     assert tuple(segments) == tuple(expected_text_spans)
     assert text == "".join(s.sent for s in segments)
-

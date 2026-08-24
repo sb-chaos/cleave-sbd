@@ -78,4 +78,3 @@ multi_period_abbreviation_regex = "\\b[\\u0400-\\u04FF]+(?:\\.[\\u0400-\\u04FF]+
 [[rules]]
 pattern = "((?:(?<=^)|(?<=\\s))[\u0410-\u042f\u0401])\\.(?=\\s)"
 replacement = "\\g<1>\ue000"
-

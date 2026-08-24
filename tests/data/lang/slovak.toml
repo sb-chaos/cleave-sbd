@@ -18,4 +18,3 @@ expected = ["Ide o príslušníkov XII. Pluku špeciálneho určenia."]
 text = "Spoločnosť bola založená 7. Apríla 2020, na zmluve však figuruje dátum 20. marec 2020."
 expected = ["Spoločnosť bola založená 7. Apríla 2020, na zmluve však figuruje dátum 20. marec 2020."]
 
-

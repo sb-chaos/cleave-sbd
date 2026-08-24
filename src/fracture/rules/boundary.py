@@ -185,4 +185,3 @@ STANDARD_PAIRED_PATTERNS: tuple[
     (BETWEEN_SINGLE_QUOTE_SLANTED_REGEX, mask_punctuation),
     (BETWEEN_EM_DASHES_REGEX, mask_punctuation),
 )
-

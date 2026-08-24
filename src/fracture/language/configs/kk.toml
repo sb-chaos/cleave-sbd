@@ -304,4 +304,3 @@ replacement = "\ue005"
 [[rules]]
 pattern = "!(?=\\s*[-\\u2014]\\s*)"
 replacement = "\ue004"
-

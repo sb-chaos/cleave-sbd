@@ -174,4 +174,3 @@ def test_segmenter_stream() -> None:
     streamed_spans = list(span_segmenter.stream(text, chunk_paragraphs=2))
     batched_spans = list(span_segmenter.segment(text))
     assert streamed_spans == batched_spans
-

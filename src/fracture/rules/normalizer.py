@@ -70,4 +70,3 @@ def replace_no_space_sentence(match: re.Match[str]) -> str:
     if any(keyword in word for keyword in URL_EMAIL_KEYWORDS):
         return match.group(0)
     return ". "
-

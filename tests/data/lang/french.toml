@@ -18,4 +18,3 @@ expected = ["Ce modèle permet d’afficher le texte « LL.AA.II.RR. » pour l�
 text = "Les derniers ouvrages de Intercept Ltd. sont ici."
 expected = ["Les derniers ouvrages de Intercept Ltd. sont ici."]
 
-

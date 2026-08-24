@@ -15,4 +15,3 @@ __all__: list[str] = [
     "get_language_module",
     "load_language_config",
 ]
-

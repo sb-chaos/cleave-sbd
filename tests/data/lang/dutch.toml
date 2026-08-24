@@ -10,4 +10,3 @@ expected = ["81 procent van de schoten was raak.", "...en toen barste de hel los
 text = "Afkorting aanw. vnw."
 expected = ["Afkorting aanw. vnw."]
 
-

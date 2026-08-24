@@ -109,4 +109,3 @@ text = "Maissen se chargea du reste .... Logiquement,"
 expected = [["Maissen se chargea du reste .... ", 0, 33], ["Logiquement,", 33, 45]]
 
 
-

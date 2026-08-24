@@ -38,4 +38,3 @@ replacement = "\ue00d"
 [[rules]]
 pattern = "\u060c(?=\\s\\S+\u060c)"
 replacement = "\ue00c"
-

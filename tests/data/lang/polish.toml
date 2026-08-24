@@ -2,4 +2,3 @@
 text = "To słowo bałt. jestskrótem."
 expected = ["To słowo bałt. jestskrótem."]
 
-

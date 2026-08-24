@@ -191,4 +191,3 @@ expected = ["I wasn’t really ... well, what I mean...see . . . what I'm saying
 text = "One further habit which was somewhat weakened . . . was that of combining words into self-interpreting compounds. . . . The practice was not abandoned. . . ."
 expected = ["One further habit which was somewhat weakened . . . was that of combining words into self-interpreting compounds.", ". . . The practice was not abandoned. . . ."]
 
-

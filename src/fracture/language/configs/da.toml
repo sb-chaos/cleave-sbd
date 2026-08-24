@@ -519,4 +519,3 @@ sentence_starters = [
 [[rules]]
 pattern = "(\\s-?\\d{1,2})\\.(?=\\s)"
 replacement = "\\g<1>\ue000"
-

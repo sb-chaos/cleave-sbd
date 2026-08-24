@@ -32,4 +32,3 @@ def test_normalizer_empty_and_none_inputs(empty_val: str | None) -> None:
     """Verify normalizer handling of empty and None input values."""
     cleaned = normalize(empty_val, config=Language.get_language_code("en"))
     assert cleaned == empty_val
-

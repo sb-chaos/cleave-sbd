@@ -234,4 +234,3 @@ replacement = "\ue000"
 [[rules]]
 pattern = "((?:(?<=^)|(?<=\\s))[VXI]+)\\.(?=\\s+)"
 replacement = "\\g<1>\ue000"
-

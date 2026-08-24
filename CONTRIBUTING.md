@@ -62,4 +62,3 @@ When making contributions, adhere to the core design principles of `fracture`:
 - Branch naming: `feat/<feature-name>`, `fix/<bug-name>`, or `refactor/<description>`.
 - Commit messages: Follow [Conventional Commits](https://www.conventionalcommits.org/) (e.g., `feat:`, `fix:`, `docs:`, `chore:`).
 - Ensure all CI checks (pytest, ruff, basedpyright) pass locally before pushing.
-

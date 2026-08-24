@@ -196,4 +196,3 @@ class Segmenter:
                         )
             else:
                 yield from self.segment(chunk)
-

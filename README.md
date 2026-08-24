@@ -167,4 +167,3 @@ Sincere attribution and gratitude are given to the projects whose compiled lingu
 ## License
 
 MIT License. See [LICENSE](LICENSE) for details.
-

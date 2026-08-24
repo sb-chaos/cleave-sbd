@@ -232,4 +232,3 @@ ROMAN_NUMERALS_SET: frozenset[str] = frozenset(ROMAN_NUMERALS.keys())
 LATIN_NUMERALS: dict[str, int] = {
     char: index for index, char in enumerate(string.ascii_lowercase)
 }
-

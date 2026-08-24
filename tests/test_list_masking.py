@@ -43,4 +43,3 @@ def test_list_item_masking_length_invariance(sample: str) -> None:
     """Verify length preservation invariant for list item masking."""
     masked = mask_list_items(sample)
     assert len(masked) == len(sample), f"Length mismatch for {sample!r}"
-
