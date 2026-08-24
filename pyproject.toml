@@ -46,24 +46,15 @@ Repository = "https://github.com/sb-chaos/cleave-sbd"
 Issues = "https://github.com/sb-chaos/cleave-sbd/issues"
 Changelog = "https://github.com/sb-chaos/cleave-sbd/blob/main/CHANGELOG.md"
 
-[project.optional-dependencies]
-dev = [
-    "pytest>=9.0.0",
-    "basedpyright>=1.39.0",
-    "ruff>=0.16.0",
-    "build>=1.5.0",
-    "twine>=7.0.0",
-]
-
-# Standard PEP 735 dependency groups (supported by uv, Hatch, PDM)
+# Standard PEP 735 dependency groups
 [dependency-groups]
 dev = [
-    "pytest>=9.0.0",
     "basedpyright>=1.39.0",
-    "ruff>=0.16.0",
     "build>=1.5.0",
+    "pytest>=9.0.0",
+    "ruff>=0.16.0",
     "twine>=7.0.0",
-    "uv>=0.12.0"
+    "uv>=0.12.0",
 ]
 
 # -----------------------------------------------------------------------------
@@ -82,7 +73,7 @@ allowed-confusables = [
     # Typographic punctuation: smart quotes, brackets & dashes
     "„", "“", "”", "‘", "’", "«", "»", "「", "」", "（", "）", "—",
     # Non-Latin & fullwidth punctuation / language markers (CJK, Arabic, Indic, Armenian)
-    "।", "۔", "؟", "،", "。", "．", "！", "？", "の", "։","ǃ","ʼ",
+    "।", "۔", "؟", "،", "。", "．", "！", "？", "の", "։", "ǃ", "ʼ",
     # Units, superscripts & legal marks
     "°", "²", "³", "µ", "®",
     # Cyrillic lookalikes / Latin homoglyphs (common in bg, kk, ru files)
@@ -119,7 +110,6 @@ known-first-party = ["csbd"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra --strict-markers"
-
 
 [tool.coverage.run]
 source = ["src/csbd"]
