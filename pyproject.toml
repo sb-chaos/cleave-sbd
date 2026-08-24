@@ -41,10 +41,10 @@ classifiers = [
 dependencies = []
 
 [project.urls]
-Homepage = "https://github.com/sblasing/cleave-sbd"
-Repository = "https://github.com/sblasing/cleave-sbd"
-Issues = "https://github.com/sblasing/cleave-sbd/issues"
-Changelog = "https://github.com/sblasing/cleave-sbd/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/sb-chaos/cleave-sbd"
+Repository = "https://github.com/sb-chaos/cleave-sbd"
+Issues = "https://github.com/sb-chaos/cleave-sbd/issues"
+Changelog = "https://github.com/sb-chaos/cleave-sbd/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = [
