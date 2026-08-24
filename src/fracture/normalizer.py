@@ -244,3 +244,4 @@ def normalize(
     cleaned = replace_escaped_newlines(cleaned)
 
     return cleaned
+

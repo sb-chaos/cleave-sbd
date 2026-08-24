@@ -138,3 +138,4 @@ expected = ["Schwangere Frauen sollten während der ersten drei Monate eine täg
 text = "Andere \nFischsorten (z.B. Hai, Thunfisch, Aal und Seeteufel) weisen einen erhöhten Quecksilbergehalt \nauf und sollten deshalb in der Schwangerschaft nur selten verzehrt werden."
 expected = ["Andere Fischsorten (z. B. Hai, Thunfisch, Aal und Seeteufel) weisen einen erhöhten Quecksilbergehalt auf und sollten deshalb in der Schwangerschaft nur selten verzehrt werden."]
 
+

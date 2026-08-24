@@ -207,3 +207,4 @@ replacement = "\\g<1>\ue000"
 [[rules]]
 pattern = "((?:(?<=^)|(?<=\\s))[a-z])\\.(?=\\s)"
 replacement = "\\g<1>\ue000"
+

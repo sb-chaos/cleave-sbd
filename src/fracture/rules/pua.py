@@ -131,3 +131,4 @@ def mask_single_quote_punctuation(match: re.Match[str]) -> str:
         The matched string with punctuation inside single quotes mapped to sentinels.
     """
     return match.group(0).translate(PUNCTUATION_MASK_TABLE)
+

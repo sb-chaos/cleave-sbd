@@ -46,3 +46,4 @@ def test_unpunctuated_stream_linear_scaling() -> None:
     assert len(res) == 1
     # 50k words in pure Python regex runs in ~0.25s; < 1.0s guards against exponential ReDoS
     assert elapsed < 1.0, f"Segmentation took {elapsed:.4f}s on 50k unpunctuated words"
+

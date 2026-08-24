@@ -5,3 +5,4 @@ punctuations = [
     "\u0589",
 ]
 sentence_boundary_regex = ".*?[\u0589\u055c:]|.*?$"
+

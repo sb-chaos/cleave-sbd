@@ -82,3 +82,4 @@ def test_toml_configs_validity() -> None:
         assert isinstance(config.paired_punctuation_patterns, tuple)
         for p in config.paired_punctuation_patterns:
             assert isinstance(p, re.Pattern)
+

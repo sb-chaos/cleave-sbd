@@ -6,3 +6,4 @@ punctuations = [
     "\u06d4",
 ]
 sentence_boundary_regex = ".*?[\u06d4\u061f!?]|.*?$"
+

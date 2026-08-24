@@ -179,3 +179,4 @@ class Language:
     @classmethod
     def get_language_code(cls, code: str) -> LanguageConfig:
         return load_language_config(code)
+

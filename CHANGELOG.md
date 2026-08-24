@@ -16,3 +16,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Multilingual rule sets for 22 languages: `am`, `ar`, `bg`, `da`, `de`, `el`, `en`, `es`, `fa`, `fr`, `hi`, `hy`, `it`, `ja`, `kk`, `mr`, `nl`, `pl`, `ru`, `sk`, `ur`, `zh`.
 - Zero runtime dependencies.
 
+

@@ -103,7 +103,7 @@ KOMMANDITGESELLSCHAFT_REGEX: re.Pattern[str] = re.compile(
     r"(?<=Co)\.(?=\s*(?:KG|GmbH|OHG|AG)\b)", re.IGNORECASE
 )
 SINGLE_UPPERCASE_LETTER_REGEX: re.Pattern[str] = re.compile(
-    r"((?:(?<=^)|(?<=[\s\ue000]))[A-ZА-ЯЁ])\.(?=[,.:\-?!]|\s|[A-ZА-ЯЁ]\.|\s*$)"
+    r"((?:(?<=^)|(?<=[\s\ue000]))(?:[A-ZА-ЯЁ]\.)+)(?=[,.:\-?!]|\s|\s*$)"
 )
 SINGLE_LOWERCASE_LETTER_REGEX: re.Pattern[str] = re.compile(
     r"((?:(?<=^)|(?<=\s))[a-zа-яё])\.(?=\s+[a-zA-Zа-яёА-ЯЁ]|\s*$)"
@@ -143,6 +143,15 @@ def build_number_abbr_regex(num_clean: list[str]) -> re.Pattern[str] | None:
         return None
     num_pattern: str = "|".join(re.escape(abbr) for abbr in num_clean)
     return re.compile(rf"((?:(?<=^)|(?<=\s))(?i:{num_pattern}))\.(?=(\s*\d|\s+\())")
+
+
+# Single linear scan pattern for standard abbreviations (evaluated with O(1) hash set lookup)
+STANDARD_ABBR_SCAN_REGEX: re.Pattern[str] = re.compile(
+    r"(?:(?<=^)|(?<=\s))(?P<word>[^\s\.\u200e\u200f\u202a-\u202e\u2066-\u2069]+)"
+    r"(?P<lead_uni>[\u200e\u200f\u202a-\u202e\u2066-\u2069]*)\."
+    r"(?P<trail_uni>[\u200e\u200f\u202a-\u202e\u2066-\u2069]*)"
+    r"(?=[.:\-?,!\"\'“”«»]|\s+(?:[a-zа-яё\u0600-\u06ff]|I\s|I'm|I'll|\d|\(|\"|'|«|„))"
+)
 
 
 def build_standard_abbr_regex(std_clean: list[str]) -> re.Pattern[str] | None:
@@ -223,3 +232,4 @@ ROMAN_NUMERALS_SET: frozenset[str] = frozenset(ROMAN_NUMERALS.keys())
 LATIN_NUMERALS: dict[str, int] = {
     char: index for index, char in enumerate(string.ascii_lowercase)
 }
+

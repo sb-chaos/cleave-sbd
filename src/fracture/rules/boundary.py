@@ -62,31 +62,55 @@ NUMBERED_REFERENCE_REGEX: re.Pattern[str] = re.compile(
 # Pre-Compiled Transformation Rules
 # =============================================================================
 
+# Common file extensions for URL / attachment protection
+FILE_EXTENSIONS: str = (
+    r"jpe?g|png|gif|tiff?|pdf|ps|docx?|xlsx?|svg|bmp|"
+    r"tga|exif|odt|html?|txt|rtf|bat|sxw|xml|zip|exe|msi|blend|wmv|"
+    r"mp[34]|pptx?|flac|rb|cpp|cs|js"
+)
+
 COMMON_RULES: tuple[Rule, ...] = (
-    # Protect coordinates like 45°N. 123°W
     Rule(re.compile(r"(?<=[a-zA-Z]°)\.(?=\s*\d+)"), PUA_PERIOD),
-    # Protect common file extensions
     Rule(
-        re.compile(
-            r"(?<=\s)\.(?=(?:jpe?g|png|gif|tiff?|pdf|ps|docx?|xlsx?|svg|bmp|"
-            r"tga|exif|odt|html?|txt|rtf|bat|sxw|xml|zip|exe|msi|blend|wmv|"
-            r"mp[34]|pptx?|flac|rb|cpp|cs|js)\s)"
-        ),
+        re.compile(rf"(?<=\s)\.(?=(?:{FILE_EXTENSIONS})\s)"),
         PUA_PERIOD,
     ),
-    # Preserve isolated single newlines
-    Rule(re.compile(r"\n"), PUA_NEWLINE),
-    # Protect questions/exclamations inside quotes
     Rule(re.compile(r"""\?(?=['"])"""), PUA_QUESTION),
     Rule(re.compile(r"""!(?=['"])"""), PUA_EXCLAMATION),
-    # Protect mid-sentence exclamation points
     Rule(re.compile(r"!(?=,\s[a-z])"), PUA_EXCLAMATION),
     Rule(re.compile(r"!(?=\s[a-z])"), PUA_EXCLAMATION),
-    # Protect periods in alphanumeric words/emails (e.g. site.com)
-    Rule(
-        re.compile(r"([a-zA-Z0-9_])\.([a-zA-Z0-9_])"), r"\g<1>" + PUA_PERIOD + r"\g<2>"
-    ),
+    Rule(re.compile(r"(?<=[a-zA-Z0-9_])\.(?=[a-zA-Z0-9_])"), PUA_PERIOD),
 )
+
+
+def mask_common_rules(text: str) -> str:
+    """Apply all common punctuation rules across fast compiled C-level regex passes.
+
+    Args:
+        text: The input text to transform.
+
+    Returns:
+        The text with coordinates, file extensions, and punctuation masked.
+    """
+    has_period = "." in text
+    has_quest = "?" in text
+    has_excl = "!" in text
+
+    if has_period and "°" in text:
+        text = COMMON_RULES[0].pattern.sub(COMMON_RULES[0].replacement, text)
+    if has_period:
+        text = COMMON_RULES[1].pattern.sub(COMMON_RULES[1].replacement, text)
+    if has_quest:
+        text = COMMON_RULES[2].pattern.sub(COMMON_RULES[2].replacement, text)
+    if has_excl:
+        text = COMMON_RULES[3].pattern.sub(COMMON_RULES[3].replacement, text)
+        text = COMMON_RULES[4].pattern.sub(COMMON_RULES[4].replacement, text)
+        text = COMMON_RULES[5].pattern.sub(COMMON_RULES[5].replacement, text)
+    if has_period:
+        text = COMMON_RULES[6].pattern.sub(COMMON_RULES[6].replacement, text)
+
+    return text
+
 
 ELLIPSIS_RULES: tuple[Rule, ...] = (
     Rule(
@@ -161,3 +185,4 @@ STANDARD_PAIRED_PATTERNS: tuple[
     (BETWEEN_SINGLE_QUOTE_SLANTED_REGEX, mask_punctuation),
     (BETWEEN_EM_DASHES_REGEX, mask_punctuation),
 )
+

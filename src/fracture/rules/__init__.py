@@ -19,6 +19,7 @@ from fracture.rules.abbreviation import (
     ROMAN_UPPERCASE_FOLLOWING_REGEX,
     SINGLE_LOWERCASE_LETTER_REGEX,
     SINGLE_UPPERCASE_LETTER_REGEX,
+    STANDARD_ABBR_SCAN_REGEX,
     STANDARD_ABBREVIATIONS,
     build_compound_abbr_regex,
     build_number_abbr_regex,
@@ -53,6 +54,7 @@ from fracture.rules.boundary import (
     SPLIT_SPACE_QUOTATION_AT_END_OF_SENTENCE_REGEX,
     STANDARD_PAIRED_PATTERNS,
     WORD_WITH_LEADING_APOSTROPHE,
+    mask_common_rules,
 )
 from fracture.rules.disambiguation import (
     EXCLAMATION_WORDS,
@@ -204,6 +206,7 @@ __all__ = [
     "SINGLE_UPPERCASE_LETTER_REGEX",
     "SPLIT_SPACE_QUOTATION_AT_END_OF_SENTENCE_REGEX",
     "STANDARD_ABBREVIATIONS",
+    "STANDARD_ABBR_SCAN_REGEX",
     "STANDARD_PAIRED_PATTERNS",
     "TABLE_OF_CONTENTS",
     "TYPO_ESCAPED_CR",
@@ -219,9 +222,11 @@ __all__ = [
     "build_replace_all_exact_regex",
     "build_sentence_starters_boundary_regex",
     "build_standard_abbr_regex",
+    "mask_common_rules",
     "mask_exclamation_words",
     "mask_punctuation",
     "mask_single_quote_punctuation",
     "replace_no_space_sentence",
     "unmask_all",
 ]
+

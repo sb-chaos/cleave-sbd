@@ -7,3 +7,4 @@ paired_punctuation_patterns = [
 [[clean_rules]]
 pattern = "(?<=\\u306e)\\n(?=\\S)"
 replacement = ""
+

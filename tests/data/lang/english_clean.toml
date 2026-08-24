@@ -502,3 +502,4 @@ expected = ["In placebo-controlled studies of all uses of Tracleer, marked decre
 text = "The parties to this Agreement are PragmaticSegmenterExampleCompanyA Inc. (“Company A”), and PragmaticSegmenterExampleCompanyB Inc. (“Company B”)."
 expected = ["The parties to this Agreement are PragmaticSegmenterExampleCompanyA Inc. (“Company A”), and PragmaticSegmenterExampleCompanyB Inc. (“Company B”)."]
 
+

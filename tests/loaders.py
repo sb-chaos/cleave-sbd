@@ -276,3 +276,4 @@ def load_pdf_cases() -> list[PdfCase]:
         )
         pdf_cases.append(PdfCase(text=input_text, expected=expected_sentences))
     return pdf_cases
+

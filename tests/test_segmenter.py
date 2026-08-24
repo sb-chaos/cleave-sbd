@@ -151,3 +151,27 @@ def test_file_segmenter(tmp_path: Path) -> None:
     content = output_file.read_text(encoding="utf-8")
     assert "[1]" in content
     assert "=== fracture Segmentation Output" in content
+
+
+def test_segmenter_stream() -> None:
+    """Verify streaming generator yields identical sentences across paragraph chunks."""
+    text = (
+        "Hello world! This is paragraph one.\n\n"
+        "Here begins paragraph two. It has two sentences.\n\n"
+        "Paragraph three is here. It is great."
+    )
+    segmenter = fracture.Segmenter(language="en", clean=False, char_span=False)
+    streamed = list(segmenter.stream(text, chunk_paragraphs=1))
+    batched = list(segmenter.segment(text))
+    assert streamed == batched
+
+    # Test chunk_paragraphs > 1
+    streamed_multi = list(segmenter.stream(text, chunk_paragraphs=2))
+    assert streamed_multi == batched
+
+    # Test char_span streaming
+    span_segmenter = fracture.Segmenter(language="en", clean=False, char_span=True)
+    streamed_spans = list(span_segmenter.stream(text, chunk_paragraphs=2))
+    batched_spans = list(span_segmenter.segment(text))
+    assert streamed_spans == batched_spans
+

@@ -16,3 +16,4 @@ stanza                           OK                          127,102   55604.61 
 Note: Speedup is normalized relative to 'fracture (clean=False)' baseline.
 To install comparison libraries: uv run --with nltk,spacy,stanza,blingfire,syntok,pysbd python tests/bigtext_speed_benchmark.py
 ===================================================================================================================
+
