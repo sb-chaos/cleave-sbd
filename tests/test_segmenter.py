@@ -7,8 +7,8 @@ from typing import Final, cast
 
 import pytest
 
-import fracture
-from fracture.segmenter import TextSpan
+import csbd
+from csbd.segmenter import TextSpan
 from tests.loaders import PdfCase, load_pdf_cases
 
 PDF_CASES: Final[list[PdfCase]] = load_pdf_cases()
@@ -17,14 +17,14 @@ PDF_CASES: Final[list[PdfCase]] = load_pdf_cases()
 @pytest.mark.parametrize("empty_input", ["", None, "\n"])
 def test_segmenter_empty_inputs(empty_input: str | None) -> None:
     """Verify segmenter returns an empty list for empty/null inputs."""
-    seg = fracture.Segmenter(language="en", clean=False, char_span=False)
+    seg = csbd.Segmenter(language="en", clean=False, char_span=False)
     assert seg.segment(empty_input or "") == ()
 
 
 def test_segmenter_immutability() -> None:
     """Verify segmenter does not mutate input strings."""
     text = "My name is Jonas E. Smith. Please turn to p. 55."
-    seg = fracture.Segmenter(language="en", clean=False, char_span=False)
+    seg = csbd.Segmenter(language="en", clean=False, char_span=False)
     _ = seg.segment(text)
     assert text == "My name is Jonas E. Smith. Please turn to p. 55."
 
@@ -32,7 +32,7 @@ def test_segmenter_immutability() -> None:
 def test_sbd_char_span_basic() -> None:
     """Verify character offset span calculation."""
     text = "My name is Jonas E. Smith. Please turn to p. 55."
-    seg = fracture.Segmenter(language="en", clean=False, char_span=True)
+    seg = csbd.Segmenter(language="en", clean=False, char_span=True)
     raw_segments = seg.segment(text)
     segments = cast(list[TextSpan], raw_segments)
     expected = [
@@ -79,7 +79,7 @@ def test_same_sentence_different_char_span() -> None:
         ),
         TextSpan(sent="(Laughter.)", start=393, end=404),
     ]
-    seg = fracture.Segmenter(language="en", clean=False, char_span=True)
+    seg = csbd.Segmenter(language="en", clean=False, char_span=True)
     raw_segments = seg.segment(text)
     segments = cast(list[TextSpan], raw_segments)
     assert tuple(segments) == tuple(expected_text_spans)
@@ -89,30 +89,28 @@ def test_same_sentence_different_char_span() -> None:
 def test_exception_with_both_clean_and_span_true() -> None:
     """Verify ValueError when both clean and char_span are True."""
     with pytest.raises(ValueError) as excinfo:
-        _ = fracture.Segmenter(language="en", clean=True, char_span=True)
+        _ = csbd.Segmenter(language="en", clean=True, char_span=True)
     assert "char_span must be False if clean is True" in str(excinfo.value)
 
 
 def test_exception_with_doc_type_pdf_and_clean_false() -> None:
     """Verify ValueError when doc_type is pdf but clean is False."""
     with pytest.raises(ValueError) as excinfo:
-        _ = fracture.Segmenter(language="en", clean=False, doc_type="pdf")
+        _ = csbd.Segmenter(language="en", clean=False, doc_type="pdf")
     assert "`doc_type='pdf'` should have `clean=True`" in str(excinfo.value)
 
 
 def test_exception_with_doc_type_pdf_and_both_clean_char_span_true() -> None:
     """Verify ValueError when doc_type is pdf with char_span True."""
     with pytest.raises(ValueError) as excinfo:
-        _ = fracture.Segmenter(
-            language="en", clean=True, doc_type="pdf", char_span=True
-        )
+        _ = csbd.Segmenter(language="en", clean=True, doc_type="pdf", char_span=True)
     assert "char_span must be False if clean is True" in str(excinfo.value)
 
 
 @pytest.mark.parametrize("text, expected", PDF_CASES)
 def test_pdf_segmentation(text: str, expected: tuple[str, ...]) -> None:
     """Verify sentence boundary segmentation on PDF documents."""
-    seg = fracture.Segmenter(language="en", clean=True, doc_type="pdf")
+    seg = csbd.Segmenter(language="en", clean=True, doc_type="pdf")
     raw_segments = seg.segment(text)
     segments = cast(list[str], raw_segments)
     stripped: list[str] = [s.strip() for s in segments]
@@ -132,12 +130,12 @@ def test_file_segmenter(tmp_path: Path) -> None:
     input_file.write_text(sample_content, encoding="utf-8")
 
     text = input_file.read_text(encoding="utf-8")
-    segmenter = fracture.Segmenter(language="en", clean=True, char_span=False)
+    segmenter = csbd.Segmenter(language="en", clean=True, char_span=False)
     raw_segments = segmenter.segment(text)
     sentences = cast(list[str], raw_segments)
 
     output_lines: list[str] = [
-        f"=== fracture Segmentation Output ({len(sentences)} Sentences) ===",
+        f"=== cleave-sbd Segmentation Output ({len(sentences)} Sentences) ===",
         f"Input File : {input_file.as_posix()}",
         "=" * 60,
     ]
@@ -150,7 +148,7 @@ def test_file_segmenter(tmp_path: Path) -> None:
     assert output_file.exists()
     content = output_file.read_text(encoding="utf-8")
     assert "[1]" in content
-    assert "=== fracture Segmentation Output" in content
+    assert "=== cleave-sbd Segmentation Output" in content
 
 
 def test_segmenter_stream() -> None:
@@ -160,7 +158,7 @@ def test_segmenter_stream() -> None:
         "Here begins paragraph two. It has two sentences.\n\n"
         "Paragraph three is here. It is great."
     )
-    segmenter = fracture.Segmenter(language="en", clean=False, char_span=False)
+    segmenter = csbd.Segmenter(language="en", clean=False, char_span=False)
     streamed = list(segmenter.stream(text, chunk_paragraphs=1))
     batched = list(segmenter.segment(text))
     assert streamed == batched
@@ -170,7 +168,7 @@ def test_segmenter_stream() -> None:
     assert streamed_multi == batched
 
     # Test char_span streaming
-    span_segmenter = fracture.Segmenter(language="en", clean=False, char_span=True)
+    span_segmenter = csbd.Segmenter(language="en", clean=False, char_span=True)
     streamed_spans = list(span_segmenter.stream(text, chunk_paragraphs=2))
     batched_spans = list(span_segmenter.segment(text))
     assert streamed_spans == batched_spans

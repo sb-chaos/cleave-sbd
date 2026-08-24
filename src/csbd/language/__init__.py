@@ -1,6 +1,6 @@
 """Language package entrypoint."""
 
-from fracture.language.lang import (
+from csbd.language.lang import (
     SUPPORTED_LANGUAGES,
     Language,
     LanguageConfig,

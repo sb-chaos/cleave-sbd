@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-from fracture.rules.pua import PUA_EXCLAMATION
+from csbd.rules.pua import PUA_EXCLAMATION
 
 
 @dataclass(frozen=True, slots=True)

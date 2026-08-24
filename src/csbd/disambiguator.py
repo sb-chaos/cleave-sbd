@@ -5,8 +5,8 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 
-from fracture.language.protocols import LanguageProtocol
-from fracture.processors import (
+from csbd.language.protocols import LanguageProtocol
+from csbd.processors import (
     LanguageAbbreviationData,
     apply_replacements,
     get_language_abbreviation_data,
@@ -18,7 +18,7 @@ from fracture.processors import (
     replace_abbreviations,
     search_for_abbreviations_in_string,
 )
-from fracture.rules import (
+from csbd.rules import (
     BETWEEN_DOUBLE_QUOTES_REGEX,
     BETWEEN_EM_DASHES_REGEX,
     BETWEEN_PARENS_REGEX,

@@ -2,8 +2,8 @@
 
 from collections.abc import Sequence
 
-from fracture.language.protocols import LanguageProtocol
-from fracture.rules import (
+from csbd.language.protocols import LanguageProtocol
+from csbd.rules import (
     CONSECUTIVE_PERIODS,
     CONSECUTIVE_SLASHES,
     DOUBLE_NL,

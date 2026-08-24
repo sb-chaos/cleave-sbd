@@ -1,6 +1,6 @@
 """Consolidated rule definitions, regular expressions, and Unicode PUA mappings."""
 
-from fracture.rules.abbreviation import (
+from csbd.rules.abbreviation import (
     ALPHA_LIST_REGEX,
     AM_PM_REGEX,
     AM_PM_RULES,
@@ -29,7 +29,7 @@ from fracture.rules.abbreviation import (
     build_sentence_starters_boundary_regex,
     build_standard_abbr_regex,
 )
-from fracture.rules.boundary import (
+from csbd.rules.boundary import (
     BETWEEN_DOUBLE_QUOTES_REGEX,
     BETWEEN_EM_DASHES_REGEX,
     BETWEEN_PARENS_REGEX,
@@ -56,7 +56,7 @@ from fracture.rules.boundary import (
     WORD_WITH_LEADING_APOSTROPHE,
     mask_common_rules,
 )
-from fracture.rules.disambiguation import (
+from csbd.rules.disambiguation import (
     EXCLAMATION_WORDS,
     EXCLAMATION_WORDS_REGEX,
     PUNCTUATIONS,
@@ -64,7 +64,7 @@ from fracture.rules.disambiguation import (
     Rule,
     mask_exclamation_words,
 )
-from fracture.rules.normalizer import (
+from csbd.rules.normalizer import (
     CONSECUTIVE_PERIODS,
     CONSECUTIVE_SLASHES,
     DOUBLE_NL,
@@ -90,7 +90,7 @@ from fracture.rules.normalizer import (
     URL_EMAIL_KEYWORDS,
     replace_no_space_sentence,
 )
-from fracture.rules.pua import (
+from csbd.rules.pua import (
     PUA_APOSTROPHE,
     PUA_ARABIC_COMMA,
     PUA_CJK_PERIOD,

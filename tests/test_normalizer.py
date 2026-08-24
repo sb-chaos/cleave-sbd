@@ -6,8 +6,8 @@ from typing import Final
 
 import pytest
 
-from fracture.language import Language
-from fracture.normalizer import normalize
+from csbd.language import Language
+from csbd.normalizer import normalize
 from tests.loaders import NormalizerCase, load_normalizer_cases
 
 NORMALIZER_CASES: Final[list[NormalizerCase]] = load_normalizer_cases()

@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Create a report and test case to help us improve fracture
+about: Create a report and test case to help us improve cleave-sbd
 title: "[BUG] "
 labels: ["bug"]
 assignees: ""
@@ -13,9 +13,9 @@ A clear and concise description of what the bug is.
 ### Reproduction Code
 
 ```python
-import fracture
+import csbd
 
-seg = fracture.Segmenter(language="en", clean=False, char_span=False)
+seg = csbd.Segmenter(language="en", clean=False, char_span=False)
 text = "Your sample text here."
 sentences = seg.segment(text)
 print(sentences)
@@ -29,7 +29,7 @@ A clear and concise description of what sentences should have been segmented.
 ```
 
 ### Actual Behavior
-The actual output returned by `fracture`.
+The actual output returned by `cleave-sbd`.
 
 ```python
 ["Actual sentence 1."]
@@ -37,7 +37,7 @@ The actual output returned by `fracture`.
 
 ### Environment Information
 - Python version (e.g., `3.11.8`, `3.12.2`):
-- `fracture` version (e.g., `0.1.0`):
+- `cleave-sbd` version (e.g., `0.1.0`):
 - Operating System (e.g., Linux, macOS, Windows):
 
 ### Additional Context

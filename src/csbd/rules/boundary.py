@@ -5,8 +5,8 @@ from __future__ import annotations
 import re
 from collections.abc import Callable
 
-from fracture.rules.disambiguation import Rule
-from fracture.rules.pua import (
+from csbd.rules.disambiguation import Rule
+from csbd.rules.pua import (
     PUA_ELLIPSIS_DOT,
     PUA_ELLIPSIS_SPACE,
     PUA_EXCLAMATION,

@@ -6,8 +6,8 @@ import re
 from dataclasses import dataclass
 from functools import lru_cache
 
-from fracture.language.protocols import LanguageProtocol
-from fracture.rules import (
+from csbd.language.protocols import LanguageProtocol
+from csbd.rules import (
     AM_PM_RULES,
     KOMMANDITGESELLSCHAFT_REGEX,
     MULTI_PERIOD_DEFAULT_REGEX,

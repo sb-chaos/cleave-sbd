@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import time
 
-from fracture.rules.boundary import (
+from csbd.rules.boundary import (
     BETWEEN_SINGLE_QUOTES_REGEX,
 )
-from fracture.rules.normalizer import HTML_TAG_RULE
-from fracture.segmenter import Segmenter
+from csbd.rules.normalizer import HTML_TAG_RULE
+from csbd.segmenter import Segmenter
 
 
 def test_html_tag_rule_linear_scaling() -> None:

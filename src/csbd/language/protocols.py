@@ -3,7 +3,7 @@
 import re
 from typing import Protocol
 
-from fracture.rules import Rule
+from csbd.rules import Rule
 
 
 class LanguageProtocol(Protocol):

@@ -5,8 +5,8 @@ from typing import Final, cast
 
 import pytest
 
-import fracture
-from fracture.language import SUPPORTED_LANGUAGES, Language, LanguageConfig
+import csbd
+from csbd.language import SUPPORTED_LANGUAGES, Language, LanguageConfig
 from tests.loaders import SbdCase, load_language_sbd_cases_with_metadata
 
 RAW_CASES_WITH_META: Final[list[tuple[SbdCase, str, bool]]] = (
@@ -27,7 +27,7 @@ RAW_CASES_WITH_META: Final[list[tuple[SbdCase, str, bool]]] = (
 )
 def test_language_sentence_boundary_disambiguation(case: SbdCase) -> None:
     """Execute sentence boundary disambiguation for a strictly typed SbdCase namedtuple."""
-    segmenter = fracture.Segmenter(
+    segmenter = csbd.Segmenter(
         language=case.language,
         clean=case.clean,
         doc_type=case.doc_type,

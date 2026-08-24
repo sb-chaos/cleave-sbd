@@ -1,4 +1,4 @@
-"""Comprehensive profiler for fracture pipeline and large benchmark datasets."""
+"""Comprehensive profiler for cleave-sbd pipeline and large benchmark datasets."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ import time
 from pathlib import Path
 from typing import Final
 
-import fracture
+import csbd
 
 
 def profile_file(
@@ -47,7 +47,7 @@ def profile_file(
     )
     print(f"{'=' * 70}")
 
-    seg = fracture.Segmenter(language=language, clean=False)
+    seg = csbd.Segmenter(language=language, clean=False)
 
     pr = cProfile.Profile()
     pr.enable()
@@ -74,7 +74,9 @@ def profile_file(
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Profile fracture on benchmark files.")
+    parser = argparse.ArgumentParser(
+        description="Profile cleave-sbd on benchmark files."
+    )
     parser.add_argument(
         "--file",
         "-f",

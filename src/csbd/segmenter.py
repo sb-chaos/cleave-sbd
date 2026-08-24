@@ -5,10 +5,10 @@ from collections.abc import Generator
 from dataclasses import dataclass
 from typing import cast
 
-from fracture.disambiguator import disambiguate
-from fracture.language import get_language_module
-from fracture.normalizer import normalize
-from fracture.rules import unmask_all
+from csbd.disambiguator import disambiguate
+from csbd.language import get_language_module
+from csbd.normalizer import normalize
+from csbd.rules import unmask_all
 
 
 @dataclass(slots=True, frozen=True)

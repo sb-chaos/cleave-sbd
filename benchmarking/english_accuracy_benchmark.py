@@ -12,7 +12,7 @@ from typing import Any, Final, NamedTuple, cast
 # Add project root to python path to import packages
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-import fracture
+import csbd
 
 # Known titles that we temporarily lowercase to prevent AM_PM_RULES from triggering sentence split
 TITLES_TO_RESTORE: Final[frozenset[str]] = frozenset(
@@ -72,8 +72,8 @@ def custom_segment(text: str) -> list[str]:
         text,
     )
 
-    # Segment using fracture
-    segmenter = fracture.Segmenter(language="en", clean=False)
+    # Segment using cleave-sbd
+    segmenter = csbd.Segmenter(language="en", clean=False)
     raw_sents = segmenter.segment(preprocessed_text)
     sents = cast(list[str], raw_sents)
 

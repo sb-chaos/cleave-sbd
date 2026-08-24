@@ -5,8 +5,8 @@ from __future__ import annotations
 import re
 import string
 
-from fracture.rules.disambiguation import Rule
-from fracture.rules.pua import PUA_NEWLINE, PUA_PERIOD
+from csbd.rules.disambiguation import Rule
+from csbd.rules.pua import PUA_NEWLINE, PUA_PERIOD
 
 # =============================================================================
 # Standard Abbreviations & Honorifics

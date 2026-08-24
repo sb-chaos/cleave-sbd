@@ -6,8 +6,8 @@ from typing import cast
 
 import pytest
 
-import fracture
-from fracture.segmenter import TextSpan
+import csbd
+from csbd.segmenter import TextSpan
 from tests.loaders import load_issues_cases
 
 ISSUE_CASES, ISSUE_CHAR_SPAN_CASES = load_issues_cases()
@@ -20,7 +20,7 @@ ISSUE_CASES, ISSUE_CHAR_SPAN_CASES = load_issues_cases()
 )
 def test_issue_regression(issue: str, text: str, expected: tuple[str, ...]) -> None:
     """Verify bugfix regressions reported in GitHub issues."""
-    seg = fracture.Segmenter(language="en", clean=False)
+    seg = csbd.Segmenter(language="en", clean=False)
     raw_segments = seg.segment(text)
     segments = cast(list[str], raw_segments)
     stripped: list[str] = [s.strip() for s in segments]
@@ -39,7 +39,7 @@ def test_issue_char_spans(
     expected: tuple[tuple[str, int, int], ...],
 ) -> None:
     """Verify character offset span tracking across issue regression cases."""
-    seg = fracture.Segmenter(language="en", clean=False, char_span=True)
+    seg = csbd.Segmenter(language="en", clean=False, char_span=True)
     raw_segments = seg.segment(text)
     segments = cast(list[TextSpan], raw_segments)
     expected_text_spans = [

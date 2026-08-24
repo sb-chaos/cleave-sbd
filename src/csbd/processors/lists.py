@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import re
 
-from fracture.language.protocols import LanguageProtocol
-from fracture.rules import (
+from csbd.language.protocols import LanguageProtocol
+from csbd.rules import (
     ALPHA_LIST_REGEX,
     BULLET_CHARS,
     LATIN_NUMERALS,

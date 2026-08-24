@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 
-from fracture.rules.disambiguation import Rule
+from csbd.rules.disambiguation import Rule
 
 URL_EMAIL_KEYWORDS: tuple[str, ...] = (
     ".com",

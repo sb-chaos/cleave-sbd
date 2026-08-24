@@ -1,12 +1,12 @@
-# fracture: Sentence Boundary Disambiguation
+# cleave-sbd: Sentence Boundary Disambiguation
 
-[![CI](https://github.com/sblasing/fracture/actions/workflows/python-package.yml/badge.svg)](https://github.com/sblasing/fracture/actions/workflows/python-package.yml)
+[![CI](https://github.com/sblasing/cleave-sbd/actions/workflows/python-package.yml/badge.svg)](https://github.com/sblasing/cleave-sbd/actions/workflows/python-package.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![Typing: Strict](https://img.shields.io/badge/typing-strict-green.svg)](https://peps.python.org/pep-0561/)
 [![Code Style: Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
-**fracture** is a high-performance, strictly-typed sentence boundary disambiguation (SBD) engine. It isolates sentence boundaries across complex edge cases—including abbreviations, honorifics, numbers, lists, ellipses, and quotations—with zero machine learning dependencies.
+**cleave-sbd** is a high-performance, strictly-typed sentence boundary disambiguation (SBD) engine. It isolates sentence boundaries across complex edge cases—including abbreviations, honorifics, numbers, lists, ellipses, and quotations—with zero machine learning dependencies.
 
 ---
 
@@ -23,14 +23,14 @@
 ## Installation
 
 ```bash
-pip install fracture
+pip install cleave-sbd
 ```
 
 
 Or with `uv`:
 
 ```bash
-uv add fracture
+uv add cleave-sbd
 ```
 
 
@@ -39,10 +39,10 @@ uv add fracture
 ## Quickstart
 
 python
-import fracture
+import csbd
 
 text = "My name is Jonas E. Smith. Please turn to p. 55."
-seg = fracture.Segmenter(language="en", clean=False)
+seg = csbd.Segmenter(language="en", clean=False)
 
 sentences = seg.segment(text)
 print(sentences)
@@ -56,10 +56,10 @@ print(sentences)
 Extract start and end character offsets alongside segmented sentences:
 
 python
-import fracture
+import csbd
 
 text = "Hello world! This is a test."
-seg = fracture.Segmenter(language="en", char_span=True)
+seg = csbd.Segmenter(language="en", char_span=True)
 
 spans = seg.segment(text)
 for span in spans:
@@ -100,7 +100,7 @@ for span in spans:
 
 ## Architecture & Engineering Philosophy
 
-`fracture` is engineered under strict architectural constraints to guarantee high cohesion, loose coupling, and C-level execution speed:
+`cleave-sbd` is engineered under strict architectural constraints to guarantee high cohesion, loose coupling, and C-level execution speed:
 
 1. **Standard Library Only:** Built exclusively with Python standard library primitives (`tomllib`, `typing`, `dataclasses`, `itertools`). Zero external runtime dependencies, zero supply-chain vulnerabilities, and zero version drift.
 2. **Strict Typing & Boundary Sanitization:** End-to-end type safety verified under strict type checkers. Untyped dictionaries (`dict[str, Any]`) are restricted entirely to raw TOML ingestion and mapped immediately to concrete types.
@@ -122,9 +122,9 @@ Benchmarks evaluated on the **Complete Works of William Shakespeare** (`pg100.tx
 
 | Engine | Sentences Found | Mean Latency | Min Latency | Throughput | Status / Speedup |
 | --- | --- | --- | --- | --- | --- |
-| **`fracture` (`clean=False`)** | 175,998 | 3,407.85 ms | 3,378.60 ms | 1.52 MB/s | 1.00x (Baseline) |
-| **`fracture` (`clean=True`)** | 176,010 | 3,533.35 ms | 3,469.87 ms | 1.47 MB/s | 0.96x |
-| **`fracture` (`char_span=True`)** | 175,998 | 3,832.14 ms | 3,689.56 ms | 1.35 MB/s | 0.89x |
+| **`cleave-sbd` (`clean=False`)** | 175,998 | 3,407.85 ms | 3,378.60 ms | 1.52 MB/s | 1.00x (Baseline) |
+| **`cleave-sbd` (`clean=True`)** | 176,010 | 3,533.35 ms | 3,469.87 ms | 1.47 MB/s | 0.96x |
+| **`cleave-sbd` (`char_span=True`)** | 175,998 | 3,832.14 ms | 3,689.56 ms | 1.35 MB/s | 0.89x |
 | **`spaCy sentencizer`** | 109,084 | 4,862.67 ms | 4,758.62 ms | 1.07 MB/s | 0.97x |
 | **`BlingFire`** | 107,489 | 164.11 ms | 161.32 ms | 31.62 MB/s | 27.77x |
 | **`NLTK sent_tokenize`**| 105,488 | 726.35 ms | 724.30 ms | 7.15 MB/s | 6.27x |
@@ -137,9 +137,9 @@ Benchmarks evaluated on the **Complete Works of William Shakespeare** (`pg100.tx
 
 ### Key Takeaways & Failure Analysis
 
-* **pySBD Asymptotic Hang (>15 Minutes):** `pySBD` hits an $O(N^2)$ algorithmic wall on multi-megabyte corpora. Due to un-vectorized line-by-line loops, dynamic runtime regex recompilation, and repeated string allocations, processing the 5.3 MB corpus locked the CPU thread for **over 15 minutes without completing**. In contrast, `fracture` finished the exact same segmentation in **3.41 seconds**.
+* **pySBD Asymptotic Hang (>15 Minutes):** `pySBD` hits an $O(N^2)$ algorithmic wall on multi-megabyte corpora. Due to un-vectorized line-by-line loops, dynamic runtime regex recompilation, and repeated string allocations, processing the 5.3 MB corpus locked the CPU thread for **over 15 minutes without completing**. In contrast, `cleave-sbd` finished the exact same segmentation in **3.41 seconds**.
 * **spaCy Pipeline Lockout:** spaCy failed to run out-of-the-box due to rigid external model weight requirements and initialization overhead, refusing processing without dedicated secondary environment bootstrapping.
-* **Granular Boundary Precision:** `fracture` detected **176,430** valid sentence boundaries (~49,000–70,000 more than Stanza, NLTK, or BlingFire) by accurately segmenting dramatic verse, dialogue cues, character tags, and archaic typography rather than collapsing them into single run-on blocks.
+* **Granular Boundary Precision:** `cleave-sbd` detected **176,430** valid sentence boundaries (~49,000–70,000 more than Stanza, NLTK, or BlingFire) by accurately segmenting dramatic verse, dialogue cues, character tags, and archaic typography rather than collapsing them into single run-on blocks.
 * **10.6x Faster than Neural Pipelines:** Pure-Python pre-compiled state machines beat Stanford Stanza's PyTorch neural pipeline (`4.56 s` vs `48.15 s`) on a single CPU core with zero external C++ or CUDA dependencies.
 * **Zero-Cost Character Spans:** Full character offset tracking (`char_span=True`) adds only **~200 ms** of latency over 5.3 MB, sustaining **1.09 MB/s** throughput.
 
@@ -155,7 +155,7 @@ uv run --with nltk,stanza,blingfire,syntok python tests/bigtext_speed_benchmark.
 
 ## Acknowledgments & Attribution
 
-`fracture` is an independent, complete rewrite designed from the ground up as a modern, declarative, strictly-typed sentence boundary disambiguation engine.
+`cleave-sbd` is an independent, complete rewrite designed from the ground up as a modern, declarative, strictly-typed sentence boundary disambiguation engine.
 
 Sincere attribution and gratitude are given to the projects whose compiled linguistic heuristics and rule sets inspired this library:
 

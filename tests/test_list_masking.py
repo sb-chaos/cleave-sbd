@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from fracture.disambiguator import mask_list_items
-from fracture.rules import (
+from csbd.disambiguator import mask_list_items
+from csbd.rules import (
     PUA_LEFT_PAREN,
     PUA_PERIOD,
     PUA_RIGHT_PAREN,

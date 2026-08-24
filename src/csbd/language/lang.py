@@ -8,7 +8,7 @@ import tomllib
 from dataclasses import dataclass
 from typing import Any
 
-from fracture.rules import Rule
+from csbd.rules import Rule
 
 SUPPORTED_LANGUAGES: frozenset[str] = frozenset(
     {
@@ -72,9 +72,7 @@ def load_language_config(code: str) -> LanguageConfig:
         )
 
     # Resolve, read, and load TOML config using stdlib resources
-    ref = importlib.resources.files("fracture.language.configs").joinpath(
-        f"{code}.toml"
-    )
+    ref = importlib.resources.files("csbd.language.configs").joinpath(f"{code}.toml")
     data: dict[str, Any] = tomllib.loads(ref.read_text(encoding="utf-8"))
 
     # Instantiate the configuration container

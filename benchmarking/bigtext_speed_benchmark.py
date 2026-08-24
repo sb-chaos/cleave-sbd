@@ -1,7 +1,7 @@
-"""Speed benchmark comparing fracture against popular NLP sentence tokenizers.
+"""Speed benchmark comparing cleave-sbd against popular NLP sentence tokenizers.
 
 Supported engines:
-- fracture (clean=False, clean=True, char_span=True)
+- cleave-sbd (clean=False, clean=True, char_span=True)
 - blingfire
 - nltk (sent_tokenize)
 - spacy (sentencizer / blank("en"))
@@ -30,7 +30,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
-import fracture
+import csbd
 
 DEFAULT_BENCHMARK_URL: str = "https://www.gutenberg.org/cache/epub/100/pg100.txt"
 DEFAULT_BENCHMARK_PATH: Path = Path("benchmarks/pg100.txt")
@@ -81,21 +81,21 @@ class EngineResult:
 TokenizerFn = Callable[[str], Sequence[object]]
 
 
-def setup_fracture_fast() -> tuple[TokenizerFn | None, str | None]:
+def setup_csbd_fast() -> tuple[TokenizerFn | None, str | None]:
     """Pragmatic SBD without cleaner (pure SBD)."""
-    segmenter = fracture.Segmenter(language="en", clean=False, char_span=False)
+    segmenter = csbd.Segmenter(language="en", clean=False, char_span=False)
     return segmenter.segment, None
 
 
-def setup_fracture_clean() -> tuple[TokenizerFn | None, str | None]:
+def setup_csbd_clean() -> tuple[TokenizerFn | None, str | None]:
     """Pragmatic SBD with pre-cleaning enabled."""
-    segmenter = fracture.Segmenter(language="en", clean=True, char_span=False)
+    segmenter = csbd.Segmenter(language="en", clean=True, char_span=False)
     return segmenter.segment, None
 
 
-def setup_fracture_char_span() -> tuple[TokenizerFn | None, str | None]:
+def setup_csbd_char_span() -> tuple[TokenizerFn | None, str | None]:
     """Pragmatic SBD with character span offset calculation."""
-    segmenter = fracture.Segmenter(language="en", clean=False, char_span=True)
+    segmenter = csbd.Segmenter(language="en", clean=False, char_span=True)
     return segmenter.segment, None
 
 
@@ -259,9 +259,9 @@ def setup_pysbd() -> tuple[TokenizerFn | None, str | None]:
 AVAILABLE_ENGINES: list[
     tuple[str, Callable[[], tuple[TokenizerFn | None, str | None]]]
 ] = [
-    ("fracture (clean=False)", setup_fracture_fast),
-    ("fracture (clean=True)", setup_fracture_clean),
-    ("fracture (char_span=True)", setup_fracture_char_span),
+    ("cleave-sbd (clean=False)", setup_csbd_fast),
+    ("cleave-sbd (clean=True)", setup_csbd_clean),
+    ("cleave-sbd (char_span=True)", setup_csbd_char_span),
     ("blingfire", setup_blingfire),
     ("nltk sent_tokenize", setup_nltk),
     ("spacy sentencizer", setup_spacy_sentencizer),
@@ -292,7 +292,7 @@ def load_benchmark_text(
         )
         try:
             req = urllib.request.Request(
-                url, headers={"User-Agent": "Mozilla/5.0 (fracture-benchmark)"}
+                url, headers={"User-Agent": "Mozilla/5.0 (cleave-sbd-benchmark)"}
             )
             with urllib.request.urlopen(req, timeout=15) as resp:
                 content = resp.read().decode("utf-8", errors="replace")
@@ -395,7 +395,7 @@ def run_benchmark(
         throughput_chars_per_sec = text_chars / mean_s if mean_s > 0 else 0.0
         throughput_sents_per_sec = sentence_count / mean_s if mean_s > 0 else 0.0
 
-        if baseline_mean_s is None and "fracture (clean=False)" in name:
+        if baseline_mean_s is None and "cleave-sbd (clean=False)" in name:
             baseline_mean_s = mean_s
 
         speedup = (
@@ -435,7 +435,7 @@ def print_results_table(
     text_kb = text_bytes / 1024.0
 
     print("=" * 115)
-    print(" fracture SPEED BENCHMARK REPORT")
+    print(" cleave-sbd SPEED BENCHMARK REPORT")
     print("=" * 115)
     print(f"Source Text : {source_msg}")
     print(
@@ -461,7 +461,9 @@ def print_results_table(
         )
 
     print("=" * 115)
-    print("Note: Speedup is normalized relative to 'fracture (clean=False)' baseline.")
+    print(
+        "Note: Speedup is normalized relative to 'cleave-sbd (clean=False)' baseline."
+    )
     print(
         "To install comparison libraries: uv run --with nltk,spacy,stanza,blingfire,syntok,pysbd python tests/bigtext_speed_benchmark.py"
     )

@@ -10,15 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Memory-Bounded Sentence Streaming API**: Introduced `Segmenter.stream(text, chunk_paragraphs=1000)` lazy generator for constant-memory corpus processing with exact global character offset tracking (`TextSpan`).
 - **Modular Processor Architecture**: Decomposed monolithic disambiguator into specialized single-responsibility modules:
-  - `fracture.processors.lists`: AST-based sequential validation for numbered, alphabetical, and Roman numeral lists.
-  - `fracture.processors.abbreviation`: LRU-cached category compilation, prepositive matching, and linguistic abbreviation masking.
-  - `fracture.disambiguator`: Lean, functional pipeline orchestrator.
-- **Rules Package Separation**: Extracted all pre-compiled regex tables, PUA sentinels, and replacement definitions into `fracture.rules`.
+  - `csbd.processors.lists`: AST-based sequential validation for numbered, alphabetical, and Roman numeral lists.
+  - `csbd.processors.abbreviation`: LRU-cached category compilation, prepositive matching, and linguistic abbreviation masking.
+  - `csbd.disambiguator`: Lean, functional pipeline orchestrator.
+- **Rules Package Separation**: Extracted all pre-compiled regex tables, PUA sentinels, and replacement definitions into `csbd.rules`.
 - **ReDoS Hardening & Catastrophic Backtracking Defenses**: Audited and hardened nested lookahead/group expressions with non-backtracking atomic lookaheads, backed by `tests/test_backtracking.py`.
 - **Benchmarking & Profiling Suite**: Added `profiling/profile_benchmarks.py` for automated profiling and throughput benchmarking.
 
 ### Changed
-- **Package Layout & Rebranding**: Migrated from `pragmatic_sbd` to `fracture` under standard `src/` directory layout.
+- **Package Layout & Rebranding**: Migrated from `pragmatic_sbd` to `cleave-sbd` under standard `src/` directory layout.
 - **$O(1)$ Hash Set Scanner Optimization**: Replaced massive 100+ branch regex alternations with single-pass word boundary scanners (`STANDARD_ABBR_SCAN_REGEX`) and compiled C-level `frozenset` lookups.
 - **Fast-Path Character Short-Circuiting**: Added SIMD `str.__contains__` (`memchr`) short-circuiting to skip unused paired delimiter and punctuation regex passes.
 - **Zero-Allocation Span Tracking**: Replaced heap-allocated `.strip()` / `.lstrip()` operations in `trim_span` with pointer index scanning, eliminating over 700,000 intermediate string allocations.
