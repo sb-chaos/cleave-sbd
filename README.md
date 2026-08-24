@@ -1,6 +1,6 @@
 # cleave-sbd: Sentence Boundary Disambiguation
 
-[![CI](https://github.com/sblasing/cleave-sbd/actions/workflows/ci.yml/badge.svg)](https://github.com/sblasing/cleave-sbd/actions/workflows/ci.yml)
+[![python-package](https://github.com/sblasing/cleave-sbd/actions/workflows/python-package.yml/badge.svg)](https://github.com/sblasing/cleave-sbd/actions/workflows/python-package.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python: 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
 [![Typing: Strict](https://img.shields.io/badge/typing-strict-green.svg)](https://peps.python.org/pep-0561/)
