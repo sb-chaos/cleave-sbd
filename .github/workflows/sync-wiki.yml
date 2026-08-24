@@ -16,11 +16,44 @@ jobs:
     name: Sync wiki directory to GitHub Wiki
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout main repository
         uses: actions/checkout@v4
 
-      - name: Sync wiki files to GitHub Wiki repository
-        uses: Andrew-Chen-De/sync-to-github-wiki@v1.0.0
+      - name: Checkout wiki repository
+        uses: actions/checkout@v4
         with:
+          repository: ${{ github.repository }}.wiki
+          path: .github-wiki-repo
           token: ${{ secrets.GITHUB_TOKEN }}
-          wiki-folder: wiki
+        continue-on-error: true
+        id: checkout-wiki
+
+      - name: Push to GitHub Wiki
+        run: |
+          if [ "${{ steps.checkout-wiki.outcome }}" != "success" ]; then
+            echo "Wiki repo not found or not initialized yet. Attempting direct clone/init..."
+            git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git .github-wiki-repo || true
+          fi
+
+          mkdir -p .github-wiki-repo
+          cd .github-wiki-repo
+          if [ ! -d ".git" ]; then
+            git init
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+          fi
+
+          # Copy wiki markdown files into the wiki repository
+          cp -r ../wiki/* .
+
+          git add .
+          if git diff --staged --quiet; then
+            echo "No changes to sync."
+          else
+            git commit -m "docs: sync wiki from main repo [skip ci]"
+            git push origin HEAD:master || git push origin HEAD:main
+          fi
