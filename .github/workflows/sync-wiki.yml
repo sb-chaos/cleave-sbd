@@ -19,35 +19,24 @@ jobs:
       - name: Checkout main repository
         uses: actions/checkout@v4
 
-      - name: Checkout wiki repository
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ github.repository }}.wiki
-          path: .github-wiki-repo
-          token: ${{ secrets.GITHUB_TOKEN }}
-        continue-on-error: true
-        id: checkout-wiki
-
       - name: Push to GitHub Wiki
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [ "${{ steps.checkout-wiki.outcome }}" != "success" ]; then
-            echo "Wiki repo not found or not initialized yet. Attempting direct clone/init..."
-            git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git .github-wiki-repo || true
+          WIKI_URL="https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.wiki.git"
+          
+          echo "==> Cloning GitHub Wiki repository..."
+          if ! git clone "$WIKI_URL" wiki-clone; then
+            echo "::error::GitHub Wiki git repository not found (https://github.com/${{ github.repository }}.wiki.git)."
+            echo "::error::Please ensure GitHub Wikis is enabled in Settings -> Features -> Wikis AND create an initial Home page on the GitHub Wiki UI."
+            exit 1
           fi
 
-          mkdir -p .github-wiki-repo
-          cd .github-wiki-repo
-          if [ ! -d ".git" ]; then
-            git init
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git
-          else
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-          fi
+          cd wiki-clone
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Copy wiki markdown files into the wiki repository
+          # Copy wiki markdown files into the cloned wiki repository
           cp -r ../wiki/* .
 
           git add .
@@ -55,5 +44,5 @@ jobs:
             echo "No changes to sync."
           else
             git commit -m "docs: sync wiki from main repo [skip ci]"
-            git push origin HEAD:master || git push origin HEAD:main
+            git push origin HEAD
           fi
