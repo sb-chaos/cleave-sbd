@@ -13,6 +13,63 @@
 ## Features
 
 * **Zero Heavy Dependencies:** Pure Python logic without bloated neural models, PyTorch, or GPU requirements.
+* **Declarative & Length-Preserving:** Length-preserving PUA sentinel substitutions ensure 1:1 character offset invariance for precise span extraction.
+* **Strictly Typed:** Fully typed and verified in strict mode with Basedpyright/Pyright (PEP 561 compliant with `py.typed`).
+* **Multilingual Support:** Out-of-the-box rule sets for 22 languages.
+* **High Performance:** Pre-compiled regular expressions and immutable lookup tables.
+
+---
+
+## Installation
+
+```bash
+pip install cleave-sbd
+```
+
+Or with `uv`:
+
+```bash
+uv add cleave-sbd
+```
+
+---
+
+## Quickstart
+
+```python
+import csbd
+
+text = "My name is Jonas E. Smith. Please turn to p. 55."
+seg = csbd.Segmenter(language="en", clean=False)
+
+sentences = seg.segment(text)
+print(sentences)
+# Output:
+# ('My name is Jonas E. Smith.', 'Please turn to p. 55.')
+```
+
+### Character Span Mode
+
+Extract start and end character offsets alongside segmented sentences:
+
+```python
+import csbd
+
+text = "Hello world! This is a test."
+seg = csbd.Segmenter(language="en", char_span=True)
+
+spans = seg.segment(text)
+for span in spans:
+    print(f"{span.sent!r} -> [{span.start}:{span.end}]")
+# Output:
+# 'Hello world!' -> [0:12]
+# 'This is a test.' -> [13:28]
+
+---
+
+## Features
+
+* **Zero Heavy Dependencies:** Pure Python logic without bloated neural models, PyTorch, or GPU requirements.
 * **Declarative & Length-Preserving:** Length-preserving PUA sentinel substitutions ensure $1:1$ character offset invariance for precise span extraction.
 * **Strictly Typed:** Fully typed and verified in strict mode with Basedpyright/Pyright (PEP 561 compliant with `py.typed`).
 * **Multilingual Support:** Out-of-the-box rule sets for 22 languages.
