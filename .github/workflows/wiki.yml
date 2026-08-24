@@ -24,7 +24,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           WIKI_URL="https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.wiki.git"
-          
+
           echo "==> Cloning GitHub Wiki repository..."
           if ! git clone "$WIKI_URL" wiki-clone; then
             echo "::error::GitHub Wiki git repository not found (https://github.com/${{ github.repository }}.wiki.git)."

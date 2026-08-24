@@ -7,7 +7,7 @@ packages = ["src/csbd"]
 
 [project]
 name = "cleave-sbd"
-version = "0.2.0b1"
+version = "0.3.0b1"
 description = "High-performance, strictly-typed sentence boundary disambiguation (Pragmatic SBD)"
 readme = "README.md"
 requires-python = ">=3.11"

@@ -1,6 +1,9 @@
 name: Publish to PyPI
 
 on:
+  push:
+    tags:
+      - "v*"
   release:
     types: [published]
   workflow_dispatch:
@@ -10,7 +13,7 @@ jobs:
     name: Build and Upload to PyPI
     runs-on: ubuntu-latest
     permissions:
-      id-token: write  # Required for PyPI Trusted Publishing (OIDC)
+      id-token: write
       contents: read
 
     environment:
@@ -36,3 +39,5 @@ jobs:
 
       - name: Publish package distributions to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          skip-existing: true

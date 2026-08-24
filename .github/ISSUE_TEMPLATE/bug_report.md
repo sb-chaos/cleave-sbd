@@ -1,54 +1,46 @@
 ---
 name: Bug Report
-about: Create a report and test case to help us improve cleave-sbd
-title: "[BUG] "
+about: Report a bug or incorrect sentence boundary segmentation
+title: "[BUG]: "
 labels: ["bug"]
 assignees: ""
-
 ---
 
-### Description
-A clear and concise description of what the bug is.
+### Problem Description
+<!-- Brief description of the issue or unexpected behavior -->
 
-### Reproduction Code
-
+### Minimal Reproducible Example
 ```python
 import csbd
 
 seg = csbd.Segmenter(language="en", clean=False, char_span=False)
-text = "Your sample text here."
-sentences = seg.segment(text)
-print(sentences)
+text = "..."
+
+print(seg.segment(text))
 ```
 
-### Expected Behavior
-A clear and concise description of what sentences should have been segmented.
+### Output Comparison
 
+**Expected output:**
 ```python
 ["Expected sentence 1.", "Expected sentence 2."]
 ```
 
-### Actual Behavior
-The actual output returned by `cleave-sbd`.
-
+**Actual output:**
 ```python
-["Actual sentence 1."]
+["Actual output produced."]
 ```
 
-### Environment Information
-- Python version (e.g., `3.11.8`, `3.12.2`):
-- `cleave-sbd` version (e.g., `0.1.0`):
-- Operating System (e.g., Linux, macOS, Windows):
+### Environment
+- **OS:** <!-- e.g., Ubuntu 22.04, macOS Sonoma, Windows 11 -->
+- **Python version:** <!-- e.g., 3.12.2 -->
+- **`cleave-sbd` version:** <!-- e.g., 0.2.0b1 -->
 
-### Additional Context
-Add any other context, stack traces, or screenshots here.
-
+### Traceback / Logs (optional)
 <details>
-<summary>Traceback (if applicable)</summary>
+<summary>Click to view traceback</summary>
 
+```text
+<!-- Paste traceback here if applicable -->
 ```
-Paste traceback here
-```
-
 </details>
-
