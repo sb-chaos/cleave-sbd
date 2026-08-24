@@ -91,12 +91,12 @@ expected = [["This eBook is for the use of anyone anywhere at no cost\n", 0, 56]
 [[char_span_cases]]
 issue = "#78"
 text = "Sentence. .. Next sentence. Next next sentence."
-expected = [["Sentence. ", 0, 10], [".. ", 10, 13], ["Next sentence. ", 13, 28], ["Next next sentence.", 28, 47]]
+expected = [["Sentence. .. ", 0, 13], ["Next sentence. ", 13, 28], ["Next next sentence.", 28, 47]]
 
 [[char_span_cases]]
 issue = "#83"
 text = "Maissen se chargea du reste .. Logiquement,"
-expected = [["Maissen se chargea du reste .", 0, 29], [". ", 29, 31], ["Logiquement,", 31, 43]]
+expected = [["Maissen se chargea du reste .. ", 0, 31], ["Logiquement,", 31, 43]]
 
 [[char_span_cases]]
 issue = "#83"
@@ -106,5 +106,6 @@ expected = [["Maissen se chargea du reste ... ", 0, 32], ["Logiquement,", 32, 44
 [[char_span_cases]]
 issue = "#83"
 text = "Maissen se chargea du reste .... Logiquement,"
-expected = [["Maissen se chargea du reste .", 0, 29], ["... ", 29, 33], ["Logiquement,", 33, 45]]
+expected = [["Maissen se chargea du reste .... ", 0, 33], ["Logiquement,", 33, 45]]
+
 

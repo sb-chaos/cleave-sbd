@@ -1,7 +1,7 @@
 """Public API layer for sentence boundary disambiguation and segmentation."""
 
-from collections.abc import Sequence
 from dataclasses import dataclass
+from typing import cast
 
 from fracture.disambiguator import disambiguate
 from fracture.language import get_language_module
@@ -80,62 +80,42 @@ class Segmenter:
 
         config = get_language_module(self.language) if self.language else None
 
+        target_text = text
         if self.clean:
-            cleaned_text: str | None = normalize(
+            cleaned = normalize(
                 text=text,
                 config=config,
                 doc_type=self.doc_type,
                 char_span=False,
             )
-            sentences = disambiguate(
-                text=cleaned_text or "",
-                config=config,
-                char_span=False,
-            )
-            return tuple(unmask_all(sentence) for sentence in sentences)
+            target_text = cleaned or ""
+            if not target_text or target_text.isspace():
+                return ()
 
-        sentences = disambiguate(
-            text=text,
+        output = disambiguate(
+            text=target_text,
             config=config,
             char_span=self.char_span,
         )
 
+        if not output:
+            return ()
+
         if self.char_span:
-            return self.sentences_with_char_spans(text, sentences)
+            spans = cast(tuple[tuple[int, int], ...], output)
+            text_len = len(target_text)
+            result_spans: list[TextSpan] = []
+            for i, (start, end) in enumerate(spans):
+                next_start = spans[i + 1][0] if i + 1 < len(spans) else text_len
+                span_end = end
+                while span_end < next_start and target_text[span_end].isspace():
+                    span_end += 1
 
-        return tuple(unmask_all(sentence) for sentence in sentences)
-
-    def sentences_with_char_spans(
-        self, original_text: str, sentences: Sequence[str]
-    ) -> tuple[TextSpan, ...]:
-        """Calculate start and end character offsets sequentially against the original source text.
-
-        Args:
-            original_text: The original, unmodified text.
-            sentences: Segmented sentence strings to locate.
-
-        Returns:
-            A tuple of TextSpan objects containing the sentences and their start/end offsets.
-        """
-        sent_spans: list[TextSpan] = []
-        prior_end_char_idx: int = 0
-        orig_len: int = len(original_text)
-
-        for sent in sentences:
-            start_idx = original_text.find(sent, prior_end_char_idx)
-            if start_idx == -1:
-                continue
-            end_idx = start_idx + len(sent)
-            while end_idx < orig_len and original_text[end_idx].isspace():
-                end_idx += 1
-
-            sent_spans.append(
-                TextSpan(
-                    sent=original_text[start_idx:end_idx],
-                    start=start_idx,
-                    end=end_idx,
+                raw_slice = target_text[start:span_end]
+                clean_sent = unmask_all(raw_slice)
+                result_spans.append(
+                    TextSpan(sent=clean_sent, start=start, end=span_end)
                 )
-            )
-            prior_end_char_idx = end_idx
+            return tuple(result_spans)
 
-        return tuple(sent_spans)
+        return cast(tuple[str, ...], output)

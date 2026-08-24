@@ -40,7 +40,9 @@ NORMAL_QUOTES: Rule = Rule(re.compile(r"''|``"), '"')
 
 # HTML Rules
 HTML_TAG_RULE: Rule = Rule(
-    re.compile(r"<\/?\w+((\s+\w+(\s*=\s*(?:\".*?\"|'.*?'|[\^'\">\s]+))?)+\s*|\s*)\/?>")
+    re.compile(
+        r"</?[a-zA-Z0-9_:-]+(?:\s+[a-zA-Z0-9_:-]+(?:\s*=\s*(?:\"[^\"]*\"|'[^']*'|[^'\">\s]+))?)*\s*/?>"
+    )
 )
 HTML_ESCAPED_TAG_RULE: Rule = Rule(re.compile(r"&lt;\/?[^gt;]*gt;"))
 HTML_RULES: tuple[Rule, ...] = (HTML_TAG_RULE, HTML_ESCAPED_TAG_RULE)

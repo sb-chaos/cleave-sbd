@@ -13,8 +13,6 @@ from fracture.rules import (
     BETWEEN_SINGLE_QUOTES_REGEX,
     BULLET_CHARS,
     COMMON_RULES,
-    CONTINUOUS_PUNCTUATION_REGEX,
-    DOUBLE_PUNCTUATION_RULES,
     ELLIPSIS_RULES,
     KOMMANDITGESELLSCHAFT_REGEX,
     LATIN_NUMERALS,
@@ -25,11 +23,11 @@ from fracture.rules import (
     NUMBER_RULES,
     NUMBERED_REFERENCE_REGEX,
     PARENS_BETWEEN_DOUBLE_QUOTES_REGEX,
+    PARENS_LEAD_SPACE_REGEX,
+    PARENS_TRAIL_SPACE_REGEX,
     POSSESSIVE_ABBR_REGEX,
-    PUA_EXCLAMATION,
     PUA_LEFT_PAREN,
     PUA_PERIOD,
-    PUA_QUESTION,
     PUA_RIGHT_PAREN,
     PUA_SEARCH_PUNCTUATIONS,
     PUA_TEMP_END_PUNCT,
@@ -499,10 +497,6 @@ def mask_list_items(text: str, config: LanguageProtocol | None = None) -> str:
 # =============================================================================
 
 
-PARENS_LEAD_SPACE_REGEX: re.Pattern[str] = re.compile(r"\s(?=\()")
-PARENS_TRAIL_SPACE_REGEX: re.Pattern[str] = re.compile(r"(?<=\))\s")
-
-
 @dataclass(slots=True, frozen=True)
 class LanguageAbbreviationData:
     """Pre-compiled and cached regex patterns for language-specific abbreviation handling."""
@@ -857,38 +851,64 @@ def disambiguate(
     *,
     config: LanguageProtocol | None = None,
     char_span: bool = False,
-) -> tuple[str, ...]:
+) -> tuple[tuple[int, int], ...] | tuple[str, ...]:
     """Execute the full 1:1 length-preserving disambiguation and extraction pipeline.
 
     Returns:
-        A list of segmented sentence strings.
+        A tuple of (start, end) offset tuples if char_span is True, else a tuple of sentence strings.
     """
     if not text:
         return ()
 
     # 1. Lists: Mask list numbers and format markers
-    text = mask_list_items(text, config=config)
+    masked_text = mask_list_items(text, config=config)
 
     # 2. Abbreviations: Mask periods in honorifics, initials, acronyms
-    text = replace_abbreviations(text, config=config)
+    masked_text = replace_abbreviations(masked_text, config=config)
 
     # 3. Numbers & Dates: Mask decimals, versions, timestamps
-    text = _mask_numbers_and_dates(text, config=config)
+    masked_text = _mask_numbers_and_dates(masked_text, config=config)
 
     # 4. Exclamation words: Mask internal exclamation marks (e.g., 'Yahoo!')
-    text = mask_exclamation_words(text)
+    masked_text = mask_exclamation_words(masked_text)
 
     # 5. Paired punctuation: Mask enclosed periods/punctuation
-    text = _check_for_parens_between_quotes(text)
-    text = mask_between_punctuation(text, config=config)
+    masked_text = _check_for_parens_between_quotes(masked_text)
+    masked_text = mask_between_punctuation(masked_text, config=config)
 
     # 6. Continuous & Common punctuation
-    text = _mask_continuous_punctuation(text)
+    masked_text = _mask_continuous_punctuation(masked_text)
     for rule in COMMON_RULES:
-        text = rule.pattern.sub(rule.replacement, text)
+        masked_text = rule.pattern.sub(rule.replacement, masked_text)
 
     # 7. Boundary splitting
-    return _split_into_segments(text, config=config)
+    spans = _split_into_segments(masked_text, config=config)
+
+    if char_span:
+        return spans
+
+    return tuple(unmask_all(masked_text[start:end]) for start, end in spans)
+
+
+def trim_span(text: str, start: int, end: int) -> tuple[int, int] | None:
+    """Trim leading and trailing whitespace from a span without string allocation.
+
+    Args:
+        text: The source text.
+        start: Start character offset.
+        end: End character offset.
+
+    Returns:
+        Adjusted (start, end) offsets, or None if the span contains only whitespace.
+    """
+    slice_val = text[start:end]
+    left_pad = len(slice_val) - len(slice_val.lstrip())
+    right_pad = len(slice_val.lstrip()) - len(slice_val.strip())
+    new_start = start + left_pad
+    new_end = end - right_pad
+    if new_start < new_end:
+        return (new_start, new_end)
+    return None
 
 
 def _check_for_parens_between_quotes(text: str) -> str:
@@ -924,9 +944,10 @@ def _mask_numbers_and_dates(text: str, config: LanguageProtocol | None = None) -
     def _ref_sub(match: re.Match[str]) -> str:
         reference = match.group("ref")
         trailing_space = match.group("space") or ""
-        if match.end() == len(match.string):
-            return f"{PUA_PERIOD}{reference}"
-        return f"{PUA_PERIOD}{reference}{trailing_space}\r"
+        if trailing_space:
+            # Replace the trailing space char 1:1 with \r delimiter
+            return f"{PUA_PERIOD}{reference}" + ("\r" * len(trailing_space))
+        return f"{PUA_PERIOD}{reference}"
 
     text = NUMBERED_REFERENCE_REGEX.sub(_ref_sub, text)
 
@@ -938,21 +959,14 @@ def _mask_numbers_and_dates(text: str, config: LanguageProtocol | None = None) -
 
 
 def _mask_continuous_punctuation(text: str) -> str:
-    """Mask double punctuation marks and multi-dot ellipses.
+    """Mask multi-dot ellipses.
 
     Args:
         text: The text string to process.
 
     Returns:
-        The text with contiguous punctuation masked.
+        The text with multi-dot ellipses masked.
     """
-
-    def _cont_repl(match: re.Match[str]) -> str:
-        return match.group(1).replace("!", PUA_EXCLAMATION).replace("?", PUA_QUESTION)
-
-    text = CONTINUOUS_PUNCTUATION_REGEX.sub(_cont_repl, text)
-    for rule in DOUBLE_PUNCTUATION_RULES:
-        text = rule.pattern.sub(rule.replacement, text)
     for rule in ELLIPSIS_RULES:
         text = rule.pattern.sub(rule.replacement, text)
     return text
@@ -960,14 +974,14 @@ def _mask_continuous_punctuation(text: str) -> str:
 
 def _split_into_segments(
     text: str, config: LanguageProtocol | None = None
-) -> tuple[str, ...]:
-    """Split disambiguated text into sentence segments using boundary regex.
+) -> tuple[tuple[int, int], ...]:
+    """Split disambiguated text into sentence spans using non-destructive line scanning.
 
     Args:
         text: The fully masked text string.
 
     Returns:
-        A list of final unmasked, trimmed sentence strings.
+        A tuple of (start, end) character offset tuples for each sentence span.
     """
     boundary_regex = (
         config.sentence_boundary_regex
@@ -985,34 +999,73 @@ def _split_into_segments(
     quote_regex = QUOTATION_AT_END_OF_SENTENCE_REGEX
     split_quote_regex = SPLIT_SPACE_QUOTATION_AT_END_OF_SENTENCE_REGEX
 
-    segments: list[str] = []
-    for line in LINE_SPLIT_REGEX.split(text):
-        if not line:
-            continue
-        if not search_punctuations.isdisjoint(line):
-            processed_line = (
-                line if line[-1] in punctuations else (line + PUA_TEMP_END_PUNCT)
-            )
-            matches = list(boundary_regex.finditer(processed_line))
-            if matches:
-                for match in matches:
-                    matched_text = match.group(0)
-                    if quote_regex.search(matched_text):
-                        parts = split_quote_regex.split(matched_text)
-                        segments.extend(
-                            unmask_all(part).strip() for part in parts if part.strip()
-                        )
-                    else:
-                        cleaned_segment = unmask_all(matched_text).strip()
-                        if cleaned_segment:
-                            segments.append(cleaned_segment)
-            else:
-                raw_line = unmask_all(line).strip()
-                if raw_line:
-                    segments.append(raw_line)
-        else:
-            raw_line = unmask_all(line).strip()
-            if raw_line:
-                segments.append(raw_line)
+    spans: list[tuple[int, int]] = []
+    text_len = len(text)
+    line_start = 0
 
-    return tuple(segments)
+    def _has_semantic_content(s: int, e: int) -> bool:
+        return any(text[i].isalnum() for i in range(s, e))
+
+    def _add_span(s: int, e: int, *, is_line: bool = False) -> None:
+        span = trim_span(text, s, e)
+        if span is not None:
+            if is_line or _has_semantic_content(span[0], span[1]):
+                spans.append(span)
+            elif spans:
+                # Merge trailing intra-line punctuation-only noise into previous sentence span
+                spans[-1] = (spans[-1][0], span[1])
+
+    def _process_line_segment(curr_line_start: int, curr_line_end: int) -> None:
+        line_len = curr_line_end - curr_line_start
+        if line_len <= 0:
+            return
+        line = text[curr_line_start:curr_line_end]
+        if not search_punctuations.isdisjoint(line):
+            has_end_punct = line[-1] in punctuations
+            processed_line = line if has_end_punct else (line + PUA_TEMP_END_PUNCT)
+            has_match = False
+            for match in boundary_regex.finditer(processed_line):
+                has_match = True
+                local_start = min(match.start(), line_len)
+                local_end = min(match.end(), line_len)
+                if local_start >= local_end:
+                    continue
+                matched_slice = line[local_start:local_end]
+                if quote_regex.search(matched_slice):
+                    sub_start = 0
+                    for quote_match in split_quote_regex.finditer(matched_slice):
+                        sub_end = quote_match.start()
+                        _add_span(
+                            curr_line_start + local_start + sub_start,
+                            curr_line_start + local_start + sub_end,
+                        )
+                        sub_start = quote_match.end()
+                    if sub_start < len(matched_slice):
+                        _add_span(
+                            curr_line_start + local_start + sub_start,
+                            curr_line_start + local_start + len(matched_slice),
+                        )
+                else:
+                    _add_span(
+                        curr_line_start + local_start,
+                        curr_line_start + local_end,
+                    )
+            if not has_match:
+                _add_span(curr_line_start, curr_line_end, is_line=True)
+        else:
+            _add_span(curr_line_start, curr_line_end, is_line=True)
+
+    for line_match in LINE_SPLIT_REGEX.finditer(text):
+        line_end = line_match.start()
+        _process_line_segment(line_start, line_end)
+        line_start = line_match.end()
+
+    if line_start < text_len:
+        _process_line_segment(line_start, text_len)
+
+    if not spans:
+        fallback = trim_span(text, 0, text_len)
+        if fallback is not None:
+            return (fallback,)
+
+    return tuple(spans)
