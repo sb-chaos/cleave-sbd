@@ -35,5 +35,5 @@ This runs safe auto-formatting, strict linting (`ruff`), strict type checking (`
 
 For detailed guides, please see our GitHub Wiki:
 
-* **[Contributing & Adding Languages](https://github.com/sb-chaos/cleave-sbd/wiki/Contributing-&-Adding-Languages)**: Step-by-step instructions for adding the 23rd language, creating TOML configs, and registering rules.
-* **[Architecture & Engineering Philosophy](https://github.com/sb-chaos/cleave-sbd/wiki/Architecture-and-Engineering-Philosophy)**: Core design principles, layered decoupling, and strict typing standards.
+* **[Contributing](https://github.com/sb-chaos/cleave-sbd/wiki/Contributing)**: Step-by-step instructions for adding the 23rd language, creating TOML configs, and registering rules.
+* **[Design Philosophy](https://github.com/sb-chaos/cleave-sbd/wiki/Design-Philosophy)**: Core design principles, layered decoupling, and strict typing standards.

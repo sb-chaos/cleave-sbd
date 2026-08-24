@@ -125,12 +125,12 @@ Native multi-core batch processing leveraging pure immutable state machines acro
 
 For complete documentation, architectural specifications, and recipes, see the **[cleave-sbd Wiki](https://github.com/sb-chaos/cleave-sbd/wiki)**:
 
-* **[1. Architecture & Engineering Philosophy](https://github.com/sb-chaos/cleave-sbd/wiki/Architecture-and-Engineering-Philosophy)**: The 10 core architectural invariants governing zero-dependency design, strict typing, layered decoupling, and immutable modeling.
-* **[2. Coordinate Invariance & OffsetMap](https://github.com/sb-chaos/cleave-sbd/wiki/Coordinate-Invariance-&-OffsetMap)**: Mechanism of length-preserving PUA sentinels and $O(\log K)$ cumulative delta tracking for exact span projection.
-* **[3. Common API Use Cases & Recipes](https://github.com/sb-chaos/cleave-sbd/wiki/Common-Use-Cases)**: Code recipes for sentence segmentation, exact character span extraction, bounded streaming, and PDF repair.
-* **[4. Language Support & Heuristics](https://github.com/sb-chaos/cleave-sbd/wiki/Language-Support-&-Heuristics)**: Linguistic heuristics across 22 supported languages (non-Latin scripts, legal outlines, continuous text, abbreviations).
-* **[5. Performance & Speed Benchmarks](https://github.com/sb-chaos/cleave-sbd/wiki/Performance-and-Benchmarks)**: Benchmark comparisons, latency tables, and failure analysis against Stanford Stanza, spaCy, NLTK, BlingFire, Syntok, and pySBD.
-* **[6. Contributing & Adding Languages](https://github.com/sb-chaos/cleave-sbd/wiki/Contributing-&-Adding-Languages)**: Developer guide for running automated quality gates (`validate.sh`) and adding language configurations.
+* **[1. Design Philosophy](https://github.com/sb-chaos/cleave-sbd/wiki/Design-Philosophy)**: The 10 design rules behind our zero-dependency build, strict typing, and memory model.
+* **[2. Span Tracking](https://github.com/sb-chaos/cleave-sbd/wiki/Span-Tracking)**: The mechanics behind our PUA masks and $O(\log K)$ delta tracking for exact character offsets.
+* **[3. Use Cases](https://github.com/sb-chaos/cleave-sbd/wiki/Use-Cases)**: Code recipes for sentence segmentation, span extraction, bounded streaming, and data cleaning.
+* **[4. Languages](https://github.com/sb-chaos/cleave-sbd/wiki/Languages)**: How we handle abbreviations, legal numbering, non-Latin scripts, and unspaced text across 22 languages.
+* **[5. Benchmarks](https://github.com/sb-chaos/cleave-sbd/wiki/Benchmarks)**: Benchmark comparisons, latency tables, and failure analysis against Stanza, spaCy, NLTK, BlingFire, Syntok, and pySBD.
+* **[6. Contributing](https://github.com/sb-chaos/cleave-sbd/wiki/Contributing)**: Developer guide for running automated quality gates (`validate.sh`) and adding language configurations.
 
 ---
 

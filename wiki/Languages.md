@@ -1,12 +1,12 @@
-# Language Support & Heuristics
+# Languages & Rule Heuristics
 
-`cleave-sbd` provides rule sets and linguistic heuristics for **22 languages**, handling abbreviations, honorifics, non-Latin punctuation, continuous scripts, and archaic typography.
+`cleave-sbd` supports 22 languages out of the box with zero external models, neural tokenizers, or data downloads. Here is how we handle punctuation marks, abbreviations, and typography across scripts.
 
 ---
 
 ## 1. Supported Languages Matrix
 
-| Code | Language | Script | Sentence Boundary Marks | Special Heuristics |
+| Code | Language | Script | Sentence Delimiters | Special Handling |
 | :--- | :--- | :--- | :--- | :--- |
 | `am` | Amharic | Ge'ez | `።`, `፧`, `፨` | Word space delimiter `፡`, Ge'ez numerics |
 | `ar` | Arabic | Arabic | `؟`, `!`, `.` | Right-to-left layout, Arabic comma `،` protection |
@@ -36,20 +36,17 @@
 
 ## 2. Common Edge-Case Heuristics
 
-`cleave-sbd` addresses challenging linguistic edge cases through declarative rules:
+### A. Unspaced & CJK Text (Japanese, Chinese)
+Japanese (`。`) and Chinese (`。`) do not require whitespace between sentences. The engine splits on fullwidth punctuation boundaries directly in the character stream without losing punctuation.
 
-### A. Non-Latin Punctuation & Script Switching
-- In languages like Hindi (`।`) and Armenian (`։`), traditional punctuation marks are treated as first-class sentence delimiters while protecting nested quotes and abbreviations.
-- CJK languages (`ja`, `zh`) segment continuous character streams without requiring whitespace between sentences.
+### B. Non-Latin Delimiters (Hindi, Armenian, Arabic, Urdu)
+Hindi Danda (`।`), Double Danda (`॥`), and Armenian Verjaket (`։`) are treated as primary sentence boundaries while protecting nested quotes and abbreviations.
 
-### B. Numbered Lists & Legal Outlines
-- Distinguishes between list enumerations (`1. First item`, `a. Sub-item`, `(iv) Clause`) and sentence boundaries.
-- Numeric decimals (`3.14159`), software versions (`v0.2.0`), currency (`$5.99`), and timestamps (`10:30 a.m.`) are protected from false splits.
+### C. Numbered Lists & Legal Outlines
+The engine separates list enumerations (`1. First item`, `a. Sub-item`, `(iv) Clause`) from real sentence boundaries. Numeric decimals (`3.14159`), software versions (`v0.2.0`), currency (`$5.99`), and timestamps (`10:30 a.m.`) are protected from false splits.
 
-### C. Abbreviations, Initials, & Honorifics
-- Multi-period acronyms (`U.S.A.`, `e.g.`, `Ph.D.`) are disambiguated using pre-compiled regex tables.
-- Person names with single-letter initials (e.g. `J. K. Rowling`, `George W. Bush`) are identified via prepositive heuristics to prevent fragmenting names.
+### D. Abbreviations, Initials, & Honorifics
+Multi-period acronyms (`U.S.A.`, `e.g.`, `Ph.D.`) are disambiguated using pre-compiled regex tables. Names with single-letter initials (e.g. `J. K. Rowling`, `George W. Bush`) are identified via prepositive heuristics so names are never broken apart.
 
-### D. Quotations & Dialogue Spans
-- Handles punctuation enclosed within single quotes, double quotes, arrow guillemets (`«...»`), and slanted quotes (`“...”`).
-- Trailing quotation marks after terminating punctuation (e.g. `"Hello!" said Holmes.`) are split correctly without stranding orphaned quotes.
+### E. Quotations & Dialogue Spans
+Punctuation enclosed within single quotes, double quotes, arrow guillemets (`«...»`), and slanted quotes (`“...”`) is masked. Trailing quotation marks after terminating punctuation (e.g. `"Hello!" said Holmes.`) are split correctly without stranding orphaned quotes.
