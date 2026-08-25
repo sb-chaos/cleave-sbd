@@ -20,6 +20,14 @@ from csbd.rules import (
     ROMAN_PARENS_REGEX,
 )
 
+__all__ = [
+    "apply_replacements",
+    "mask_alphabetical_lists",
+    "mask_list_items",
+    "mask_numbered_lists",
+    "mask_parenthesized_and_roman_lists",
+]
+
 
 def apply_replacements(text: str, replacements: dict[int, str]) -> str:
     """Efficiently assemble a modified string from sparse character replacements.
@@ -52,6 +60,11 @@ def mask_numbered_lists(text: str) -> str:
     Returns:
         The text with numbered list delimiters masked.
     """
+    if not any(c.isdigit() for c in text) or (
+        "." not in text and ")" not in text and "]" not in text
+    ):
+        return text
+
     matches = list(NUMBER_LIST_REGEX.finditer(text))
     if not matches:
         return text
@@ -186,6 +199,9 @@ def mask_alphabetical_lists(text: str) -> str:
     Returns:
         The text with alphabetical list delimiters masked.
     """
+    if "." not in text and ")" not in text and "]" not in text:
+        return text
+
     matches = list(ALPHA_LIST_REGEX.finditer(text))
     if not matches:
         return text
@@ -317,6 +333,9 @@ def mask_parenthesized_and_roman_lists(text: str) -> str:
     Returns:
         The text with Roman numeral list markers masked.
     """
+    if "(" not in text and "." not in text and ")" not in text and "]" not in text:
+        return text
+
     roman_parens_matches = list(ROMAN_PARENS_REGEX.finditer(text))
     roman_delim_matches = list(ROMAN_DELIM_REGEX.finditer(text))
     if not roman_parens_matches and not roman_delim_matches:

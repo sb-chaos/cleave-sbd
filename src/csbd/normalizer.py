@@ -2,7 +2,7 @@
 
 import re
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass, field
+from typing import overload
 
 from csbd.language.protocols import LanguageProtocol
 from csbd.models import NormalizationResult, OffsetMap
@@ -49,55 +49,57 @@ __all__ = [
 ]
 
 
-@dataclass(slots=True)
-class _DeltaCollector:
-    """Internal helper to record text replacements and build an OffsetMap."""
+@overload
+def _apply_rule_tracked(
+    rule: Rule, text: str, in_map: None = None
+) -> tuple[str, None]: ...
 
-    raw_length: int
-    clean_keys: list[int] = field(default_factory=list)
-    cum_deltas: list[int] = field(default_factory=list)
-    running_delta: int = 0
 
-    def record_edit(self, clean_pos: int, raw_delta: int) -> None:
-        """Record a single edit step delta.
-
-        Args:
-            clean_pos: Character offset in the new cleaned buffer where replacement occurred.
-            raw_delta: Net change in length (raw_len - new_len). Positive means raw was longer.
-        """
-        self.running_delta += raw_delta
-        if self.clean_keys and self.clean_keys[-1] == clean_pos:
-            self.cum_deltas[-1] = self.running_delta
-        else:
-            self.clean_keys.append(clean_pos)
-            self.cum_deltas.append(self.running_delta)
-
-    def build_map(self, clean_length: int) -> OffsetMap:
-        """Build the immutable OffsetMap."""
-        return OffsetMap(
-            clean_keys=tuple(self.clean_keys),
-            cum_deltas=tuple(self.cum_deltas),
-            raw_length=self.raw_length,
-            clean_length=clean_length,
-        )
+@overload
+def _apply_rule_tracked(
+    rule: Rule, text: str, in_map: OffsetMap
+) -> tuple[str, OffsetMap]: ...
 
 
 def _apply_rule_tracked(
-    rule: Rule, text: str, collector: _DeltaCollector | None = None
-) -> str:
-    """Apply a regular expression replacement rule with optional delta tracking."""
-    if collector is None:
-        return rule.pattern.sub(rule.replacement, text)
+    rule: Rule,
+    text: str,
+    in_map: OffsetMap | None = None,
+) -> tuple[str, OffsetMap | None]:
+    """Apply a regular expression replacement rule with coordinate delta tracking."""
+    if in_map is None:
+        return rule.pattern.sub(rule.replacement, text), None
 
     chunks: list[str] = []
     last_idx = 0
     curr_clean_pos = 0
+    clean_keys: list[int] = []
+    cum_deltas: list[int] = []
+
+    def record_edit(k: int, d: int) -> None:
+        if clean_keys and clean_keys[-1] == k:
+            cum_deltas[-1] = d
+        elif not cum_deltas or cum_deltas[-1] != d:
+            clean_keys.append(k)
+            cum_deltas.append(d)
+
+    in_keys_len = len(in_map.clean_keys)
+    k_idx = 0
+    has_match = False
 
     for match in rule.pattern.finditer(text):
+        has_match = True
         m_start = match.start()
         m_end = match.end()
 
-        # Append preceding unchanged slice
+        # Forward keys from in_map that fall in (last_idx, m_start]
+        while k_idx < in_keys_len and in_map.clean_keys[k_idx] <= m_start:
+            k = in_map.clean_keys[k_idx]
+            shifted_k = curr_clean_pos + (k - last_idx)
+            d_shifted = in_map.clean_to_raw(k) - shifted_k
+            record_edit(shifted_k, d_shifted)
+            k_idx += 1
+
         unchanged = text[last_idx:m_start]
         chunks.append(unchanged)
         curr_clean_pos += len(unchanged)
@@ -105,157 +107,421 @@ def _apply_rule_tracked(
         # Compute replacement
         repl = match.expand(rule.replacement)
         chunks.append(repl)
-
-        # Delta calculation: (orig_matched_chars - replaced_chars)
-        raw_diff = (m_end - m_start) - len(repl)
         curr_clean_pos += len(repl)
-        if raw_diff != 0:
-            collector.record_edit(curr_clean_pos, raw_diff)
+
+        # Compute delta to raw at end of repl
+        raw_at_end = in_map.clean_to_raw(m_end)
+        d_new = raw_at_end - curr_clean_pos
+        record_edit(curr_clean_pos, d_new)
+
+        # Advance k_idx past any in_map keys inside replaced range
+        while k_idx < in_keys_len and in_map.clean_keys[k_idx] <= m_end:
+            k_idx += 1
 
         last_idx = m_end
 
+    if not has_match:
+        return text, in_map
+
+    # Forward remaining in_map keys
+    while k_idx < in_keys_len:
+        k = in_map.clean_keys[k_idx]
+        shifted_k = curr_clean_pos + (k - last_idx)
+        d_shifted = in_map.clean_to_raw(k) - shifted_k
+        record_edit(shifted_k, d_shifted)
+        k_idx += 1
+
     tail = text[last_idx:]
     chunks.append(tail)
-    return "".join(chunks)
+    out_text = "".join(chunks)
+    out_map = OffsetMap(
+        clean_keys=tuple(clean_keys),
+        cum_deltas=tuple(cum_deltas),
+        raw_length=in_map.raw_length,
+        clean_length=len(out_text),
+    )
+    return out_text, out_map
+
+
+@overload
+def _apply_sub_fn_tracked(
+    pattern: re.Pattern[str],
+    repl_fn: Callable[[re.Match[str]], str],
+    text: str,
+    in_map: None = None,
+) -> tuple[str, None]: ...
+
+
+@overload
+def _apply_sub_fn_tracked(
+    pattern: re.Pattern[str],
+    repl_fn: Callable[[re.Match[str]], str],
+    text: str,
+    in_map: OffsetMap,
+) -> tuple[str, OffsetMap]: ...
 
 
 def _apply_sub_fn_tracked(
     pattern: re.Pattern[str],
     repl_fn: Callable[[re.Match[str]], str],
     text: str,
-    collector: _DeltaCollector | None = None,
-) -> str:
-    """Apply a dynamic substitution function with optional delta tracking."""
-    if collector is None:
-        return pattern.sub(repl_fn, text)
+    in_map: OffsetMap | None = None,
+) -> tuple[str, OffsetMap | None]:
+    """Apply a dynamic substitution function with coordinate delta tracking."""
+    if in_map is None:
+        return pattern.sub(repl_fn, text), None
 
     chunks: list[str] = []
     last_idx = 0
     curr_clean_pos = 0
+    clean_keys: list[int] = []
+    cum_deltas: list[int] = []
+
+    def record_edit(k: int, d: int) -> None:
+        if clean_keys and clean_keys[-1] == k:
+            cum_deltas[-1] = d
+        elif not cum_deltas or cum_deltas[-1] != d:
+            clean_keys.append(k)
+            cum_deltas.append(d)
+
+    in_keys_len = len(in_map.clean_keys)
+    k_idx = 0
+    has_match = False
 
     for match in pattern.finditer(text):
+        has_match = True
         m_start = match.start()
         m_end = match.end()
+
+        # Forward keys from in_map that fall in (last_idx, m_start]
+        while k_idx < in_keys_len and in_map.clean_keys[k_idx] <= m_start:
+            k = in_map.clean_keys[k_idx]
+            shifted_k = curr_clean_pos + (k - last_idx)
+            d_shifted = in_map.clean_to_raw(k) - shifted_k
+            record_edit(shifted_k, d_shifted)
+            k_idx += 1
 
         unchanged = text[last_idx:m_start]
         chunks.append(unchanged)
         curr_clean_pos += len(unchanged)
 
+        # Compute replacement
         repl = repl_fn(match)
         chunks.append(repl)
-
-        raw_diff = (m_end - m_start) - len(repl)
         curr_clean_pos += len(repl)
-        if raw_diff != 0:
-            collector.record_edit(curr_clean_pos, raw_diff)
+
+        # Compute delta to raw at end of repl
+        raw_at_end = in_map.clean_to_raw(m_end)
+        d_new = raw_at_end - curr_clean_pos
+        record_edit(curr_clean_pos, d_new)
+
+        # Advance k_idx past any in_map keys inside replaced range
+        while k_idx < in_keys_len and in_map.clean_keys[k_idx] <= m_end:
+            k_idx += 1
 
         last_idx = m_end
 
+    if not has_match:
+        return text, in_map
+
+    # Forward remaining in_map keys
+    while k_idx < in_keys_len:
+        k = in_map.clean_keys[k_idx]
+        shifted_k = curr_clean_pos + (k - last_idx)
+        d_shifted = in_map.clean_to_raw(k) - shifted_k
+        record_edit(shifted_k, d_shifted)
+        k_idx += 1
+
     tail = text[last_idx:]
     chunks.append(tail)
-    return "".join(chunks)
+    out_text = "".join(chunks)
+    out_map = OffsetMap(
+        clean_keys=tuple(clean_keys),
+        cum_deltas=tuple(cum_deltas),
+        raw_length=in_map.raw_length,
+        clean_length=len(out_text),
+    )
+    return out_text, out_map
 
 
-def strip_html(text: str, collector: _DeltaCollector | None = None) -> str:
+@overload
+def strip_html(text: str, offset_map: None = None) -> str: ...
+
+
+@overload
+def strip_html(text: str, offset_map: OffsetMap) -> tuple[str, OffsetMap]: ...
+
+
+def strip_html(
+    text: str, offset_map: OffsetMap | None = None
+) -> tuple[str, OffsetMap] | str:
     """Strip HTML tags and escaped HTML entities."""
+    if offset_map is None:
+        if "<" in text:
+            text = HTML_TAG_RULE.pattern.sub(HTML_TAG_RULE.replacement, text)
+        if "&lt;" in text:
+            text = HTML_ESCAPED_TAG_RULE.pattern.sub(
+                HTML_ESCAPED_TAG_RULE.replacement, text
+            )
+        return text
+
     if "<" in text:
-        text = _apply_rule_tracked(HTML_TAG_RULE, text, collector)
+        text, offset_map = _apply_rule_tracked(HTML_TAG_RULE, text, offset_map)
     if "&lt;" in text:
-        text = _apply_rule_tracked(HTML_ESCAPED_TAG_RULE, text, collector)
-    return text
+        text, offset_map = _apply_rule_tracked(HTML_ESCAPED_TAG_RULE, text, offset_map)
+    return text, offset_map
 
 
-def clean_inline_formatting(text: str, collector: _DeltaCollector | None = None) -> str:
+@overload
+def clean_inline_formatting(text: str, offset_map: None = None) -> str: ...
+
+
+@overload
+def clean_inline_formatting(
+    text: str, offset_map: OffsetMap
+) -> tuple[str, OffsetMap]: ...
+
+
+def clean_inline_formatting(
+    text: str, offset_map: OffsetMap | None = None
+) -> tuple[str, OffsetMap] | str:
     """Remove inline formatting tags (e.g. {b^>1<b^})."""
     if "{b^" in text:
-        return _apply_rule_tracked(INLINE_FORMATTING, text, collector)
-    return text
+        if offset_map is None:
+            return INLINE_FORMATTING.pattern.sub(INLINE_FORMATTING.replacement, text)
+        return _apply_rule_tracked(INLINE_FORMATTING, text, offset_map)
+    return (text, offset_map) if offset_map is not None else text
 
 
-def clean_quotations(text: str, collector: _DeltaCollector | None = None) -> str:
+@overload
+def clean_quotations(text: str, offset_map: None = None) -> str: ...
+
+
+@overload
+def clean_quotations(text: str, offset_map: OffsetMap) -> tuple[str, OffsetMap]: ...
+
+
+def clean_quotations(
+    text: str, offset_map: OffsetMap | None = None
+) -> tuple[str, OffsetMap] | str:
     """Normalize backticks and duplicated quote characters."""
+    if offset_map is None:
+        if "`" in text or "''" in text:
+            if "`" in text:
+                text = text.replace("`", "'")
+            if "''" in text:
+                text = NORMAL_QUOTES.pattern.sub(NORMAL_QUOTES.replacement, text)
+        return text
+
     if "`" in text or "''" in text:
         if "`" in text:
-            # 1:1 replacement doesn't shift length, but tracked safe
             text = text.replace("`", "'")
         if "''" in text:
-            text = _apply_rule_tracked(NORMAL_QUOTES, text, collector)
-    return text
+            text, offset_map = _apply_rule_tracked(NORMAL_QUOTES, text, offset_map)
+    return text, offset_map
 
 
-def clean_table_of_contents(text: str, collector: _DeltaCollector | None = None) -> str:
+@overload
+def clean_table_of_contents(text: str, offset_map: None = None) -> str: ...
+
+
+@overload
+def clean_table_of_contents(
+    text: str, offset_map: OffsetMap
+) -> tuple[str, OffsetMap]: ...
+
+
+def clean_table_of_contents(
+    text: str, offset_map: OffsetMap | None = None
+) -> tuple[str, OffsetMap] | str:
     """Clean leader dots in table-of-contents entries."""
     if "...." in text:
-        return _apply_rule_tracked(TABLE_OF_CONTENTS, text, collector)
-    return text
+        if offset_map is None:
+            return TABLE_OF_CONTENTS.pattern.sub(TABLE_OF_CONTENTS.replacement, text)
+        return _apply_rule_tracked(TABLE_OF_CONTENTS, text, offset_map)
+    return (text, offset_map) if offset_map is not None else text
+
+
+@overload
+def clean_consecutive_characters(text: str, offset_map: None = None) -> str: ...
+
+
+@overload
+def clean_consecutive_characters(
+    text: str, offset_map: OffsetMap
+) -> tuple[str, OffsetMap]: ...
 
 
 def clean_consecutive_characters(
-    text: str, collector: _DeltaCollector | None = None
-) -> str:
+    text: str, offset_map: OffsetMap | None = None
+) -> tuple[str, OffsetMap] | str:
     """Normalize consecutive periods and slashes."""
+    if offset_map is None:
+        if "....." in text:
+            text = CONSECUTIVE_PERIODS.pattern.sub(
+                CONSECUTIVE_PERIODS.replacement, text
+            )
+        if "///" in text:
+            text = CONSECUTIVE_SLASHES.pattern.sub(
+                CONSECUTIVE_SLASHES.replacement, text
+            )
+        return text
+
     if "....." in text:
-        text = _apply_rule_tracked(CONSECUTIVE_PERIODS, text, collector)
+        text, offset_map = _apply_rule_tracked(CONSECUTIVE_PERIODS, text, offset_map)
     if "///" in text:
-        text = _apply_rule_tracked(CONSECUTIVE_SLASHES, text, collector)
-    return text
+        text, offset_map = _apply_rule_tracked(CONSECUTIVE_SLASHES, text, offset_map)
+    return text, offset_map
+
+
+@overload
+def check_for_no_space_in_between_sentences(
+    text: str, offset_map: None = None
+) -> str: ...
+
+
+@overload
+def check_for_no_space_in_between_sentences(
+    text: str, offset_map: OffsetMap
+) -> tuple[str, OffsetMap]: ...
 
 
 def check_for_no_space_in_between_sentences(
-    text: str, collector: _DeltaCollector | None = None
-) -> str:
+    text: str, offset_map: OffsetMap | None = None
+) -> tuple[str, OffsetMap] | str:
     """Insert spaces in punctuation-joined sentences while protecting URLs/emails."""
     if "." not in text:
-        return text
+        return (text, offset_map) if offset_map is not None else text
+    if offset_map is None:
+        return NO_SPACE_SENTENCE_COMBINED.sub(replace_no_space_sentence, text)
     return _apply_sub_fn_tracked(
-        NO_SPACE_SENTENCE_COMBINED, replace_no_space_sentence, text, collector
+        NO_SPACE_SENTENCE_COMBINED, replace_no_space_sentence, text, offset_map
     )
 
 
+@overload
+def remove_newline_in_middle_of_sentence(text: str, offset_map: None = None) -> str: ...
+
+
+@overload
 def remove_newline_in_middle_of_sentence(
-    text: str, collector: _DeltaCollector | None = None
-) -> str:
+    text: str, offset_map: OffsetMap
+) -> tuple[str, OffsetMap]: ...
+
+
+def remove_newline_in_middle_of_sentence(
+    text: str, offset_map: OffsetMap | None = None
+) -> tuple[str, OffsetMap] | str:
     """Remove mid-sentence line breaks within words and clauses."""
-    text = _apply_rule_tracked(NL_IN_WORD, text, collector)
-    return _apply_rule_tracked(NL_IN_SENTENCE, text, collector)
+    if offset_map is None:
+        text = NL_IN_WORD.pattern.sub(NL_IN_WORD.replacement, text)
+        return NL_IN_SENTENCE.pattern.sub(NL_IN_SENTENCE.replacement, text)
+    text, offset_map = _apply_rule_tracked(NL_IN_WORD, text, offset_map)
+    text, offset_map = _apply_rule_tracked(NL_IN_SENTENCE, text, offset_map)
+    return text, offset_map
 
 
-def remove_pdf_line_breaks(text: str, collector: _DeltaCollector | None = None) -> str:
+@overload
+def remove_pdf_line_breaks(text: str, offset_map: None = None) -> str: ...
+
+
+@overload
+def remove_pdf_line_breaks(
+    text: str, offset_map: OffsetMap
+) -> tuple[str, OffsetMap]: ...
+
+
+def remove_pdf_line_breaks(
+    text: str, offset_map: OffsetMap | None = None
+) -> tuple[str, OffsetMap] | str:
     """Handle PDF-specific line-wrap breaks and bullet points."""
     if "\n" not in text:
-        return text
-    text = _apply_rule_tracked(NL_BEFORE_BULLET, text, collector)
-    text = _apply_rule_tracked(PDF_NEW_LINE_MID_SENTENCE, text, collector)
-    return _apply_rule_tracked(PDF_NEW_LINE_MID_SENTENCE_NOSPACE, text, collector)
+        return (text, offset_map) if offset_map is not None else text
+    if offset_map is None:
+        text = NL_BEFORE_BULLET.pattern.sub(NL_BEFORE_BULLET.replacement, text)
+        text = PDF_NEW_LINE_MID_SENTENCE.pattern.sub(
+            PDF_NEW_LINE_MID_SENTENCE.replacement, text
+        )
+        return PDF_NEW_LINE_MID_SENTENCE_NOSPACE.pattern.sub(
+            PDF_NEW_LINE_MID_SENTENCE_NOSPACE.replacement, text
+        )
+    text, offset_map = _apply_rule_tracked(NL_BEFORE_BULLET, text, offset_map)
+    text, offset_map = _apply_rule_tracked(PDF_NEW_LINE_MID_SENTENCE, text, offset_map)
+    text, offset_map = _apply_rule_tracked(
+        PDF_NEW_LINE_MID_SENTENCE_NOSPACE, text, offset_map
+    )
+    return text, offset_map
+
+
+@overload
+def replace_newlines(text: str, doc_type: str = "", offset_map: None = None) -> str: ...
+
+
+@overload
+def replace_newlines(
+    text: str, doc_type: str, offset_map: OffsetMap
+) -> tuple[str, OffsetMap]: ...
+
+
+@overload
+def replace_newlines(text: str, *, offset_map: OffsetMap) -> tuple[str, OffsetMap]: ...
 
 
 def replace_newlines(
-    text: str, doc_type: str = "", collector: _DeltaCollector | None = None
-) -> str:
+    text: str, doc_type: str = "", offset_map: OffsetMap | None = None
+) -> tuple[str, OffsetMap] | str:
     """Normalize newlines based on document type (standard or PDF)."""
     if "\n" not in text:
-        return text
+        return (text, offset_map) if offset_map is not None else text
 
     if doc_type == "pdf":
-        return remove_pdf_line_breaks(text, collector)
+        if offset_map is None:
+            return remove_pdf_line_breaks(text)
+        return remove_pdf_line_breaks(text, offset_map)
 
-    text = remove_newline_in_middle_of_sentence(text, collector)
-    text = _apply_rule_tracked(DOUBLE_NL_SPACE, text, collector)
-    text = _apply_rule_tracked(DOUBLE_NL, text, collector)
-    text = _apply_rule_tracked(NL_BEFORE_PERIOD, text, collector)
-    return _apply_rule_tracked(NL_TO_CR, text, collector)
+    if offset_map is None:
+        text = remove_newline_in_middle_of_sentence(text)
+        text = DOUBLE_NL_SPACE.pattern.sub(DOUBLE_NL_SPACE.replacement, text)
+        text = DOUBLE_NL.pattern.sub(DOUBLE_NL.replacement, text)
+        text = NL_BEFORE_PERIOD.pattern.sub(NL_BEFORE_PERIOD.replacement, text)
+        return NL_TO_CR.pattern.sub(NL_TO_CR.replacement, text)
+
+    text, offset_map = remove_newline_in_middle_of_sentence(text, offset_map)
+    text, offset_map = _apply_rule_tracked(DOUBLE_NL_SPACE, text, offset_map)
+    text, offset_map = _apply_rule_tracked(DOUBLE_NL, text, offset_map)
+    text, offset_map = _apply_rule_tracked(NL_BEFORE_PERIOD, text, offset_map)
+    text, offset_map = _apply_rule_tracked(NL_TO_CR, text, offset_map)
+    return text, offset_map
+
+
+@overload
+def replace_escaped_newlines(text: str, offset_map: None = None) -> str: ...
+
+
+@overload
+def replace_escaped_newlines(
+    text: str, offset_map: OffsetMap
+) -> tuple[str, OffsetMap]: ...
 
 
 def replace_escaped_newlines(
-    text: str, collector: _DeltaCollector | None = None
-) -> str:
+    text: str, offset_map: OffsetMap | None = None
+) -> tuple[str, OffsetMap] | str:
     """Normalize escaped newline and carriage-return strings."""
     if "\\" not in text:
-        return text
-    text = _apply_rule_tracked(ESCAPED_NL, text, collector)
-    text = _apply_rule_tracked(ESCAPED_CR, text, collector)
-    text = _apply_rule_tracked(TYPO_ESCAPED_NL, text, collector)
-    return _apply_rule_tracked(TYPO_ESCAPED_CR, text, collector)
+        return (text, offset_map) if offset_map is not None else text
+
+    if offset_map is None:
+        text = ESCAPED_NL.pattern.sub(ESCAPED_NL.replacement, text)
+        text = ESCAPED_CR.pattern.sub(ESCAPED_CR.replacement, text)
+        text = TYPO_ESCAPED_NL.pattern.sub(TYPO_ESCAPED_NL.replacement, text)
+        return TYPO_ESCAPED_CR.pattern.sub(TYPO_ESCAPED_CR.replacement, text)
+
+    text, offset_map = _apply_rule_tracked(ESCAPED_NL, text, offset_map)
+    text, offset_map = _apply_rule_tracked(ESCAPED_CR, text, offset_map)
+    text, offset_map = _apply_rule_tracked(TYPO_ESCAPED_NL, text, offset_map)
+    text, offset_map = _apply_rule_tracked(TYPO_ESCAPED_CR, text, offset_map)
+    return text, offset_map
 
 
 def normalize_with_map(
@@ -279,28 +545,32 @@ def normalize_with_map(
     if not text:
         return NormalizationResult(text="", offset_map=OffsetMap.identity(len(text)))
 
-    collector = _DeltaCollector(raw_length=len(text))
+    offset_map: OffsetMap = OffsetMap.identity(len(text))
+    cleaned: str = text
 
-    cleaned = strip_html(text, collector)
-    cleaned = clean_inline_formatting(cleaned, collector)
-    cleaned = clean_quotations(cleaned, collector)
-    cleaned = clean_table_of_contents(cleaned, collector)
-    cleaned = clean_consecutive_characters(cleaned, collector)
-    cleaned = check_for_no_space_in_between_sentences(cleaned, collector)
+    cleaned, offset_map = strip_html(cleaned, offset_map)
+    cleaned, offset_map = clean_inline_formatting(cleaned, offset_map)
+    cleaned, offset_map = clean_quotations(cleaned, offset_map)
+    cleaned, offset_map = clean_table_of_contents(cleaned, offset_map)
+    cleaned, offset_map = clean_consecutive_characters(cleaned, offset_map)
+    cleaned, offset_map = check_for_no_space_in_between_sentences(cleaned, offset_map)
 
     rules: tuple[Rule, ...] = tuple(custom_rules)
     if config is not None and config.clean_rules:
         rules = rules + config.clean_rules
 
     for rule in rules:
-        cleaned = _apply_rule_tracked(rule, cleaned, collector)
+        cleaned, offset_map = _apply_rule_tracked(rule, cleaned, offset_map)
+        assert offset_map is not None
 
-    cleaned = replace_newlines(cleaned, doc_type=doc_type, collector=collector)
-    cleaned = replace_escaped_newlines(cleaned, collector=collector)
+    cleaned, offset_map = replace_newlines(
+        cleaned, doc_type=doc_type, offset_map=offset_map
+    )
+    cleaned, offset_map = replace_escaped_newlines(cleaned, offset_map=offset_map)
 
     return NormalizationResult(
         text=cleaned,
-        offset_map=collector.build_map(clean_length=len(cleaned)),
+        offset_map=offset_map,
     )
 
 

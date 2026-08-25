@@ -1,4 +1,4 @@
-"""Immutable domain models and zero-overhead NamedTuple primitives."""
+"""Immutable domain models and coordinate mapping primitives."""
 
 from bisect import bisect_right
 from dataclasses import dataclass
@@ -12,7 +12,14 @@ __all__ = [
 
 
 class OffsetMap(NamedTuple):
-    """Immutable, bisect-accelerated coordinate projection map between cleaned and raw text."""
+    """Coordinate projection map between cleaned and raw text.
+
+    Attributes:
+        clean_keys: Clean text character offsets where delta transitions occur.
+        cum_deltas: Cumulative offsets to add to clean indices to yield raw indices.
+        raw_length: Total length of original raw text.
+        clean_length: Total length of normalized text.
+    """
 
     clean_keys: tuple[int, ...]
     cum_deltas: tuple[int, ...]
@@ -21,11 +28,25 @@ class OffsetMap(NamedTuple):
 
     @classmethod
     def identity(cls, length: int) -> "OffsetMap":
-        """Construct an identity offset map for uncleaned text (1:1 mapping)."""
+        """Create an identity 1:1 offset map.
+
+        Args:
+            length: Length of the text.
+
+        Returns:
+            OffsetMap with identity coordinate mapping.
+        """
         return cls(clean_keys=(), cum_deltas=(), raw_length=length, clean_length=length)
 
     def clean_to_raw(self, clean_idx: int) -> int:
-        """Map a character offset from the cleaned text to the raw source text in O(log K) time."""
+        """Project a cleaned text index back to its raw source offset.
+
+        Args:
+            clean_idx: Character offset in cleaned text.
+
+        Returns:
+            Corresponding character offset in raw text.
+        """
         if not self.clean_keys:
             return min(clean_idx, self.raw_length)
 
@@ -37,14 +58,27 @@ class OffsetMap(NamedTuple):
     def clean_span_to_raw_span(
         self, clean_start: int, clean_end: int
     ) -> tuple[int, int]:
-        """Project a (start, end) coordinate span from cleaned text to raw source text."""
+        """Project a cleaned text span (start, end) back to raw source offsets.
+
+        Args:
+            clean_start: Start offset in cleaned text.
+            clean_end: End offset in cleaned text.
+
+        Returns:
+            Tuple of (raw_start, raw_end) offsets in raw source text.
+        """
         raw_start = self.clean_to_raw(clean_start)
         raw_end = self.clean_to_raw(clean_end)
         return (raw_start, max(raw_start, raw_end))
 
 
 class NormalizationResult(NamedTuple):
-    """Lightweight result tuple pairing cleaned text with its OffsetMap."""
+    """Container pairing normalized text with its coordinate OffsetMap.
+
+    Attributes:
+        text: Normalized text string.
+        offset_map: Coordinate mapping from clean text to raw text.
+    """
 
     text: str
     offset_map: OffsetMap
@@ -52,7 +86,17 @@ class NormalizationResult(NamedTuple):
 
 @dataclass(slots=True, frozen=True)
 class TextSpan:
-    """A sentence span with original source coordinates and optional normalized coordinates."""
+    """Sentence span with source coordinates and optional normalized coordinates.
+
+    Attributes:
+        sent: Sentence text content.
+        start: Start offset in original raw text.
+        end: End offset in original raw text.
+        clean_start: Optional start offset in cleaned text.
+        clean_end: Optional end offset in cleaned text.
+        raw_slice: Optional unnormalized source text slice.
+        trailing_delim: Optional trailing paragraph or chunk delimiter.
+    """
 
     sent: str
     start: int
@@ -60,6 +104,7 @@ class TextSpan:
     clean_start: int | None = None
     clean_end: int | None = None
     raw_slice: str | None = None
+    trailing_delim: str = ""
 
     def __repr__(self) -> str:
         return self.sent

@@ -38,6 +38,14 @@ SUPPORTED_LANGUAGES: frozenset[str] = frozenset(
     }
 )
 
+__all__ = [
+    "SUPPORTED_LANGUAGES",
+    "Language",
+    "LanguageConfig",
+    "get_language_module",
+    "load_language_config",
+]
+
 
 @dataclass(slots=True, frozen=True)
 class LanguageConfig:
@@ -176,4 +184,12 @@ class Language:
 
     @classmethod
     def get_language_code(cls, code: str) -> LanguageConfig:
+        """Lookup and return the language configuration for the given ISO code.
+
+        Args:
+            code: Two-letter ISO 639-1 language code.
+
+        Returns:
+            The loaded LanguageConfig instance.
+        """
         return load_language_config(code)

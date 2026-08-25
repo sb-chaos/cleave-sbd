@@ -9,10 +9,25 @@ from csbd.rules.pua import PUA_EXCLAMATION
 
 
 class Rule(NamedTuple):
-    """Immutable rule specification containing a compiled regex and replacement template."""
+    """Immutable rule specification containing a compiled regex and replacement template.
+
+    Attributes:
+        pattern: Compiled regular expression pattern.
+        replacement: String replacement template or PUA sentinel string.
+    """
 
     pattern: re.Pattern[str]
     replacement: str = ""
+
+
+__all__ = [
+    "EXCLAMATION_RULES",
+    "EXCLAMATION_WORDS",
+    "PUNCTUATIONS",
+    "SENTENCE_STARTERS",
+    "Rule",
+    "mask_exclamation_words",
+]
 
 
 # =============================================================================
@@ -65,7 +80,14 @@ EXCLAMATION_RULES: tuple[Rule, ...] = tuple(
 
 
 def mask_exclamation_words(text: str) -> str:
-    """Mask exclamation marks within known proper nouns and click consonants."""
+    """Mask exclamation marks within known proper nouns and click consonants.
+
+    Args:
+        text: Source text string.
+
+    Returns:
+        Text with internal word exclamation marks masked to PUA sentinels.
+    """
     for rule in EXCLAMATION_RULES:
         text = rule.pattern.sub(rule.replacement, text)
     return text

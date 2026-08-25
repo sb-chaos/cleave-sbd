@@ -244,17 +244,8 @@ wheels = [
 
 [[package]]
 name = "cleave-sbd"
-version = "0.2.0b1"
+version = "0.3.0b1"
 source = { editable = "." }
-
-[package.optional-dependencies]
-dev = [
-    { name = "basedpyright" },
-    { name = "build" },
-    { name = "pytest" },
-    { name = "ruff" },
-    { name = "twine" },
-]
 
 [package.dev-dependencies]
 dev = [
@@ -267,14 +258,6 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [
-    { name = "basedpyright", marker = "extra == 'dev'", specifier = ">=1.39.0" },
-    { name = "build", marker = "extra == 'dev'", specifier = ">=1.5.0" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.0.0" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.16.0" },
-    { name = "twine", marker = "extra == 'dev'", specifier = ">=7.0.0" },
-]
-provides-extras = ["dev"]
 
 [package.metadata.requires-dev]
 dev = [

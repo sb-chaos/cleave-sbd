@@ -19,6 +19,33 @@ URL_EMAIL_KEYWORDS: tuple[str, ...] = (
     "www.",
 )
 
+__all__ = [
+    "CONSECUTIVE_PERIODS",
+    "CONSECUTIVE_SLASHES",
+    "DOUBLE_NL",
+    "DOUBLE_NL_SPACE",
+    "ESCAPED_CR",
+    "ESCAPED_NL",
+    "HTML_ESCAPED_TAG_RULE",
+    "HTML_RULES",
+    "HTML_TAG_RULE",
+    "INLINE_FORMATTING",
+    "NL_BEFORE_BULLET",
+    "NL_BEFORE_PERIOD",
+    "NL_IN_SENTENCE",
+    "NL_IN_WORD",
+    "NL_TO_CR",
+    "NORMAL_QUOTES",
+    "NO_SPACE_SENTENCE_COMBINED",
+    "PDF_NEW_LINE_MID_SENTENCE",
+    "PDF_NEW_LINE_MID_SENTENCE_NOSPACE",
+    "TABLE_OF_CONTENTS",
+    "TYPO_ESCAPED_CR",
+    "TYPO_ESCAPED_NL",
+    "URL_EMAIL_KEYWORDS",
+    "replace_no_space_sentence",
+]
+
 # Text & Whitespace Normalization Rules
 NL_IN_WORD: Rule = Rule(re.compile(r"\n(?=[a-zA-Z]{1,2}\n)"))
 DOUBLE_NL_SPACE: Rule = Rule(re.compile(r"\n \n"), "\r")
@@ -53,7 +80,14 @@ PDF_NEW_LINE_MID_SENTENCE_NOSPACE: Rule = Rule(re.compile(r"\n(?=[a-z])"), " ")
 
 
 def replace_no_space_sentence(match: re.Match[str]) -> str:
-    """Insert period-space after sentences lacking whitespace, protecting URLs/emails."""
+    """Insert space after sentence-terminal period when omitted, protecting URLs and emails.
+
+    Args:
+        match: Regex match object matching punctuation without following space.
+
+    Returns:
+        Formatted period with trailing space, or original match if part of URL/email.
+    """
     start = match.start()
     text = match.string
 

@@ -25,6 +25,15 @@ from csbd.rules import (
     build_sentence_starters_boundary_regex,
 )
 
+__all__ = [
+    "LanguageAbbreviationData",
+    "get_language_abbreviation_data",
+    "replace_abbreviation_as_sentence_boundary",
+    "replace_abbreviations",
+    "replace_multi_period_abbreviations",
+    "search_for_abbreviations_in_string",
+]
+
 
 @dataclass(slots=True, frozen=True)
 class LanguageAbbreviationData:
@@ -280,11 +289,13 @@ def replace_abbreviations(
     Returns:
         The text with all recognized abbreviation periods masked to PUA sentinels.
     """
-    if not text:
+    if not text or ("." not in text and "\uff0e" not in text and "\u3002" not in text):
         return text
 
-    text = POSSESSIVE_ABBR_REGEX.sub(PUA_PERIOD, text)
-    text = KOMMANDITGESELLSCHAFT_REGEX.sub(PUA_PERIOD, text)
+    if "'" in text or "’" in text:
+        text = POSSESSIVE_ABBR_REGEX.sub(PUA_PERIOD, text)
+    if "&" in text or "Co." in text:
+        text = KOMMANDITGESELLSCHAFT_REGEX.sub(PUA_PERIOD, text)
     text = SINGLE_UPPERCASE_LETTER_REGEX.sub(
         lambda m: m.group(1).replace(".", PUA_PERIOD), text
     )
@@ -295,5 +306,6 @@ def replace_abbreviations(
     for rule in AM_PM_RULES:
         text = rule.pattern.sub(rule.replacement, text)
 
-    text = replace_abbreviation_as_sentence_boundary(text, config=config)
+    if PUA_PERIOD in text:
+        text = replace_abbreviation_as_sentence_boundary(text, config=config)
     return text

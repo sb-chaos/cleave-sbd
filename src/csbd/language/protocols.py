@@ -5,6 +5,10 @@ from typing import Protocol
 
 from csbd.rules import Rule
 
+__all__ = [
+    "LanguageProtocol",
+]
+
 
 class LanguageProtocol(Protocol):
     """Protocol defining required language configuration attributes."""

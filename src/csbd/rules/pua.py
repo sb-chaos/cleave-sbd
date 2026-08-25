@@ -49,6 +49,49 @@ PUA_SEARCH_PUNCTUATIONS: frozenset[str] = frozenset(
     }
 )
 
+PUA_WHITESPACE_SENTINELS: frozenset[str] = frozenset(
+    {
+        PUA_ELLIPSIS_SPACE,
+        PUA_TEMP_END_PUNCT,
+    }
+)
+
+__all__ = [
+    "PUA_APOSTROPHE",
+    "PUA_ARABIC_COMMA",
+    "PUA_CJK_PERIOD",
+    "PUA_COLON",
+    "PUA_DOUBLE_EE",
+    "PUA_DOUBLE_EQ",
+    "PUA_DOUBLE_QE",
+    "PUA_DOUBLE_QQ",
+    "PUA_ELLIPSIS_DOT",
+    "PUA_ELLIPSIS_SPACE",
+    "PUA_EXCLAMATION",
+    "PUA_FULLWIDTH_EXCL",
+    "PUA_FULLWIDTH_PERIOD",
+    "PUA_FULLWIDTH_QUEST",
+    "PUA_LEFT_PAREN",
+    "PUA_NEWLINE",
+    "PUA_PERIOD",
+    "PUA_QUESTION",
+    "PUA_RIGHT_PAREN",
+    "PUA_SEARCH_PUNCTUATIONS",
+    "PUA_TEMP_END_PUNCT",
+    "PUA_WHITESPACE_SENTINELS",
+    "PUNCTUATION_MASK_TABLE",
+    "UNMASK_TABLE",
+    "is_boundary_whitespace",
+    "mask_punctuation",
+    "mask_single_quote_punctuation",
+    "unmask_all",
+]
+
+
+def is_boundary_whitespace(char: str) -> bool:
+    """Check if a character is standard whitespace or a PUA whitespace sentinel."""
+    return char.isspace() or char in PUA_WHITESPACE_SENTINELS
+
 
 # =============================================================================
 # 2. Fast Unmask Translation Table

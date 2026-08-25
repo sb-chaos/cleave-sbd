@@ -168,6 +168,75 @@ def test_clean_and_span_both_true_supported() -> None:
     assert raw_text[spans[1].start : spans[1].end].startswith("Second sentence.")
 
 
+def test_clean_and_span_multipass_offset_mapping() -> None:
+    """Verify coordinate composition across multiple normalization passes (HTML, quotes, newlines)."""
+    raw_text = (
+        "<p>First sentence. Second sentence.</p>\n\n"
+        "Third sentence with ``quotes'' and <b>tag</b>."
+    )
+    seg = csbd.Segmenter(language="en", clean=True, char_span=True)
+    raw_spans = seg.segment(raw_text)
+    spans = cast(tuple[TextSpan, ...], raw_spans)
+
+    assert len(spans) == 3
+    # Clean text assertions
+    assert spans[0].sent.strip() == "First sentence."
+    assert spans[1].sent.strip() == "Second sentence."
+    assert spans[2].sent.strip() == 'Third sentence with "quotes" and tag.'
+
+    # Raw span coordinate projection assertions
+    assert raw_text[spans[0].start : spans[0].end].startswith("First sentence.")
+    assert raw_text[spans[1].start : spans[1].end].startswith("Second sentence.")
+    # Third sentence must encompass the full raw slice without truncated tags
+    last_slice = raw_text[spans[2].start : spans[2].end]
+    assert last_slice.endswith("<b>tag</b>."), (
+        f"Expected raw slice to end with '<b>tag</b>.', got {last_slice!r}"
+    )
+
+
+def test_boundary_content_retention_structural_symbols() -> None:
+    """Verify structural symbols, markdown dividers, and scene breaks are retained as standalone segments."""
+    text = (
+        "***\n"
+        "First chapter text begins here.\n"
+        "---\n"
+        "Second chapter text begins here.\n"
+        "[...]"
+    )
+    seg = csbd.Segmenter(language="en", clean=False, char_span=True)
+    raw_spans = seg.segment(text)
+    spans = cast(tuple[TextSpan, ...], raw_spans)
+
+    assert len(spans) == 5
+    assert spans[0].sent.strip() == "***"
+    assert spans[0].start == 0
+    assert spans[0].end == 4
+
+    assert spans[1].sent.strip() == "First chapter text begins here."
+    assert spans[2].sent.strip() == "---"
+    assert spans[3].sent.strip() == "Second chapter text begins here."
+    assert spans[4].sent.strip() == "[...]"
+
+
+def test_sentinel_whitespace_boundary_trimming() -> None:
+    """Verify leading and trailing PUA space sentinels are stripped cleanly from sentence spans."""
+    text = (
+        "One further habit which was somewhat weakened . . . "
+        "was that of combining words into self-interpreting compounds. . . . "
+        "The practice was not abandoned. . . ."
+    )
+    seg = csbd.Segmenter(language="en", clean=False, char_span=True)
+    raw_spans = seg.segment(text)
+    spans = cast(tuple[TextSpan, ...], raw_spans)
+
+    assert len(spans) == 2
+    assert spans[0].sent.strip().startswith("One further habit")
+    assert spans[1].sent.strip().startswith(". . . The practice")
+    # Verify no PUA sentinels leak into sentence strings
+    for span in spans:
+        assert not any(ord(c) >= 0xE000 and ord(c) <= 0xF8FF for c in span.sent)
+
+
 def test_exception_with_doc_type_pdf_and_clean_false() -> None:
     """Verify ValueError when doc_type is pdf but clean is False."""
     with pytest.raises(ValueError) as excinfo:
@@ -235,8 +304,13 @@ def test_segmenter_stream() -> None:
     streamed_multi = list(segmenter.stream(text, chunk_paragraphs=2))
     assert streamed_multi == batched
 
-    # Test char_span streaming
+    # Test char_span streaming with exact batch-stream parity
     span_segmenter = csbd.Segmenter(language="en", clean=False, char_span=True)
-    streamed_spans = list(span_segmenter.stream(text, chunk_paragraphs=2))
+    streamed_spans = list(span_segmenter.stream(text, chunk_paragraphs=1))
     batched_spans = list(span_segmenter.segment(text))
     assert streamed_spans == batched_spans
+
+    # Verify trailing delimiter metadata on intermediate chunks
+    assert cast(TextSpan, streamed_spans[1]).trailing_delim == "\n\n"
+    assert cast(TextSpan, streamed_spans[3]).trailing_delim == "\n\n"
+    assert cast(TextSpan, streamed_spans[-1]).trailing_delim == ""

@@ -9,7 +9,7 @@ from csbd.disambiguator import disambiguate
 from csbd.language import get_language_module
 from csbd.models import OffsetMap, TextSpan
 from csbd.normalizer import normalize_with_map
-from csbd.rules import unmask_all
+from csbd.rules import is_boundary_whitespace, unmask_all
 
 __all__ = [
     "Segmenter",
@@ -89,7 +89,9 @@ class Segmenter:
             for i, (c_start, c_end) in enumerate(spans):
                 next_start = spans[i + 1][0] if i + 1 < len(spans) else text_len
                 span_end = c_end
-                while span_end < next_start and target_text[span_end].isspace():
+                while span_end < next_start and is_boundary_whitespace(
+                    target_text[span_end]
+                ):
                     span_end += 1
 
                 raw_clean_slice = target_text[c_start:span_end]
@@ -146,54 +148,42 @@ class Segmenter:
             raise ValueError("chunk_paragraphs must be at least 1")
 
         paragraph_pattern = re.compile(r"(?:\r?\n){2,}")
-        matches = list(paragraph_pattern.finditer(text))
-        if not matches:
-            yield from self.segment(text)
-            return
-
         text_len = len(text)
         para_count = 0
         chunk_start = 0
+        has_match = False
 
-        for match in matches:
+        for match in paragraph_pattern.finditer(text):
+            has_match = True
             para_count += 1
             if para_count == chunk_paragraphs:
-                p_end = match.start()
-                if p_end > chunk_start:
-                    chunk = text[chunk_start:p_end]
+                chunk_end = match.end()
+                if chunk_end > chunk_start:
+                    chunk = text[chunk_start:chunk_end]
+                    delim = text[match.start() : match.end()]
                     if self.char_span:
                         spans = self.segment(chunk)
+                        num_spans = len(spans)
                         for j, item in enumerate(spans):
                             if isinstance(item, TextSpan):
-                                if j + 1 == len(spans):
-                                    span_end = item.end + (match.end() - p_end)
-                                    raw_slice = text[
-                                        chunk_start + item.start : chunk_start
-                                        + span_end
-                                    ]
-                                    yield TextSpan(
-                                        sent=unmask_all(raw_slice)
-                                        if not self.clean
-                                        else item.sent,
-                                        start=chunk_start + item.start,
-                                        end=chunk_start + span_end,
-                                        clean_start=item.clean_start,
-                                        clean_end=item.clean_end,
-                                        raw_slice=raw_slice,
-                                    )
-                                else:
-                                    yield TextSpan(
-                                        sent=item.sent,
-                                        start=chunk_start + item.start,
-                                        end=chunk_start + item.end,
-                                        clean_start=item.clean_start,
-                                        clean_end=item.clean_end,
-                                        raw_slice=item.raw_slice,
-                                    )
+                                is_last = j + 1 == num_spans
+                                yield TextSpan(
+                                    sent=item.sent,
+                                    start=chunk_start + item.start,
+                                    end=chunk_start + item.end,
+                                    clean_start=item.clean_start,
+                                    clean_end=item.clean_end,
+                                    raw_slice=item.raw_slice,
+                                    trailing_delim=delim if is_last else "",
+                                )
                     else:
                         yield from self.segment(chunk)
-                chunk_start = match.end()
+                chunk_start = chunk_end
                 para_count = 0
+
+        if not has_match:
+            yield from self.segment(text)
+            return
 
         if chunk_start < text_len:
             chunk = text[chunk_start:text_len]
@@ -207,6 +197,7 @@ class Segmenter:
                             clean_start=item.clean_start,
                             clean_end=item.clean_end,
                             raw_slice=item.raw_slice,
+                            trailing_delim="",
                         )
             else:
                 yield from self.segment(chunk)

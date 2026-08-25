@@ -8,6 +8,36 @@ import string
 from csbd.rules.disambiguation import Rule
 from csbd.rules.pua import PUA_NEWLINE, PUA_PERIOD
 
+__all__ = [
+    "ALPHA_LIST_REGEX",
+    "AM_PM_REGEX",
+    "AM_PM_RULES",
+    "KOMMANDITGESELLSCHAFT_REGEX",
+    "LATIN_NUMERALS",
+    "MULTI_PERIOD_DEFAULT_REGEX",
+    "NUMBER_ABBREVIATIONS",
+    "NUMBER_LIST_REGEX",
+    "NUMBER_RULES",
+    "POSSESSIVE_ABBR_REGEX",
+    "PREPOSITIVE_ABBREVIATIONS",
+    "ROMAN_DELIM_REGEX",
+    "ROMAN_NUMERALS",
+    "ROMAN_NUMERALS_SET",
+    "ROMAN_PARENS_REGEX",
+    "ROMAN_UPPERCASE_FOLLOWING_REGEX",
+    "SINGLE_LOWERCASE_LETTER_REGEX",
+    "SINGLE_UPPERCASE_LETTER_REGEX",
+    "STANDARD_ABBREVIATIONS",
+    "STANDARD_ABBR_SCAN_REGEX",
+    "build_compound_abbr_regex",
+    "build_number_abbr_regex",
+    "build_prepositive_abbr_regex",
+    "build_replace_all_dot_regex",
+    "build_replace_all_exact_regex",
+    "build_sentence_starters_boundary_regex",
+    "build_standard_abbr_regex",
+]
+
 # =============================================================================
 # Standard Abbreviations & Honorifics
 # =============================================================================
@@ -118,7 +148,14 @@ ROMAN_UPPERCASE_FOLLOWING_REGEX: re.Pattern[str] = re.compile(r"\s+[A-Z]")
 
 
 def build_compound_abbr_regex(compound_list: list[str]) -> re.Pattern[str] | None:
-    """Build a regex matching compound abbreviations."""
+    """Build a regex matching compound abbreviations.
+
+    Args:
+        compound_list: List of multi-word compound abbreviations.
+
+    Returns:
+        Compiled regex pattern or None if the list is empty.
+    """
     if not compound_list:
         return None
     compound_pattern: str = "|".join(re.escape(abbr) for abbr in compound_list)
@@ -130,7 +167,14 @@ def build_compound_abbr_regex(compound_list: list[str]) -> re.Pattern[str] | Non
 
 
 def build_prepositive_abbr_regex(prep_clean: list[str]) -> re.Pattern[str] | None:
-    """Build a regex matching prepositive abbreviations."""
+    """Build a regex matching prepositive abbreviations.
+
+    Args:
+        prep_clean: List of prepositive honorific abbreviations.
+
+    Returns:
+        Compiled regex pattern or None if the list is empty.
+    """
     if not prep_clean:
         return None
     prep_pattern: str = "|".join(re.escape(abbr) for abbr in prep_clean)
@@ -138,7 +182,14 @@ def build_prepositive_abbr_regex(prep_clean: list[str]) -> re.Pattern[str] | Non
 
 
 def build_number_abbr_regex(num_clean: list[str]) -> re.Pattern[str] | None:
-    """Build a regex matching number-preceding abbreviations."""
+    """Build a regex matching number-preceding abbreviations.
+
+    Args:
+        num_clean: List of number-preceding abbreviations.
+
+    Returns:
+        Compiled regex pattern or None if the list is empty.
+    """
     if not num_clean:
         return None
     num_pattern: str = "|".join(re.escape(abbr) for abbr in num_clean)
@@ -155,7 +206,14 @@ STANDARD_ABBR_SCAN_REGEX: re.Pattern[str] = re.compile(
 
 
 def build_standard_abbr_regex(std_clean: list[str]) -> re.Pattern[str] | None:
-    """Build a regex matching standard abbreviations."""
+    """Build a regex matching standard abbreviations.
+
+    Args:
+        std_clean: List of standard abbreviation strings.
+
+    Returns:
+        Compiled regex pattern or None if the list is empty.
+    """
     if not std_clean:
         return None
     std_pattern: str = "|".join(re.escape(abbr) for abbr in std_clean)
@@ -170,7 +228,14 @@ def build_standard_abbr_regex(std_clean: list[str]) -> re.Pattern[str] | None:
 def build_sentence_starters_boundary_regex(
     sentence_starters: frozenset[str],
 ) -> re.Pattern[str] | None:
-    """Build a regex matching acronyms followed by sentence starters."""
+    """Build a regex matching acronyms followed by sentence starters.
+
+    Args:
+        sentence_starters: Set of capitalized sentence starter words.
+
+    Returns:
+        Compiled regex pattern or None if the set is empty.
+    """
     if not sentence_starters:
         return None
     starters_pattern: str = "|".join(
@@ -184,7 +249,14 @@ def build_sentence_starters_boundary_regex(
 
 
 def build_replace_all_dot_regex(non_dot: list[str]) -> re.Pattern[str] | None:
-    """Build a regex matching non-dot abbreviations for full replacement."""
+    """Build a regex matching non-dot abbreviations for full replacement.
+
+    Args:
+        non_dot: List of non-dot abbreviation strings.
+
+    Returns:
+        Compiled regex pattern or None if the list is empty.
+    """
     if not non_dot:
         return None
     return re.compile(
@@ -193,7 +265,14 @@ def build_replace_all_dot_regex(non_dot: list[str]) -> re.Pattern[str] | None:
 
 
 def build_replace_all_exact_regex(all_abbr_clean: list[str]) -> re.Pattern[str] | None:
-    """Build a regex matching exact abbreviations for full replacement."""
+    """Build a regex matching exact abbreviations for full replacement.
+
+    Args:
+        all_abbr_clean: List of exact abbreviation strings.
+
+    Returns:
+        Compiled regex pattern or None if the list is empty.
+    """
     if not all_abbr_clean:
         return None
     return re.compile(

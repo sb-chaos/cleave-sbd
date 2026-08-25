@@ -41,6 +41,7 @@ from csbd.rules import (
     SENTENCE_BOUNDARY_REGEX,
     SPLIT_SPACE_QUOTATION_AT_END_OF_SENTENCE_REGEX,
     WORD_WITH_LEADING_APOSTROPHE,
+    is_boundary_whitespace,
     mask_common_rules,
     mask_exclamation_words,
     mask_punctuation,
@@ -148,31 +149,42 @@ def disambiguate(
     has_punct = has_period or has_excl or has_quest
     has_custom_rules = config is not None and bool(config.rules)
 
-    # 1. Lists: Mask list numbers and format markers
-    if has_period or ")" in text or "•" in text or "⁃" in text:
-        masked_text = mask_list_items(masked_text, config=config)
+    if (
+        has_punct
+        or has_custom_rules
+        or "\n" in text
+        or ")" in text
+        or "]" in text
+        or "•" in text
+        or "⁃" in text
+    ):
+        # 1. Lists: Mask list numbers and format markers
+        if has_period or ")" in text or "•" in text or "⁃" in text:
+            masked_text = mask_list_items(masked_text, config=config)
 
-    # 2. Abbreviations: Mask periods in honorifics, initials, acronyms
-    if has_period:
-        masked_text = replace_abbreviations(masked_text, config=config)
+        # 2. Abbreviations: Mask periods in honorifics, initials, acronyms
+        if has_period:
+            masked_text = replace_abbreviations(masked_text, config=config)
 
-    # 3. Numbers & Dates: Mask decimals, versions, timestamps
-    if has_period or has_custom_rules:
-        masked_text = mask_numbers_and_dates(masked_text, config=config)
+        # 3. Numbers & Dates: Mask decimals, versions, timestamps
+        if has_period or has_custom_rules:
+            masked_text = mask_numbers_and_dates(masked_text, config=config)
 
-    # 4. Exclamation words: Mask internal exclamation marks (e.g., 'Yahoo!')
-    if has_excl:
-        masked_text = mask_exclamation_words(masked_text)
+        # 4. Exclamation words: Mask internal exclamation marks (e.g., 'Yahoo!')
+        if has_excl:
+            masked_text = mask_exclamation_words(masked_text)
 
-    # 5. Paired punctuation: Mask enclosed periods/punctuation
-    if has_punct or (config is not None and bool(config.paired_punctuation_patterns)):
-        masked_text = check_for_parens_between_quotes(masked_text)
-        masked_text = mask_between_punctuation(masked_text, config=config)
+        # 5. Paired punctuation: Mask enclosed periods/punctuation
+        if has_punct or (
+            config is not None and bool(config.paired_punctuation_patterns)
+        ):
+            masked_text = check_for_parens_between_quotes(masked_text)
+            masked_text = mask_between_punctuation(masked_text, config=config)
 
-    # 6. Continuous & Common punctuation
-    if has_punct or "\n" in text:
-        masked_text = mask_continuous_punctuation(masked_text)
-        masked_text = mask_common_rules(masked_text)
+        # 6. Continuous & Common punctuation
+        if has_punct or "\n" in text:
+            masked_text = mask_continuous_punctuation(masked_text)
+            masked_text = mask_common_rules(masked_text)
 
     # 7. Boundary splitting
     spans = split_into_segments(masked_text, config=config)
@@ -184,7 +196,7 @@ def disambiguate(
 
 
 def trim_span(text: str, start: int, end: int) -> tuple[int, int] | None:
-    """Trim leading and trailing whitespace from a span without string allocation.
+    """Trim leading and trailing whitespace and PUA sentinels from a span without string allocation.
 
     Args:
         text: The source text string.
@@ -192,11 +204,11 @@ def trim_span(text: str, start: int, end: int) -> tuple[int, int] | None:
         end: Ending character offset.
 
     Returns:
-        Adjusted (start, end) offsets, or None if the span contains only whitespace.
+        Adjusted (start, end) offsets, or None if the span contains only whitespace/sentinels.
     """
-    while start < end and text[start].isspace():
+    while start < end and is_boundary_whitespace(text[start]):
         start += 1
-    while end > start and text[end - 1].isspace():
+    while end > start and is_boundary_whitespace(text[end - 1]):
         end -= 1
     if start < end:
         return (start, end)
@@ -212,6 +224,10 @@ def check_for_parens_between_quotes(text: str) -> str:
     Returns:
         The text with breaks around parentheticals.
     """
+    if '"' not in text and "\u201d" not in text:
+        return text
+    if "(" not in text:
+        return text
 
     def _paren_replace(match: re.Match[str]) -> str:
         matched_text = match.group(0)
@@ -231,18 +247,23 @@ def mask_numbers_and_dates(text: str, config: LanguageProtocol | None = None) ->
     Returns:
         The text with number/date periods masked.
     """
-    for rule in NUMBER_RULES:
-        text = rule.pattern.sub(rule.replacement, text)
+    has_digits = any(c.isdigit() for c in text)
+    if not has_digits and (config is None or not config.rules):
+        return text
 
-    def _ref_sub(match: re.Match[str]) -> str:
-        reference = match.group("ref")
-        trailing_space = match.group("space") or ""
-        if trailing_space:
-            # Replace the trailing space char 1:1 with \r delimiter
-            return f"{PUA_PERIOD}{reference}" + ("\r" * len(trailing_space))
-        return f"{PUA_PERIOD}{reference}"
+    if has_digits:
+        for rule in NUMBER_RULES:
+            text = rule.pattern.sub(rule.replacement, text)
 
-    text = NUMBERED_REFERENCE_REGEX.sub(_ref_sub, text)
+        def _ref_sub(match: re.Match[str]) -> str:
+            reference = match.group("ref")
+            trailing_space = match.group("space") or ""
+            if trailing_space:
+                # Replace the trailing space char 1:1 with \r delimiter
+                return f"{PUA_PERIOD}{reference}" + ("\r" * len(trailing_space))
+            return f"{PUA_PERIOD}{reference}"
+
+        text = NUMBERED_REFERENCE_REGEX.sub(_ref_sub, text)
 
     if config is not None:
         for rule in config.rules:
@@ -260,6 +281,8 @@ def mask_continuous_punctuation(text: str) -> str:
     Returns:
         The text with multi-dot ellipses masked.
     """
+    if "." not in text and "…" not in text:
+        return text
     for rule in ELLIPSIS_RULES:
         text = rule.pattern.sub(rule.replacement, text)
     return text
@@ -297,57 +320,75 @@ def split_into_segments(
     text_len = len(text)
     line_start = 0
 
-    def _has_semantic_content(s: int, e: int) -> bool:
-        return any(text[i].isalnum() for i in range(s, e))
-
-    def _add_span(s: int, e: int, *, is_line: bool = False) -> None:
-        span = trim_span(text, s, e)
-        if span is not None:
-            if is_line or _has_semantic_content(span[0], span[1]):
-                spans.append(span)
-            elif spans:
-                # Merge trailing intra-line punctuation-only noise into previous sentence span
-                spans[-1] = (spans[-1][0], span[1])
-
     def _process_line_segment(curr_line_start: int, curr_line_end: int) -> None:
         line_len = curr_line_end - curr_line_start
         if line_len <= 0:
             return
+        trimmed_line_span = trim_span(text, curr_line_start, curr_line_end)
+        if trimmed_line_span is None:
+            return
+
         line = text[curr_line_start:curr_line_end]
-        if not search_punctuations.isdisjoint(line):
-            has_end_punct = line[-1] in punctuations
-            processed_line = line if has_end_punct else (line + PUA_TEMP_END_PUNCT)
-            has_match = False
-            for match in boundary_regex.finditer(processed_line):
-                has_match = True
-                local_start = min(match.start(), line_len)
-                local_end = min(match.end(), line_len)
-                if local_start >= local_end:
-                    continue
-                matched_slice = line[local_start:local_end]
-                if quote_regex.search(matched_slice):
-                    sub_start = 0
-                    for quote_match in split_quote_regex.finditer(matched_slice):
-                        sub_end = quote_match.start()
-                        _add_span(
-                            curr_line_start + local_start + sub_start,
-                            curr_line_start + local_start + sub_end,
-                        )
-                        sub_start = quote_match.end()
-                    if sub_start < len(matched_slice):
-                        _add_span(
-                            curr_line_start + local_start + sub_start,
-                            curr_line_start + local_start + len(matched_slice),
-                        )
+        has_semantic = any(c.isalnum() for c in line)
+        if not has_semantic:
+            # Standalone symbolic/divider/scene-break line
+            spans.append(trimmed_line_span)
+            return
+
+        if search_punctuations.isdisjoint(line):
+            spans.append(trimmed_line_span)
+            return
+
+        has_end_punct = line[-1] in punctuations
+        processed_line = line if has_end_punct else (line + PUA_TEMP_END_PUNCT)
+        line_spans: list[tuple[int, int]] = []
+
+        def _add_intra_span(s: int, e: int) -> None:
+            span = trim_span(text, s, e)
+            if span is not None:
+                span_has_semantic = any(
+                    text[i].isalnum() for i in range(span[0], span[1])
+                )
+                if span_has_semantic:
+                    line_spans.append(span)
+                elif line_spans:
+                    # Merge trailing intra-line punctuation noise into previous sentence ON THIS LINE
+                    line_spans[-1] = (line_spans[-1][0], span[1])
                 else:
-                    _add_span(
-                        curr_line_start + local_start,
-                        curr_line_start + local_end,
+                    line_spans.append(span)
+
+        has_match = False
+        for match in boundary_regex.finditer(processed_line):
+            has_match = True
+            local_start = min(match.start(), line_len)
+            local_end = min(match.end(), line_len)
+            if local_start >= local_end:
+                continue
+            matched_slice = line[local_start:local_end]
+            if quote_regex.search(matched_slice):
+                sub_start = 0
+                for quote_match in split_quote_regex.finditer(matched_slice):
+                    sub_end = quote_match.start()
+                    _add_intra_span(
+                        curr_line_start + local_start + sub_start,
+                        curr_line_start + local_start + sub_end,
                     )
-            if not has_match:
-                _add_span(curr_line_start, curr_line_end, is_line=True)
+                    sub_start = quote_match.end()
+                if sub_start < len(matched_slice):
+                    _add_intra_span(
+                        curr_line_start + local_start + sub_start,
+                        curr_line_start + local_start + len(matched_slice),
+                    )
+            else:
+                _add_intra_span(
+                    curr_line_start + local_start,
+                    curr_line_start + local_end,
+                )
+
+        if not has_match or not line_spans:
+            spans.append(trimmed_line_span)
         else:
-            _add_span(curr_line_start, curr_line_end, is_line=True)
+            spans.extend(line_spans)
 
     for line_match in LINE_SPLIT_REGEX.finditer(text):
         line_end = line_match.start()
