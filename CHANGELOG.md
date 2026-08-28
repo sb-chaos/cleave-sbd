@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Memory-Bounded Sentence Streaming API**: Introduced `Segmenter.stream(text, chunk_paragraphs=1000)` lazy generator for constant-memory corpus processing with exact global character offset tracking (`TextSpan`).
 - **Modular Processor Architecture**: Decomposed monolithic disambiguator into specialized single-responsibility modules:
-  - `csbd.processors.lists`: AST-based sequential validation for numbered, alphabetical, and Roman numeral lists.
+  - `csbd.processors.enumerations`: AST-based sequential validation for numbered, alphabetical, and Roman numeral lists.
   - `csbd.processors.abbreviation`: LRU-cached category compilation, prepositive matching, and linguistic abbreviation masking.
   - `csbd.disambiguator`: Lean, functional pipeline orchestrator.
 - **Rules Package Separation**: Extracted all pre-compiled regex tables, PUA sentinels, and replacement definitions into `csbd.rules`.

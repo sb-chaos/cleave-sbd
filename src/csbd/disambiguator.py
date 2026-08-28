@@ -71,6 +71,8 @@ __all__ = [
     "trim_span",
 ]
 
+_HAS_ALNUM_PATTERN: re.Pattern[str] = re.compile(r"\w")
+
 
 # =============================================================================
 # 1. Paired Punctuation Masking
@@ -329,7 +331,7 @@ def split_into_segments(
             return
 
         line = text[curr_line_start:curr_line_end]
-        has_semantic = any(c.isalnum() for c in line)
+        has_semantic = _HAS_ALNUM_PATTERN.search(line) is not None
         if not has_semantic:
             # Standalone symbolic/divider/scene-break line
             spans.append(trimmed_line_span)
@@ -346,8 +348,8 @@ def split_into_segments(
         def _add_intra_span(s: int, e: int) -> None:
             span = trim_span(text, s, e)
             if span is not None:
-                span_has_semantic = any(
-                    text[i].isalnum() for i in range(span[0], span[1])
+                span_has_semantic = (
+                    _HAS_ALNUM_PATTERN.search(text, span[0], span[1]) is not None
                 )
                 if span_has_semantic:
                     line_spans.append(span)

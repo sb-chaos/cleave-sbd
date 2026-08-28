@@ -89,7 +89,14 @@ __all__ = [
 
 
 def is_boundary_whitespace(char: str) -> bool:
-    """Check if a character is standard whitespace or a PUA whitespace sentinel."""
+    """Check if a character is standard whitespace or a PUA whitespace sentinel.
+
+    Args:
+        char: Single character string to evaluate.
+
+    Returns:
+        True if the character is whitespace or a PUA sentinel, False otherwise.
+    """
     return char.isspace() or char in PUA_WHITESPACE_SENTINELS
 
 

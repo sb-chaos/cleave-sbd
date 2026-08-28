@@ -7,7 +7,7 @@ from csbd.processors.abbreviation import (
     replace_abbreviations,
     search_for_abbreviations_in_string,
 )
-from csbd.processors.lists import (
+from csbd.processors.enumerations import (
     apply_replacements,
     mask_alphabetical_lists,
     mask_list_items,

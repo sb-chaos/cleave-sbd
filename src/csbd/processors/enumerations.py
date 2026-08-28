@@ -43,9 +43,12 @@ def apply_replacements(text: str, replacements: dict[int, str]) -> str:
         return text
     result: list[str] = []
     last_idx = 0
-    for idx in sorted(replacements.keys()):
+    keys = tuple(replacements.keys())
+    needs_sort = any(keys[i] >= keys[i + 1] for i in range(len(keys) - 1))
+    items_to_iter = sorted(replacements.items()) if needs_sort else replacements.items()
+    for idx, repl in items_to_iter:
         result.append(text[last_idx:idx])
-        result.append(replacements[idx])
+        result.append(repl)
         last_idx = idx + 1
     result.append(text[last_idx:])
     return "".join(result)
@@ -172,6 +175,11 @@ def mask_numbered_lists(text: str) -> str:
             _,
         ) = items[index]
 
+        if leading_space_index >= 0 and text[leading_space_index] == " ":
+            preceding_str = text[max(0, leading_space_index - 4) : leading_space_index]
+            if not preceding_str.lower().endswith("for"):
+                replacements[leading_space_index] = "\r"
+
         if is_parens:
             if lparen_index >= 0 and text[lparen_index] == "(":
                 replacements[lparen_index] = PUA_LEFT_PAREN
@@ -181,11 +189,6 @@ def mask_numbered_lists(text: str) -> str:
             dot_offset = delimiter.find(".")
             if dot_offset >= 0:
                 replacements[delimiter_start + dot_offset] = PUA_PERIOD
-
-        if leading_space_index >= 0 and text[leading_space_index] == " ":
-            preceding_str = text[max(0, leading_space_index - 4) : leading_space_index]
-            if not preceding_str.lower().endswith("for"):
-                replacements[leading_space_index] = "\r"
 
     return apply_replacements(text, replacements)
 
@@ -308,6 +311,9 @@ def mask_alphabetical_lists(text: str) -> str:
             _,
         ) = items[index]
 
+        if leading_space_index >= 0 and text[leading_space_index] == " ":
+            replacements[leading_space_index] = "\r"
+
         if is_parens:
             if lparen_index >= 0 and text[lparen_index] == "(":
                 replacements[lparen_index] = PUA_LEFT_PAREN
@@ -317,9 +323,6 @@ def mask_alphabetical_lists(text: str) -> str:
             dot_offset = delimiter.find(".")
             if dot_offset >= 0:
                 replacements[delimiter_start + dot_offset] = PUA_PERIOD
-
-        if leading_space_index >= 0 and text[leading_space_index] == " ":
-            replacements[leading_space_index] = "\r"
 
     return apply_replacements(text, replacements)
 
@@ -404,12 +407,12 @@ def mask_parenthesized_and_roman_lists(text: str) -> str:
             _, _, _, lparen_index, rparen_index, leading_space_index = (
                 roman_paren_items[index]
             )
+            if leading_space_index >= 0 and text[leading_space_index] == " ":
+                replacements[leading_space_index] = "\r"
             if lparen_index >= 0 and text[lparen_index] == "(":
                 replacements[lparen_index] = PUA_LEFT_PAREN
             if rparen_index >= 0 and text[rparen_index] == ")":
                 replacements[rparen_index] = PUA_RIGHT_PAREN
-            if leading_space_index >= 0 and text[leading_space_index] == " ":
-                replacements[leading_space_index] = "\r"
 
     if roman_delim_matches:
         roman_delim_items: list[tuple[str, int, int, str, int, int]] = []
@@ -465,12 +468,12 @@ def mask_parenthesized_and_roman_lists(text: str) -> str:
                 roman_delim_items[index]
             )
 
+            if leading_space_index >= 0 and text[leading_space_index] == " ":
+                replacements[leading_space_index] = "\r"
+
             dot_offset = delimiter.find(".")
             if dot_offset >= 0:
                 replacements[delimiter_start + dot_offset] = PUA_PERIOD
-
-            if leading_space_index >= 0 and text[leading_space_index] == " ":
-                replacements[leading_space_index] = "\r"
 
     return apply_replacements(text, replacements)
 
