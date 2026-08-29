@@ -95,7 +95,7 @@ class Segmenter:
                     span_end += 1
 
                 raw_clean_slice = target_text[c_start:span_end]
-                clean_sent = unmask_all(raw_clean_slice)
+                clean_sent = unmask_all(raw_clean_slice).replace("\r", "\n")
 
                 if offset_map is not None:
                     raw_start, raw_end = offset_map.clean_span_to_raw_span(

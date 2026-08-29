@@ -22,6 +22,7 @@ __all__ = [
     "PREPOSITIVE_ABBREVIATIONS",
     "ROMAN_DELIM_REGEX",
     "ROMAN_NUMERALS",
+    "ROMAN_NUMERALS_MAP",
     "ROMAN_NUMERALS_SET",
     "ROMAN_PARENS_REGEX",
     "ROMAN_UPPERCASE_FOLLOWING_REGEX",
@@ -46,8 +47,8 @@ __all__ = [
 STANDARD_ABBREVIATIONS: frozenset[str] = frozenset({
     "adj", "adm", "adv", "al", "ala", "alta", "apr", "arc", "ariz", "ark",
     "art", "assn", "asst", "attys", "aug", "ave", "bart", "bld", "bldg",
-    "blvd", "brig", "bros", "btw", "cal", "calif", "capt", "cl", "cmdr",
-    "co", "col", "colo", "comdr", "con", "conn", "corp", "cpl", "cres",
+    "blvd", "brig", "bros", "btw", "cal", "calif", "capt", "ch", "cl", "cmdr",
+    "co", "col", "colo", "comdr", "con", "cong", "conn", "corp", "cpl", "cres",
     "ct", "d.phil", "dak", "dec", "del", "dept", "det", "dist", "dr",
     "dr.phil", "dr.philos", "drs", "e.g", "ens", "esp", "esq", "etc",
     "exp", "expy", "ext", "feb", "fed", "fig", "fla", "ft", "fwy", "fy",
@@ -58,23 +59,25 @@ STANDARD_ABBREVIATIONS: frozenset[str] = frozenset({
     "mfg", "mich", "min", "minn", "miss", "mlle", "mm", "mme", "mo",
     "mont", "mr", "mrs", "ms", "msgr", "mssrs", "mt", "mtn", "neb",
     "nebr", "nev", "no", "nos", "nov", "nr", "oct", "ok", "okla", "ont",
-    "op", "ord", "ore", "p", "pa", "pd", "pde", "penn", "penna", "pfc",
-    "ph", "ph.d", "pl", "plz", "pp", "prof", "pvt", "que", "rd", "ref",
+    "op", "ord", "ore", "p", "pa", "para", "pd", "pde", "penn", "penna", "pfc",
+    "ph", "ph.d", "pl", "plz", "pp", "prof", "pub", "pvt", "que", "rd", "ref",
     "rep", "reps", "res", "rev", "rs", "rt", "sask", "sec", "sen",
-    "sens", "sep", "sept", "sfc", "sgt", "sr", "st", "supt", "surg",
-    "tce", "tenn", "tex", "u.s", "univ", "usafa", "ut", "v", "va",
-    "ver", "viz", "vs", "vt", "wash", "wis", "wisc", "wy", "wyo", "yuk",
+    "sens", "sep", "sept", "sess", "sfc", "sgt", "sr", "st", "stat", "subpar",
+    "subsec", "supt", "surg", "tce", "tenn", "tex", "tit", "u.s", "univ",
+    "usafa", "ut", "v", "va", "ver", "viz", "vs", "vt", "wash", "wis",
+    "wisc", "wy", "wyo", "yuk",
 })
 
 PREPOSITIVE_ABBREVIATIONS: frozenset[str] = frozenset({
-    "adm", "attys", "brig", "capt", "cmdr", "col", "cpl", "det", "dr",
+    "adm", "attys", "brig", "capt", "ch", "cmdr", "col", "cpl", "det", "dr",
     "fig", "gen", "gov", "ing", "lt", "maj", "messrs", "mr", "mrs", "ms",
-    "msgr", "mssrs", "mt", "ph", "prof", "rep", "reps", "rev", "sen",
-    "sens", "sgt", "st", "supt", "v", "vs",
+    "msgr", "mssrs", "mt", "para", "ph", "prof", "pub", "rep", "reps", "rev", "sen",
+    "sens", "sgt", "st", "stat", "subpar", "subsec", "supt", "tit", "v", "vs",
 })
 
 NUMBER_ABBREVIATIONS: frozenset[str] = frozenset({
-    "art", "ext", "no", "nos", "p", "pp",
+    "art", "ch", "cl", "ext", "no", "nos", "p", "para", "pp", "sec", "stat",
+    "subpar", "subsec", "tit",
 })
 # fmt: on
 
@@ -128,15 +131,17 @@ ROMAN_DELIM_REGEX: re.Pattern[str] = re.compile(
 # Abbreviation Regexes & Roman/Latin Lookups
 # =============================================================================
 
+ABBR_LOOKBEHIND: str = r"(?:(?<=^)|(?<=[\s\(\[\{\u2014\u2013\-\"\'\u201c\u2018]))"
+
 POSSESSIVE_ABBR_REGEX: re.Pattern[str] = re.compile(r"\.(?='s\b|’s\b|'S\b|’S\b)")
 KOMMANDITGESELLSCHAFT_REGEX: re.Pattern[str] = re.compile(
     r"(?<=Co)\.(?=\s*(?:KG|GmbH|OHG|AG)\b)", re.IGNORECASE
 )
 SINGLE_UPPERCASE_LETTER_REGEX: re.Pattern[str] = re.compile(
-    r"((?:(?<=^)|(?<=[\s\ue000]))(?:[A-ZА-ЯЁ]\.)+)(?=[,.:\-?!]|\s|\s*$)"
+    r"((?:(?<=^)|(?<=[\s\ue000\(\[\{\u2014\u2013\-\"\'\u201c\u2018]))(?:[A-Z\u0410-\u042f\u0401]\.)+)(?=[,.:\-?!]|\s|\s*$)"
 )
 SINGLE_LOWERCASE_LETTER_REGEX: re.Pattern[str] = re.compile(
-    r"((?:(?<=^)|(?<=\s))[a-zа-яё])\.(?=\s+[a-zA-Zа-яёА-ЯЁ]|\s*$)"
+    r"((?:(?<=^)|(?<=[\s\(\[\{\u2014\u2013\-\"\'\u201c\u2018]))[a-z\u0430-\u044f\u0451])\.(?=\s+[a-zA-Z\u0430-\u044f\u0451\u0410-\u042f\u0401]|\s*$)"
 )
 AM_PM_REGEX: re.Pattern[str] = re.compile(
     r"(?<=\d)\s*(?:a\.m|p\.m|am|pm)\b", re.IGNORECASE
@@ -160,9 +165,9 @@ def build_compound_abbr_regex(compound_list: list[str]) -> re.Pattern[str] | Non
         return None
     compound_pattern: str = "|".join(re.escape(abbr) for abbr in compound_list)
     return re.compile(
-        rf"((?:(?<=^)|(?<=\s))(?i:{compound_pattern}))"
+        rf"({ABBR_LOOKBEHIND}(?i:{compound_pattern}))"
         r"[\u200e\u200f\u202a-\u202e\u2066-\u2069]*\.?[\u200e\u200f\u202a-\u202e\u2066-\u2069]*"
-        rf"(?=[.:\-?,!\"\'“”«»]|\s+(?:[a-zа-яё\u0600-\u06ff]|I\s|I'm|I'll|\d|\(|\"|'|«|„))"
+        rf"(?=[.:\-?,!\"\'\u201c\u201d\u00ab\u00bb]|\s+(?:[a-z\u0430-\u044f\u0451\u0600-\u06ff]|I\s|I'm|I'll|\d|\(|\"|'|\u00ab|\u201e))"
     )
 
 
@@ -178,7 +183,7 @@ def build_prepositive_abbr_regex(prep_clean: list[str]) -> re.Pattern[str] | Non
     if not prep_clean:
         return None
     prep_pattern: str = "|".join(re.escape(abbr) for abbr in prep_clean)
-    return re.compile(rf"((?:(?<=^)|(?<=\s))(?i:{prep_pattern}))\.(?=(\s|:\d+))")
+    return re.compile(rf"({ABBR_LOOKBEHIND}(?i:{prep_pattern}))\.(?=(\s|:\d+))")
 
 
 def build_number_abbr_regex(num_clean: list[str]) -> re.Pattern[str] | None:
@@ -193,15 +198,15 @@ def build_number_abbr_regex(num_clean: list[str]) -> re.Pattern[str] | None:
     if not num_clean:
         return None
     num_pattern: str = "|".join(re.escape(abbr) for abbr in num_clean)
-    return re.compile(rf"((?:(?<=^)|(?<=\s))(?i:{num_pattern}))\.(?=(\s*\d|\s+\())")
+    return re.compile(rf"({ABBR_LOOKBEHIND}(?i:{num_pattern}))\.(?=(\s*\d|\s+\())")
 
 
 # Single linear scan pattern for standard abbreviations (evaluated with O(1) hash set lookup)
 STANDARD_ABBR_SCAN_REGEX: re.Pattern[str] = re.compile(
-    r"(?:(?<=^)|(?<=\s))(?P<word>[^\s\.\u200e\u200f\u202a-\u202e\u2066-\u2069]+)"
+    rf"{ABBR_LOOKBEHIND}(?P<word>[^\s\.\u200e\u200f\u202a-\u202e\u2066-\u2069]+)"
     r"(?P<lead_uni>[\u200e\u200f\u202a-\u202e\u2066-\u2069]*)\."
     r"(?P<trail_uni>[\u200e\u200f\u202a-\u202e\u2066-\u2069]*)"
-    r"(?=[.:\-?,!\"\'“”«»]|\s+(?:[a-zа-яё\u0600-\u06ff]|I\s|I'm|I'll|\d|\(|\"|'|«|„))"
+    rf"(?=[.:\-?,!\"\'\u201c\u201d\u00ab\u00bb]|\s+(?:[a-z\u0430-\u044f\u0451\u0600-\u06ff]|I\s|I'm|I'll|\d|\(|\"|'|\u00ab|\u201e))"
 )
 
 
@@ -218,10 +223,10 @@ def build_standard_abbr_regex(std_clean: list[str]) -> re.Pattern[str] | None:
         return None
     std_pattern: str = "|".join(re.escape(abbr) for abbr in std_clean)
     return re.compile(
-        rf"((?:(?<=^)|(?<=\s))(?i:{std_pattern}))"
+        rf"({ABBR_LOOKBEHIND}(?i:{std_pattern}))"
         r"[\u200e\u200f\u202a-\u202e\u2066-\u2069]*\."
         r"[\u200e\u200f\u202a-\u202e\u2066-\u2069]*"
-        rf"(?=[.:\-?,!\"\'“”«»]|\s+(?:[a-zа-яё\u0600-\u06ff]|I\s|I'm|I'll|\d|\(|\"|'|«|„))"
+        rf"(?=[.:\-?,!\"\'\u201c\u201d\u00ab\u00bb]|\s+(?:[a-z\u0430-\u044f\u0451\u0600-\u06ff]|I\s|I'm|I'll|\d|\(|\"|'|\u00ab|\u201e))"
     )
 
 
@@ -259,9 +264,8 @@ def build_replace_all_dot_regex(non_dot: list[str]) -> re.Pattern[str] | None:
     """
     if not non_dot:
         return None
-    return re.compile(
-        rf"((?:(?<=^)|(?<=\s))(?i:{'|'.join(re.escape(abbr) for abbr in non_dot)}))\."
-    )
+    pattern: str = "|".join(re.escape(abbr) for abbr in non_dot)
+    return re.compile(rf"(?i:\b({pattern}))\.")
 
 
 def build_replace_all_exact_regex(all_abbr_clean: list[str]) -> re.Pattern[str] | None:
@@ -275,39 +279,118 @@ def build_replace_all_exact_regex(all_abbr_clean: list[str]) -> re.Pattern[str] 
     """
     if not all_abbr_clean:
         return None
-    return re.compile(
-        rf"((?:(?<=^)|(?<=\s))(?i:{'|'.join(re.escape(abbr) for abbr in all_abbr_clean)}))(?=(\s|$|[.:\-?,!\"\'“”«»]))"
-    )
+    pattern: str = "|".join(re.escape(abbr) for abbr in all_abbr_clean)
+    return re.compile(rf"(?i:\b({pattern}))")
 
 
-ROMAN_NUMERALS: dict[str, int] = {
-    roman: index
-    for index, roman in enumerate(
-        (
-            "i",
-            "ii",
-            "iii",
-            "iv",
-            "v",
-            "vi",
-            "vii",
-            "viii",
-            "ix",
-            "x",
-            "xi",
-            "xii",
-            "xiii",
-            "xiv",
-            "xv",
-            "xvi",
-            "xvii",
-            "xviii",
-            "xix",
-            "xx",
-        )
-    )
-}
-ROMAN_NUMERALS_SET: frozenset[str] = frozenset(ROMAN_NUMERALS.keys())
+# Lookup tables for Latin / Roman numerals (1-100)
 LATIN_NUMERALS: dict[str, int] = {
-    char: index for index, char in enumerate(string.ascii_lowercase)
+    char: idx for idx, char in enumerate(string.ascii_lowercase)
 }
+ROMAN_NUMERALS_TUPLE: tuple[str, ...] = (
+    "i",
+    "ii",
+    "iii",
+    "iv",
+    "v",
+    "vi",
+    "vii",
+    "viii",
+    "ix",
+    "x",
+    "xi",
+    "xii",
+    "xiii",
+    "xiv",
+    "xv",
+    "xvi",
+    "xvii",
+    "xviii",
+    "xix",
+    "xx",
+    "xxi",
+    "xxii",
+    "xxiii",
+    "xxiv",
+    "xxv",
+    "xxvi",
+    "xxvii",
+    "xxviii",
+    "xxix",
+    "xxx",
+    "xxxi",
+    "xxxii",
+    "xxxiii",
+    "xxxiv",
+    "xxxv",
+    "xxxvi",
+    "xxxvii",
+    "xxxviii",
+    "xxxix",
+    "xl",
+    "xli",
+    "xlii",
+    "xliii",
+    "xliv",
+    "xlv",
+    "xlvi",
+    "xlvii",
+    "xlviii",
+    "xlix",
+    "l",
+    "li",
+    "lii",
+    "liii",
+    "liv",
+    "lv",
+    "lvi",
+    "lvii",
+    "lviii",
+    "lix",
+    "lx",
+    "lxi",
+    "lxii",
+    "lxiii",
+    "lxiv",
+    "lxv",
+    "lxvi",
+    "lxvii",
+    "lxviii",
+    "lxix",
+    "lxx",
+    "lxxi",
+    "lxxii",
+    "lxxiii",
+    "lxxiv",
+    "lxxv",
+    "lxxvi",
+    "lxxvii",
+    "lxxviii",
+    "lxxix",
+    "lxxx",
+    "lxxxxi",
+    "lxxxii",
+    "lxxxiii",
+    "lxxxiv",
+    "lxxxv",
+    "lxxxvi",
+    "lxxxvii",
+    "lxxxviii",
+    "lxxxix",
+    "xc",
+    "xci",
+    "xcii",
+    "xciii",
+    "xciv",
+    "xcv",
+    "xcvi",
+    "xcvii",
+    "xcviii",
+    "xcix",
+    "c",
+)
+ROMAN_NUMERALS: dict[str, int] = {
+    num: idx for idx, num in enumerate(ROMAN_NUMERALS_TUPLE)
+}
+ROMAN_NUMERALS_MAP: dict[str, int] = ROMAN_NUMERALS
+ROMAN_NUMERALS_SET: frozenset[str] = frozenset(ROMAN_NUMERALS.keys())
